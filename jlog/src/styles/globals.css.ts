@@ -1,11 +1,16 @@
 // global style 지정
-import { globalStyle } from '@vanilla-extract/css'
+import { globalStyle, fontFace } from '@vanilla-extract/css'
+
+const GowunDodum = fontFace({
+    src: 'url("/fonts/GowunDodum-Regular.ttf")',
+})
 
 globalStyle(
     'html, body', {
     padding : 0,
     margin : 0,
-    fontFamily : ""
+    fontFamily : GowunDodum,
+    height: '100%'
 });
 
 globalStyle(
