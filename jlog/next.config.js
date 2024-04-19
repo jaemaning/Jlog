@@ -1,8 +1,9 @@
 // vanilla-extract 플러그인을 사용하여 next.js 프로젝트에 vanilla-extract를 설정하는 방법
-const {
-  createVanillaExtractPlugin
-} = require('@vanilla-extract/next-plugin');
+const { createVanillaExtractPlugin } = require('@vanilla-extract/next-plugin');
 const withVanillaExtract = createVanillaExtractPlugin();
+
+// contentlayer 플러그인을 사용하여 next.js 프로젝트에 contentlayer를 설정하는 방법
+const { withContentlayer } = require('next-contentlayer');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,4 +19,4 @@ const nextConfig = {
   })
 };
 
-module.exports = withVanillaExtract(nextConfig);
+module.exports = withVanillaExtract(withContentlayer(nextConfig));
