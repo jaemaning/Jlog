@@ -1,4 +1,4 @@
-// global style 지정
+// // global style 지정
 import { globalStyle, fontFace } from '@vanilla-extract/css'
 
 const GowunDodum = fontFace({
@@ -6,25 +6,17 @@ const GowunDodum = fontFace({
 })
 
 globalStyle(
-    'html, body', {
+    'html', {
     padding : 0,
-    margin : 0,
     fontFamily : GowunDodum,
-    height: '100%'
-});
-
-globalStyle(
-    '*', {
-    boxSizing: 'border-box'
-});
-
-globalStyle('a', {
-    cursor : 'pointer',
-    textDecoration : 'none',
-    transition : 'all 0.3s',
-    color : 'blue'
-});
-
-globalStyle('ol, ul', {
-    listStyle : 'none'
+    height: '100%',
+    width: '920px',
+    margin: 'auto',
+    '@media': {
+        'screen and (max-width: 1024px)': {
+            width: 'calc(100% - 124px);',
+            margin: '0 62px',
+            boxSizing: 'border-box'
+        }
+    }
 });

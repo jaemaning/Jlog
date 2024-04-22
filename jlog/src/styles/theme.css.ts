@@ -7,19 +7,19 @@ export const [themeClass, vars] = createTheme({
         text: '#262425',
     },
     fontSizes: {
-        0: '12px',
-        1: '14px',
-        2: '16px',
-        3: '18px',
-        4: '20px',
-        5: '23px',
+        'extraSmall': '12px',
+        'small': '14px',
+        'medium': '16px',
+        'mediumLarge': '18px',
+        'large': '20px',
+        'extraLarge': '23px'
     },
     space : {
-        0: '0px',
-        1: '4px',
-        2: '8px',
-        3: '16px',
-        4: '24px',
-        5: '32px',
+        'extraSmall': '0px',
+        'small': '4px',
+        'medium': '8px',
+        'mediumLarge': '16px',
+        'large': '24px',
+        'extraLarge': '32px'
     }
 });
