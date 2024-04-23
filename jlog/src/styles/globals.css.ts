@@ -7,15 +7,16 @@ const GowunDodum = fontFace({
 
 globalStyle(
     'html', {
-    padding : 0,
+    padding : '0 10px',
     fontFamily : GowunDodum,
     height: '100%',
-    width: '920px',
+    width: '1024px',
     margin: 'auto',
+    boxSizing: 'border-box',
     '@media': {
         'screen and (max-width: 1024px)': {
-            width: 'calc(100% - 124px);',
-            margin: '0 62px',
+            width: '100%',
+            margin: '0',
             boxSizing: 'border-box'
         }
     }
