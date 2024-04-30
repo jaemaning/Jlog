@@ -48,25 +48,6 @@ const responsiveProperties = defineProperties({
 });
 
 
-const colorProperties = defineProperties({
-    conditions: {
-        lightMode: {},
-        darkMode: { '@media': '(prefers-color-scheme: dark)' }
-    },
-    defaultCondition: 'lightMode',
-    properties: {
-        color: {
-            light : style.colors.black,
-            dark : style.colors.white
-        },
-        background: {
-            light : style.colors.white,
-            dark : style.colors.black
-        }
-    }
-});
-
 export const sprinkles = createSprinkles(
-    responsiveProperties,
-    colorProperties
+    responsiveProperties
 );
