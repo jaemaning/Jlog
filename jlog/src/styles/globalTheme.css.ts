@@ -14,6 +14,7 @@ const themeColor = createThemeContract({
       mainFontColor: null,
       borderColor: null,
       gradient: null,
+      btnColor: null,
     },
   });
   
@@ -24,8 +25,10 @@ export const lightTheme = createTheme(themeColor, {
         mainFontColor: '#2c2c2c',
         borderColor: '#cbc9f9',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
+        btnColor: '#f7f9fa',
     },
 });
+
   
 export const darkTheme = createTheme(themeColor, {
     color: {
@@ -34,6 +37,7 @@ export const darkTheme = createTheme(themeColor, {
         mainFontColor: '#ffffff',
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
+        btnColor: '#1d1d1d',
     },
 });
 

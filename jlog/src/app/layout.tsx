@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import '../styles/globals.css';
 import ThemeProvider from '@/utils/ThemeProvider';
+import DarkModeBtn from "@/components/darkModBtn/darkModBtn";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           {children}
+          <DarkModeBtn/>
         </ThemeProvider>
       </body>
     </html>
