@@ -13,11 +13,6 @@ const DarkModeBtn = () => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    console.log(mounted);
-    console.log(resolvedTheme);
-  }, [resolvedTheme, mounted]);
-
 
   return (
     <div className={style.container}>

@@ -45,7 +45,9 @@ export const darkTheme = createTheme(themeColor, {
 export const global = createGlobalTheme(':root', {
     color: style.colors,
     fontSizes: style.fontSizes,
-    space : style.space
+    space : style.space,
+    lineHeight: style.lineHeight,
+    letterSpacing: style.letterSpacing,
 });
 
 export const vars = { ...global, themeColor };
