@@ -25,7 +25,7 @@ export const lightTheme = createTheme(themeColor, {
         mainFontColor: '#2c2c2c',
         borderColor: '#cbc9f9',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
-        btnColor: '#f7f9fa',
+        btnColor: '#eeeeee',
     },
 });
 
@@ -37,7 +37,7 @@ export const darkTheme = createTheme(themeColor, {
         mainFontColor: '#ffffff',
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
-        btnColor: '#1d1d1d',
+        btnColor: '#39598A',
     },
 });
 
@@ -55,7 +55,21 @@ export const vars = { ...global, themeColor };
 
 globalStyle('body', {
     fontSize: vars.fontSizes.medium,
-    backgroundColor: `hsl(${vars.themeColor.color.mainBackground})`,
+    backgroundColor: vars.themeColor.color.mainBackground,
+    color: vars.themeColor.color.mainFontColor,
     userSelect: 'none',
     transition: 'all 0.25s linear'
+});
+
+globalStyle('button', {
+    cursor: 'pointer',
+    border: 'none',
+    outline: 'none',
+    fontFamily: 'inherit',
+    fontSize: vars.fontSizes.medium,
+    padding: vars.space.medium,
+    borderRadius: '10px',
+    transition: 'all 0.25s linear',
+    backgroundColor: vars.themeColor.color.btnColor,
+    color: vars.themeColor.color.mainFontColor,
 });
