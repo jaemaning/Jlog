@@ -13,7 +13,6 @@ const DarkModeBtn = () => {
     setMounted(true);
   }, []);
 
-
   return (
     <div className={style.container}>
       <Button
