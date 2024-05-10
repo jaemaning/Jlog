@@ -5,11 +5,21 @@ import { recipe } from '@vanilla-extract/recipes';
 
 export const buttonStyle = recipe({
     base: {
-      display : 'block',
+      display : 'flex',
       borderRadius: '8px',
       cursor: 'pointer',
       margin : 'none',
       boxSizing : 'border-box',
+      transition: 'background-color 0.3s, color 0.3s',  // 부드러운 색상 전환 효과
+      backgroundColor: vars.themeColor.color.mainBackground,  // 기본 배경색
+      color: vars.themeColor.color.mainFontColor,  // 기본 폰트색
+      textAlign: 'center', // 텍스트 가운데 정렬
+      verticalAlign: 'middle', // 세로 가운데 정렬
+      justifyContent: 'center', // 가로 가운데 정렬
+      alignItems: 'center', // 세로 가운데 정렬
+      ':hover': {
+        backgroundColor: vars.themeColor.color.btnColor,  // hover 시 배경색 변경
+      }
     },
   
     variants: {
@@ -20,7 +30,6 @@ export const buttonStyle = recipe({
           padding : vars.space.small,
           width: '50px',
           height: '30px',
-
         },
         medium: {
           fontSize: vars.fontSizes.medium,
@@ -33,6 +42,15 @@ export const buttonStyle = recipe({
           padding : vars.space.large,
           width: '150px',
           height: '70px',
+        },
+        fit: {
+          width: 'fit-content',
+          height: 'fit-content',
+        },
+        circle : {
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
         }
       },
       margin: vars.recipeMargin,
@@ -40,7 +58,6 @@ export const buttonStyle = recipe({
     },
   
     defaultVariants: {
-			color : 'black',
       size: 'medium',
       border : 'none'
     }

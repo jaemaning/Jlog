@@ -6,7 +6,7 @@ interface ButtonProps {
     children: React.ReactNode;
     onClick?: () => void; // onClick 타입을 정의
     color? : keyof typeof vars.recipeColor;
-    size? : 'small' | 'medium' | 'large';
+    size? : 'small' | 'medium' | 'large' | 'fit' | 'circle';
     margin? : keyof typeof vars.recipeMargin;
     border? : keyof typeof vars.recipeBorder;
 }

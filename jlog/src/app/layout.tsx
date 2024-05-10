@@ -18,7 +18,6 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           {children}
-          <DarkModeBtn/>
         </ThemeProvider>
       </body>
     </html>

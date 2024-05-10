@@ -10,6 +10,7 @@ interface BoxProps {
     border?: keyof typeof vars.recipeBorder;
     alignItems?: keyof typeof vars.recipeAlignItems;
     justifyContent?: keyof typeof vars.recipeJustifyContent;
+    responsive?: 'block' | 'flex';
 }
 
 const Box: React.FC<BoxProps> = ({  

@@ -6,14 +6,9 @@ import { recipe } from '@vanilla-extract/recipes';
 export const boxStyle = recipe({
     base: {
       width : '100%',
-      display : 'block',
+      display : 'flex',
       margin : 'none',
-      boxSizing : 'border-box',
-      '@media' : {
-        'screen and (min-width: 768px)': {
-          display : 'flex'
-        },
-      }
+      boxSizing : 'border-box'
     },
   
     variants: {
@@ -22,10 +17,29 @@ export const boxStyle = recipe({
       margin: vars.recipeMargin,
       alignItems: vars.recipeAlignItems,
       justifyContent: vars.recipeJustifyContent,
-      border: vars.recipeBorder
+      border: vars.recipeBorder,
+      responsive : {
+        block: {
+          '@media' : {
+            'screen and (min-width: 768px)': {
+              display : 'flex'
+            },
+          },
+          display : 'block'
+        },
+        flex: {
+          '@media' : {
+            'screen and (min-width: 768px)': {
+              display : 'flex'
+            }
+          },
+          display : 'flex'
+        }
+      }
     },
   
     defaultVariants: {
       padding: 'medium',
+      responsive: 'flex'
     }
   });

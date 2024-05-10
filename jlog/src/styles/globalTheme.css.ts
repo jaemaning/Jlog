@@ -27,7 +27,7 @@ export const lightTheme = createTheme(themeColor, {
         mainFontColor: '#2c2c2c',
         borderColor: '#cbc9f9',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
-        btnColor: '#eeeeee',
+        btnColor: '#EBEBEB',
     },
 });
 
@@ -39,7 +39,7 @@ export const darkTheme = createTheme(themeColor, {
         mainFontColor: '#ffffff',
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
-        btnColor: '#39598A',
+        btnColor: '#313236',
     },
 });
 

@@ -11,22 +11,26 @@ export const typoStyle = recipe({
       margin : 'none',
       boxSizing : 'border-box',
       padding : '0',
-      color : vars.themeColor.color.mainFontColor
+      color : vars.themeColor.color.mainFontColor,
+      transform: 'skew(-0.1deg)',
     },
   
     variants: {
       size: {
         h1: {
           fontSize: vars.fontSizes.extraLarge,
-          fontWeight: bold
+          fontWeight: bold,
+          transform: 'skew(-10deg)'
         },
         h2: {
           fontSize: vars.fontSizes.large,
-          fontWeight: bold
+          fontWeight: bold,
+          transform: 'skew(-10deg)'
         },
         h3: {
           fontSize: vars.fontSizes.mediumLarge,
-          fontWeight: bold
+          fontWeight: bold,
+          transform: 'skew(-10deg)'
         },
         p1: {
           fontSize: vars.fontSizes.medium,
@@ -40,6 +44,26 @@ export const typoStyle = recipe({
           fontSize: vars.fontSizes.extraSmall,
           fontWeight: normal
         },
+        a : {
+          fontSize: vars.fontSizes.medium,
+          fontWeight: normal,
+          textDecoration: 'none',
+          cursor: 'pointer',
+          ':hover': {
+            textDecoration: 'underline'
+          },
+          transform: 'skew(-10deg)'
+        },
+        ha : {
+          fontSize: vars.fontSizes.extraLarge,
+          fontWeight: bold,
+          textDecoration: 'none',
+          cursor: 'pointer',
+          ':hover': {
+            textDecoration: 'underline'
+          },
+          transform: 'skew(-10deg)'
+        }
 
       },
       color: {
@@ -85,7 +109,7 @@ export const typoStyle = recipe({
     },
   
     defaultVariants: {
-      size: 'h1',
+      size: 'p1',
       margin: 'none',
       padding: 'none',
       color: 'origin'
