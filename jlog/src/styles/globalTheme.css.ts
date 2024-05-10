@@ -6,6 +6,7 @@ import {
 } from '@vanilla-extract/css';
 import { style } from './style';
 import { recipeMargin, recipePadding, recipeStyle } from './recipeStyle';
+import { recipe } from '@vanilla-extract/recipes';
 
 
 const themeColor = createThemeContract({
@@ -51,7 +52,10 @@ export const global = createGlobalTheme(':root', {
     letterSpacing: style.letterSpacing,
     recipeColor : recipeStyle.recipeColors,
     recipePadding : recipeStyle.recipePadding,
-    recipeMargin : recipeStyle.recipeMargin
+    recipeMargin : recipeStyle.recipeMargin,
+    recipeBorder : recipeStyle.recipeBorder,
+    recipeAlignItems : recipeStyle.recipeAlignItems,
+    recipeJustifyContent : recipeStyle.recipeJustifyContent,
 });
 
 export const vars = { ...global, themeColor };

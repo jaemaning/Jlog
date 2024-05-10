@@ -18,6 +18,8 @@ const DarkModeBtn = () => {
       <Button
         onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
         aria-label="DarkModeBtn"
+        size='small'
+        color='gray-300'
       >
         버튼
       </Button>

@@ -1,5 +1,3 @@
-import { vars } from "./globalTheme.css";
-
 const recipeColors: { [key: string]: { backgroundColor: string, color: string } } = {
     'black': { 'backgroundColor': '#000000', 'color': '#ffffff' },
     'white': { 'backgroundColor': '#ffffff', 'color': '#000000' },
@@ -30,5 +28,26 @@ export const recipeMargin = {
     extraLarge: { margin: '32px' }
 };
 
+export const recipeBorder= {
+    none: { border: 'none' },
+    thin: { border: '1px solid #ddd' },
+    thick: { border: '2px solid #333' },
+    dashed: { border: '1px dashed #333' },
+};
 
-export const recipeStyle = { recipeColors, recipePadding, recipeMargin };
+export const recipeAlignItems = {
+    start: { alignItems: 'flex-start' },
+    center: { alignItems: 'center' },
+    end: { alignItems: 'flex-end' }
+};
+
+export const recipeJustifyContent = {
+    start: { justifyContent: 'flex-start' },
+    center: { justifyContent: 'center' },
+    end: { justifyContent: 'flex-end' },
+    spaceBetween: { justifyContent: 'space-between' },
+    spaceAround: { justifyContent:'space-around' }
+};
+
+
+export const recipeStyle = { recipeColors, recipePadding, recipeMargin, recipeBorder, recipeAlignItems, recipeJustifyContent };

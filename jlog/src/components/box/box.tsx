@@ -1,15 +1,15 @@
 import React from 'react';
-import { box } from './box.css';
+import { boxStyle } from './box.css';
 import { vars } from '@/styles/globalTheme.css';
 
 interface BoxProps {
     children: React.ReactNode;
-    color?: keyof typeof vars.color;
-    padding?: keyof typeof vars.space;
-    margin?: 'none' | 'small' | 'medium' | 'large';
-    border?: 'none' | 'thin' | 'thick';
-    alignItems?: 'start' | 'center' | 'end';
-    justifyContent?: 'start' | 'center' | 'end' | 'spaceBetween' | 'spaceAround';
+    color?: keyof typeof vars.recipeColor;
+    padding?: keyof typeof vars.recipePadding;
+    margin?: keyof typeof vars.recipeMargin;
+    border?: keyof typeof vars.recipeBorder;
+    alignItems?: keyof typeof vars.recipeAlignItems;
+    justifyContent?: keyof typeof vars.recipeJustifyContent;
 }
 
 const Box: React.FC<BoxProps> = ({  
@@ -22,7 +22,7 @@ const Box: React.FC<BoxProps> = ({
     children
 }) => {
     return (
-        <div className={box({color, padding, margin, border, alignItems, justifyContent})}>
+        <div className={boxStyle({color, padding, margin, border, alignItems, justifyContent})}>
             {children}
         </div>
     );

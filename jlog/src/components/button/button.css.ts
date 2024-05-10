@@ -1,49 +1,47 @@
-import { style } from '@vanilla-extract/css';
 import { vars } from '@/styles/globalTheme.css';
 import { recipe } from '@vanilla-extract/recipes';
 
-export const buttonStyles = style({
-    fontSize: vars.fontSizes.small,
-    padding : vars.space.small,
-    width: '50px',
-    height: '30px',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer',
-    margin: '10px',
-});
+// 기본적인 box 구성
 
-// 박스는 div, section 형태의 기본적인 단위
-
-export const button = recipe({
+export const buttonStyle = recipe({
     base: {
       display : 'block',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      margin : 'none',
+      boxSizing : 'border-box',
     },
   
     variants: {
-      color: vars.color,
-      padding: {
-        none: { padding: '0' },
-        small: { padding: vars.space.small },
-        medium: { padding: vars.space.medium },
-        large: { padding: vars.space.large }
+      color: vars.recipeColor,
+      size: {
+        small: {
+          fontSize: vars.fontSizes.small,
+          padding : vars.space.small,
+          width: '50px',
+          height: '30px',
+
+        },
+        medium: {
+          fontSize: vars.fontSizes.medium,
+          padding : vars.space.medium,
+          width: '100px',
+          height: '50px',
+        },
+        large: {
+          fontSize: vars.fontSizes.large,
+          padding : vars.space.large,
+          width: '150px',
+          height: '70px',
+        }
       },
-      margin: {
-        none: { margin: '0' },
-        small: { margin: vars.space.small  },
-        medium: { margin: vars.space.medium  },
-        large: { margin: vars.space.large  }
-      },
-      border: {
-        none: { border: 'none' },
-        thin: { border: '1px solid #ddd' },
-        thick: { border: '2px solid #333' }
-      }
+      margin: vars.recipeMargin,
+      border: vars.recipeBorder
     },
   
     defaultVariants: {
-			color : 'neutral',
-      padding: 'medium',
+			color : 'black',
+      size: 'medium',
       border : 'none'
     }
   });
