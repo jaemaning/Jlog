@@ -1,5 +1,5 @@
 import Box from "@/components/box/box";
-import Typo from "@/components/Typo/typo";
+import Typo from "@/components/typo/typo";
 
 export default function Home() {
   return (
