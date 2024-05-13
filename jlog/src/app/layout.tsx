@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import '../styles/globals.css';
 import ThemeProvider from '@/utils/ThemeProvider';
-import DarkModeBtn from "@/components/darkModeBtn/darkModeBtn";
+import DarkModeBtn from "@/components/atom/darkModeBtn/darkModeBtn";
 
 export const metadata: Metadata = {
   title: "Create Next App",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { buttonStyle } from '@/components/button/button.css';
+import { buttonStyle } from '@/components/atom/button/button.css';
 import { vars } from '@/styles/globalTheme.css';
 
 interface ButtonProps {

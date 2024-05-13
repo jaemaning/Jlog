@@ -1,7 +1,7 @@
 import React from 'react';
-import Box from '@/components/box/box';
-import Typo from '@/components/typo/typo';
-import DarkModeBtn from '../darkModeBtn/darkModeBtn';
+import Box from '@/components/atom/box/box';
+import Typo from '@/components/atom/typo/typo';
+import DarkModeBtn from '../../atom/darkModeBtn/darkModeBtn';
 
 interface NavBarProps {
 

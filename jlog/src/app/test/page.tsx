@@ -1,4 +1,4 @@
-import Button from '@/components/button/button';
+import Button from '@/components/atom/button/button';
 import React from 'react';
 
 const TestPage : React.FC = () => {

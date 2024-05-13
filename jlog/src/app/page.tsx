@@ -1,6 +1,6 @@
-import Box from "@/components/box/box";
-import Typo from "@/components/typo/typo";
-import NavBar from "@/components/navBar/navBar";
+import Box from "@/components/atom/box/box";
+import Typo from "@/components/atom/typo/typo";
+import NavBar from "@/components/mole/navBar/navBar";
 
 
 export default function Home() {
