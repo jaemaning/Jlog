@@ -17,7 +17,8 @@ export const recipePadding = {
     small: { padding: '4px' },
     medium: { padding: '8px' },
     large: { padding: '16px' },
-    extraLarge: { padding: '32px' }
+    extraLarge: { padding: '32px' },
+    auto : {padding : 'auto'}
 };
 
 export const recipeMargin = {
@@ -25,7 +26,8 @@ export const recipeMargin = {
     small: { margin: '4px' },
     medium: { margin: '8px' },
     large: { margin: '16px' },
-    extraLarge: { margin: '32px' }
+    extraLarge: { margin: '32px' },
+    auto : {margin : 'auto'}
 };
 
 export const recipeBorder= {

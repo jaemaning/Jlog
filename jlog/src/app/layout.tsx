@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import '../styles/globals.css';
 import ThemeProvider from '@/utils/ThemeProvider';
-import DarkModeBtn from "@/components/atom/darkModeBtn/darkModeBtn";
+import NavBar from "@/components/mole/navBar/navBar";
+import Footer from "@/components/mole/footer/footer";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html>
       <body>
+        <NavBar />
         <ThemeProvider>
           {children}
         </ThemeProvider>
+        <Footer />
       </body>
     </html>
   );

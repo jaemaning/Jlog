@@ -66,7 +66,11 @@ globalStyle('body', {
     backgroundColor: vars.themeColor.color.mainBackground,
     color: vars.themeColor.color.mainFontColor,
     userSelect: 'none',
-    transition: 'all 0.25s linear'
+    transition: 'all 0.25s linear',
+    minHeight: '100vh',
+    boxSizing: 'border-box',
+    padding: 0,
+    margin: 0,
 });
 
 globalStyle('button', {
