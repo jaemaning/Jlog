@@ -16,7 +16,7 @@ const themeColor = createThemeContract({
       mainFontColor: null,
       borderColor: null,
       gradient: null,
-      btnColor: null,
+      loadingColor: null,
     },
   });
   
@@ -27,7 +27,7 @@ export const lightTheme = createTheme(themeColor, {
         mainFontColor: '#2c2c2c',
         borderColor: '#cbc9f9',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
-        btnColor: '#EBEBEB',
+        loadingColor: '#EEEEEE',
     },
 });
 
@@ -39,7 +39,7 @@ export const darkTheme = createTheme(themeColor, {
         mainFontColor: '#ffffff',
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
-        btnColor: '#313236',
+        loadingColor: '#303030',
     },
 });
 
@@ -82,6 +82,6 @@ globalStyle('button', {
     padding: vars.space.medium,
     borderRadius: '10px',
     transition: 'all 0.25s linear',
-    backgroundColor: vars.themeColor.color.btnColor,
+    backgroundColor: vars.themeColor.color.loadingColor,
     color: vars.themeColor.color.mainFontColor,
 });

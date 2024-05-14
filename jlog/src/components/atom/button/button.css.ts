@@ -18,7 +18,7 @@ export const buttonStyle = recipe({
       justifyContent: 'center', // 가로 가운데 정렬
       alignItems: 'center', // 세로 가운데 정렬
       ':hover': {
-        backgroundColor: vars.themeColor.color.btnColor,  // hover 시 배경색 변경
+        backgroundColor: vars.themeColor.color.loadingColor,  // hover 시 배경색 변경
       }
     },
   

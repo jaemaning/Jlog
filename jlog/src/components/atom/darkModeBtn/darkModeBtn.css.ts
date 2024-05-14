@@ -1,8 +1,16 @@
 import { style } from '@vanilla-extract/css';
+import { vars } from '@/styles/globalTheme.css';
 
 export const container = style({
-    width: '30px',
-    height: '30px',
+    width: '40px',
+    height: '40px',
+});
+
+export const loadingContatiner = style({
+    width: '40px',
+    height: '40px',
+    backgroundColor: vars.themeColor.color.loadingColor,
+    borderRadius: '15px'
 });
 
 export const button = style({

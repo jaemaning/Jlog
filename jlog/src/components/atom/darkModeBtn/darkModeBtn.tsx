@@ -9,21 +9,27 @@ import NightsStayIcon from '@mui/icons-material/NightsStay';
 
 const DarkModeBtn = () => {
   const [mounted, setMounted] = useState(false);
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  if (!mounted) return (
+    <div className={style.loadingContatiner}>
+
+    </div>
+  );
+
   return (
     <div className={style.container}>
       <Button
-        onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         aria-label="DarkModeBtn"
         size='circle'
       >
         {mounted && (
-          resolvedTheme === 'light' ? <NightsStayIcon fontSize='small' /> : <WbSunnyIcon fontSize='small' />
+          theme === 'light' ? <NightsStayIcon fontSize='small' /> : <WbSunnyIcon fontSize='small' />
         )}
       </Button>
     </div>
