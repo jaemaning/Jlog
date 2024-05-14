@@ -1,20 +1,12 @@
-// contentlayer.config.ts
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import highlight from 'rehype-highlight';
 import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeImgSize from './rehype-img-size';
 
 export const Post = defineDocumentType(() => ({
   name: 'Post',
-  contentType: 'mdx',
   filePathPattern: `**/*.mdx`, // mdx 파일경로 패턴
-
-  // mdx로 작성한 글 정보에 대해 입력해야하는 필드 정의
-  /*
-    [필드명]: {
-      type: '자료형',
-      required: '필수여부',
-    }
-  */
+  contentType: 'mdx',
   fields: {
     title: {
       type: 'string',
@@ -24,26 +16,25 @@ export const Post = defineDocumentType(() => ({
       type: 'string',
       required: true,
     },
-    category: {
-      type: 'string',
+    date: {
+      type : 'date',
       required: true,
     },
     thumbnail: {
       type: 'string',
       required: false,
     },
-    createdAt: {
-      type: 'date',
+    tags: {
+      type: 'list',
+      of: { type: 'string' },
       required: true,
     },
   },
 }));
 
 const contentSource = makeSource({
-  // 마크다운 파일이 저장되어 있는 루트 폴더
   contentDirPath: 'posts',
   documentTypes: [Post],
-  contentType: "mdx",
   mdx: {
     remarkPlugins: [],
     rehypePlugins: [
@@ -54,6 +45,7 @@ const contentSource = makeSource({
         },
       ],
       highlight,
+      rehypeImgSize,
     ],
   },
 });

@@ -15,9 +15,9 @@ export type Post = {
   type: 'Post'
   title: string
   description: string
-  category: string
+  date: IsoDateTimeString
   thumbnail?: string | undefined
-  createdAt: IsoDateTimeString
+  tags: string[]
   /** MDX file body */
   body: MDX
 

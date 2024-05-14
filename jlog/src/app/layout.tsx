@@ -3,6 +3,7 @@ import '../styles/globals.css';
 import ThemeProvider from '@/utils/ThemeProvider';
 import NavBar from "@/components/mole/navBar/navBar";
 import Footer from "@/components/mole/footer/footer";
+import { mainContainer } from "./main.css";
 
 export const metadata: Metadata = {
   title: "JLOG",
@@ -19,7 +20,9 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <NavBar />
-          {children}
+          <div className={mainContainer}>
+            {children}
+          </div>
           <Footer />
         </ThemeProvider>
       </body>
