@@ -8,6 +8,7 @@ const { withContentlayer } = require('next-contentlayer');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: false,
   compiler: (()=> {
     if (process.env.NODE_ENV === 'production') {
       compilerConfig = {

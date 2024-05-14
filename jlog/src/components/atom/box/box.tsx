@@ -20,10 +20,11 @@ const Box: React.FC<BoxProps> = ({
     border,
     alignItems,
     justifyContent,
-    children
+    children,
+    responsive
 }) => {
     return (
-        <div className={boxStyle({color, padding, margin, border, alignItems, justifyContent})}>
+        <div className={boxStyle({color, padding, margin, border, alignItems, justifyContent, responsive})}>
             {children}
         </div>
     );
