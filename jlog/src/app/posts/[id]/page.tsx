@@ -1,5 +1,8 @@
 import { useMDXComponent } from 'next-contentlayer/hooks';
 import { allPosts } from '.contentlayer/generated';
+import Button from '@/components/atom/button/button';
+import components from '@/components/atom/MDXcomponent/MDXComponent'
+
 
 export function generateStaticParams() {
   return allPosts.map((post) => ({
@@ -25,7 +28,11 @@ export default function PostDetailPage({ params }: { params: { id: string } }): 
     return (
         <div>
             <h1>{post.title}</h1>
-            <span>{post.category}</span>
+            <div>
+              {post.tags.map((postTag)=> {
+                return <Button size='fit' border='thin' margin='small'>{postTag}</Button>
+              })}
+            </div>
             <MDXComponent />
         </div>
     );

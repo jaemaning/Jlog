@@ -1,0 +1,161 @@
+---
+title: "현업에서 엑셀, 메모장 데이터 노가다를 Python으로 자동화하기 (feat. xxx공사)"
+description: "2024-01-01 | SSAFY 가 끝나고 개발자로 취업이 금방 될 줄 알았으나 너무 취업이 힘드네요,,2024-03-01 | 놀 순 없으니 최근 xxx공사 단기 계약직 근로를 시작하게 되었습니다.그러면서 제가 주로 하게 된 일은.. 데이터 정리 여기 근무하시는 분들"
+date: 2024-03-18T08:28:03.521Z
+tags: ["python"]
+---
+2024-01-01 | SSAFY 가 끝나고 개발자로 취업이 금방 될 줄 알았으나 너무 취업이 힘드네요,,
+
+2024-03-01 | 놀 순 없으니 최근 xxx공사 단기 계약직 근로를 시작하게 되었습니다.
+
+그러면서 제가 주로 하게 된 일은.. 데이터 정리 여기 근무하시는 분들은 기본적으로 엑셀을 되게 잘 쓰시더라구요..
+
+개발자 준비하고 있다고 실컷 말하고 다녔는데 저보다 엑셀 함수를 더 잘짜십니다..
+
+그래도 개발자라면 손으로 한땀 한땀 엑셀 함수를 짜는것보단 역시 자동화를 해야겠죠?
+
+## 💡 Python 자동화 주요 라이브러리
+우선 제가 데이터 정리를 위해 사용한 라이브러리는 두 가지입니다.
+> pandas : excel 파일 reading 및 간편한 수식 제공으로 사용했습니다.
+os : 자동화 구축을 위해 os에 접근할 필요가 있었고 폴더 생성 작업에 사용했습니다.
+
+ 사실 이전 자동화 구축땐 큰 용량의 파일들이 많아 **pickle**, **numpy** 같은 라이브러리도 사용했었는데 이번엔 간단한 엑셀 파일과 메모장으로만 작업하다보니 필요없었습니다.
+
+그 때 그 때 상황에 맞게 유용한 라이브러리를 찾아보고 사용하면 좋을 것 같습니다.
+
+## 📋 코드
+대외비가 걸려있어 모든 소스 코드를 오픈하진 못하지만 대략적인 로직의 코드는 다음과 같습니다.
+```python
+import pandas as pd
+import os
+
+# 아래 고정으로 들어갈 값
+LAST_VAL = """
+ ...
+ 
+ read 01 02 03
+ 
+ ...
+"""
+
+# 3번 행의 빈 컬럼이 들어오기 까지 데이터 갯수 파악
+def CheckRange(s, df):
+    i = s
+    while 1:
+        if pd.isna(df.loc[i,'Unnamed: 3']):
+            break
+        i += 1
+
+    return i
+
+def MakeUFiles():
+    flag = 0
+    for i in range(len(_ROW_RANGE)):
+        # 데이터 양식
+        data = _TITLE + "\n"
+
+        # 날짜
+        data += df.loc[_ROW_RANGE[i],'Unnamed: 3'][3:5] + "/" + df.loc[_ROW_RANGE[i],'Unnamed: 3'][6:8] + " " + df.loc[_ROW_RANGE[i],'Unnamed: 3'][9:11] + '\n'
+
+        # 7개 데이터(...)
+        v = df.loc[_ROW_RANGE[i],'Unnamed: 4':'Unnamed: 11'].dropna().values
+        v_round = [round(val, 2) for val in v]
+        val = ' '.join(map(str, v_round))
+        data += val + '\n'
+
+        # 4개 데이터(...)
+        v2 = df.loc[_ROW_RANGE[i],'Unnamed: 12':'Unnamed: 19'].dropna().values
+        v2_round = [round(val, 2) for val in v2]
+        val2 = ' '.join(map(str, v2_round))
+        data += val2 + '\n'
+
+        # 데이터 1
+        v3 = df.loc[_ROW_RANGE[i],'Unnamed: 20':'Unnamed: 27'].dropna().values
+        v3_round = [round(val, 2) for val in v3]
+        val3 = ' '.join(map(str, v3_round))
+        data += val3 + '\n'
+
+        # 데이터 2
+        v4 = df.loc[_ROW_RANGE[i],'Unnamed: 28':'Unnamed: 35'].dropna().values
+        v4_round = [round(val, 2) for val in v4]
+        val4 = ' '.join(map(str, v4_round))
+        data += val4
+        data += LAST_VAL
+
+        # 파일 .in 확장자 파일로 저장
+        file_path = folder_path+f"/{i+1}.in"
+        with open(file_path, 'w') as file:
+            file.write(data)
+    else:
+        flag = 1
+
+    if flag:
+        print("\"" + _TITLE + "\"" + " 폴더에 파일이 생성되었습니다")
+    else:
+        print("알 수 없는 오류로 파일 생성에 실패 했습니다.")
+
+
+# 인풋 데이터로 들어갈 파일들
+def CheckInputFiles(s):
+    folder_path = f'./{s}'
+
+    file_names = os.listdir(folder_path)
+
+    return file_names
+
+
+# file name list - input 폴더 안에 들어간 파일들을 전부 탐색 반드시 점검할 엑셀파일만 넣을것.
+fn_list = CheckInputFiles("input")
+for idx in range(len(fn_list)):
+
+    # fn : 파일 이름
+    fn = fn_list[idx]
+
+    # data frame 형식 엑셀 파일 읽기, sheet_name 설정
+    df = pd.read_excel(f"./input/{fn}", sheet_name='Sheet1')
+    # TITLE 설정
+    _TITLE, _ = fn.split(".")
+    _TITLE = "2023 " + _TITLE
+    
+    # 추출할 ROW 범위 설정
+    start = 3
+    end = CheckRange(start, df)
+    _ROW_RANGE = [i for i in range(start, end)]
+
+    # output folder 확인
+    output_folder_path = './output'
+    if not os.path.exists(output_folder_path):
+        os.makedirs('./output', exist_ok=True)
+
+    # 폴더 명
+    folder_path = f"./output/{_TITLE}"
+
+    if os.path.exists(folder_path):
+        result = input("현재 해당 폴더가 이미 존재합니다. 덮어 씌워 작업하시겠습니까? (Y/N)")
+    else:
+        result = "Y"
+
+    if result == "Y":
+        os.makedirs(folder_path, exist_ok=True)
+        MakeUFiles()
+    else:
+        print("작업을 취소하였습니다.")
+
+```
+
+위 해당 로직을 토대로 구현하게 되면 코드 수행은 다음과 같습니다.
+> 1. 'input' 이라는 이름의 폴더안에 정해진 양식으로 작성된 excel 파일들이 들어 있어야합니다.
+2. 해당 excel 파일들을 읽어와 원하는 데이터들의 길이를 파악하고 날짜별로 자동으로 잘라 하나의 String 으로 연결합니다.
+3. 해당 String 을 날짜별로 메모장에 붙여넣고 저장합니다.
+4. 'output' 이라는 폴더가 없다면 새로 생성하고 해당 메모장들을 저장시킵니다.
+5. 'output' 이라는 폴더가 있다면 터미널창에서 새로 생성할지 묻습니다.
+6. excel 파일들을 토대로 원하는 메모장 파일들을 생성해 냅니다.
+
+## 👀 정리
+
+사실 python 소스 코드로만 정리되어 있어 사실 개발자가 아닌 사람들은 cmd 창에서 python3 test.py 라는 명령어를 치기도 어려울 수 있다.. (파이썬 설치하고 pandas 설치하고 관련 라이브러리 설치하고 python 환경 변수 등록, cmd 창에서 폴더위치 잡고 python3 실행해야 하기에)
+
+그래서 python 의 tkinter 같은 라이브러리를 사용해 가시화된 실행 파일(.exe)을 제공해서 엑셀파일 드래그해서 넣고 결과 파일을 생성하게 할까..? 도 생각했지만 xxx공사 내부망에 exe 파일이 왔다갔다 하면 불법 프로그램으로 걸린다고 해서 그냥 소스코드로만 구현하게 되었습니다.
+
+
+출처 : https://velog.io/@ohwani/why-python

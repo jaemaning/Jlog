@@ -11,7 +11,7 @@ export default function Home() {
             {post.title}
           </Typo>
           <Typo size="a" margin="medium" href={`/posts/${post._raw.flattenedPath}`}>
-            {post.category}
+            {post.tags}
           </Typo>
         </Box>
       ))}

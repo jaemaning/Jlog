@@ -1,0 +1,156 @@
+---
+title: "코루틴(Coroutine) 을 샅샅이 살펴보기!"
+description: "Coroutine  본격적으로 들어가기에 앞서,  2023.12.21 면접에서 나에게 물어본 질문 중 Coroutine 에 대한 질문이 있었다.  그 동안 Coroutine을 깊게 생각하지 않고 단순히 suspend 명령어 붙여서 쓰면 알아서 동기적으로 처리해주는거지!"
+date: 2024-02-18T13:13:39.300Z
+tags: ["android","app","coroutine","안드로이드","앱","앱개발","코루틴"]
+---
+
+본격적으로 들어가기에 앞서,
+
+2023.12.21 면접에서 나에게 물어본 질문 중 Coroutine 에 대한 질문이 있었다.
+
+그 동안 Coroutine을 깊게 생각하지 않고 단순히 suspend 명령어 붙여서 쓰면 알아서
+동기적으로 처리해주는거지! 
+
+마치 javascript 에서 async, await 쓰듯 물흐르듯 써왔는데,,
+
+면접에서 Coroutine에 대한걸 물어보니 당황하여 쉬운 대답이었지만 기억이 나지 않았다.
+
+~~(편하게 쓰더라도 어떻게 처리되는지는 알고 써야겠다고 느꼈다..)~~
+
+---
+
+## 💡 코루틴이란 ?
+
+> A coroutine is an instance of a suspendable computation. It is conceptually similar to a thread, in the sense that it takes a block of code to run that works concurrently with the rest of the code. However, a coroutine is not bound to any particular thread. It may suspend its execution in one thread and resume in another one.
+
+
+Kotlin - Coroutine 공식문서 중 일부 발췌
+
+해석해보자면, 'Coroutine은 Thread 와 개념적으로 비슷하나 Coroutine은 특정 Thread에 바인딩되지 않고 한 Thread 내에서 실행을 일시 중단하고 다른 Coroutine에서 다시 시작할 수 있다'고 되어있습니다.
+즉 코루틴은 하나의 쓰레드에서 동작하며 쓰레드 오버라이딩을 통해 동작하게 되는 것입니다.
+
+![](/images/6439e6de-7811-437a-ba49-22b1c2b97266-image.png)
+
+이렇게 한 쓰레드 에서 동작하는 것이 가지는 이점으로는 여러 쓰레드를 이동하며 작업을 할때 Context Switching 리소스 비용 발생하게 됩니다. 이는 오버헤드가 발생해 성능 저하를 일으킬 수 있습니다. 따라서 메인 쓰레드를 차단하지 않고 현재 코루틴 실행을 일시 중지, 재개 하는 기능을 가진 코루틴은 경량 쓰레드라고도 불립니다.
+
+---
+
+
+## 📈 Coroutine vs Thread
+
+> **Coroutines** are computer program components that allow execution to be suspended and resumed, **generalizing subroutines for cooperative multitasking.** 
+
+위키피디아에 의하면 '실행의 지연과 재개를 허용함으로써,
+**비선점적 멀티태스킹**을 위한 **서브 루틴**을 일반화한 컴퓨터 프로그램 구성요소' 라는 설명이 되어있다.
+
+여기서 코루틴의 특이점이 나오는데 일반적인 서브 루틴과는 다르게 코루틴은 중단과 재개가 가능하여 하나의 진입, 반환점이 있는 서브 루틴과 달리 여러개의 진입, 반환을 가능하게 합니다. 
+
+코드로 예를 들면
+```kotlin
+fun main() {
+  /* 메인 루틴
+     새 코루틴을 실행하고 완료 전까지 현재 쓰레드를 blocking 하는 
+     코루틴 빌더 함수로 전체 작업 완료 전까지 다른 작업 할당이 불가합니다. */
+  runBlocking {
+    /* 서브 루틴
+       새 코루틴을 실행하고 완료 전까지 현재 쓰레드를 
+       blocking 하지 않는 코루틴 빌더 함수로 다른 작업 할당이 가능합니다. */
+    val goToWork = launch {
+      goToWorkCoroutine()
+    }
+    val playMusicWhileGoingToWork = launch {
+      playMusicCoroutine()
+    }
+    goToWork.join() // goToWork 코루틴 실행이 끝날 때까지 대기합니다.
+    playMusicWhileGoingToWork.cancel() // playMusicWhileGoingToWork 코루틴을 종료합니다.
+
+    startWorkCoroutine()
+
+    val leaveWork = launch {
+      leaveWorkCoroutine()
+    }
+    val playMusicWhileLeaveWork = launch {
+      playMusicCoroutine()
+    }
+    leaveWork.join()
+    playMusicWhileLeaveWork.cancel()
+  }
+}
+
+// 실행 중 쓰레드는 블로킹하지 않으면서 실행 중 코루틴은 일시 중단할 수 있는 함수입니다.
+suspend fun goToWorkCoroutine() {
+  println("Go to work")
+  delay(1000) // 현재 루틴을 잠시 대기시키는 함수로 선언 위치에 따라 메인 쓰레드를 블로킹할 수도 있습니다.
+}
+
+suspend fun playMusicCoroutine() {
+  println("Play music")
+  while (true) {
+    println("Listening")
+    delay(500)
+  }
+}
+
+suspend fun leaveWorkCoroutine() {
+  println("Leave work")
+  delay(1000)
+}
+
+suspend fun startWorkCoroutine() {
+  println("Start work")
+  println("Working")
+  delay(2000)
+}
+```
+```
+// 실행결과
+Go to work
+Play music
+Listening
+Listening
+Start work
+Working
+Leave work
+Play music
+Listening
+Listening
+```
+
+이처럼 코루틴을 사용하면 비동기로 루틴을 실행하고 일반적인 서브 루틴과 다르게 실행 중간에 중단과 임의 시점에 재개가 가능하여 루틴 간 협력을 통해 **비선점적 멀티태스킹**이 가능해지는 것입니다.
+
+여기서 '비선점적' 이라는 말 때문에 항상 헷갈리는 **비선점형 vs 선점형**을 잠깐 살펴보겠습니다.
+
+### 비선점형 vs 선점형
+- **선점형(preemption)** : 하나의 프로세스가 다른 프로세스 대신에 프로세서(CPU)를 강제로 차지할 수 있습니다. (쓰레드)
+- **비선점형(non-preemption)** : 하나의 프로세스가 CPU를 할당받으면 종료되기 전까지 다른 프로세스가 CPU를 강제로 차지할 수 없습니다. (코루틴)
+
+
+선점하다라는 개념 자체가 "먼저 점하고 있어 다른 무엇인가가 들어 올 수 없다" 라는 의미로 해석이 되는데 선점형, 비선점형 작업은 완전히 상반되는 설명이 되어있다 아마 preempt 라는 사전적 의미의 번역이 들어 올 때 선점이라는 의미로 많이 해석되기에 그대로 들어 온 것 같은데 '선점' 이라는 단어보다 '강점' 정도의 의미가 더 맞는 뜻 같습니다.
+
+### Coroutine vs Thread 정리
+
+즉 비선점적 멀티태스킹이란 하나의 프로세서에서 하나의 쓰레드가 작업을 진행하며 해당 쓰레드에선 여러 코루틴이 실행, 중단, 재개 과정을 반복하며 비동기적인 처리를 진행하는 것입니다.
+
+쓰레드과 비교하면 쓰레드는 기본적으로 프로세스 내에서 하나 이상 존재하며 멀티 쓰레드로 작업이 진행될 시 동기적 처리가되는 것이 특징입니다. 이를 강제적으로 비동기적 처리를 하게되면 앞서 말씀드린대로 Context Switching 리소스 비용이 발생하게 됩니다.
+
+따라서 비동기적인 처리를 요할때 멀티쓰레드를 강제로 비동기적 처리를 하는 것보다 코루틴을 이용한 단일 쓰레드에서 비동기적 처리를 진행하게하는 것이 보다 효과적이라고 정리할 수 있을 것 같습니다.
+
+---
+
+## 🎯 마치며
+처음 코루틴을 사용할땐 정말 web에서 async await 처럼 비동기처리를 도와주는 라이브러리 정도로 쉽게 생각하였습니다. 코루틴의 러닝커브가 Rxjava 만큼 높지 않고 사용하는데 있어서는 가장 편하기 때문에 쉽게 생각한 것 같습니다. 이번 공부를 하며 쉽게 사용하더라도 내부 라이브러리 동작 방식 정도는 알고 사용한다면 더 효율적인 개발이 가능할 것 같다고 느꼈습니다.
+
++ Coroutine 에 대한 공부는 할때마다 새로운 공부가 되고 계속해도 부족한 것 같습니다. 그래도 이 글을 통해 조금 정리가 된 것 같고 다음에는 더 깊게 이해해보도록 하겠습니다.
+
+**Coroutine 을 공부하며 기본적인 CS 공부도 많이 되었는데요, 그 중 저에겐 익숙하지만 난해한 개념들이었던 OS - Process, Thread 를 비교하며 공부해보도록 하겠습니다!**
+
+감사합니다 :)
+
+
+---
+
+출처 : https://maxpulse.tistory.com/208
+출처 : https://kotlinlang.org/docs/coroutines-overview.html#how-to-start
+출처 : https://dev.gmarket.com/82
+출처 : https://en.wikipedia.org/wiki/Coroutine

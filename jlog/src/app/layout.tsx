@@ -19,10 +19,10 @@ export default function RootLayout({
     <html>
       <body>
         <ThemeProvider>
-          <NavBar />
-          <div className={mainContainer}>
-            {children}
-          </div>
+            <NavBar />
+            <div className={mainContainer}>
+              {children}
+            </div>
           <Footer />
         </ThemeProvider>
       </body>

@@ -5,7 +5,7 @@ import { recipe } from '@vanilla-extract/recipes';
 
 export const buttonStyle = recipe({
     base: {
-      display : 'inline-flex',
+      display : 'flex',
       borderRadius: '8px',
       cursor: 'pointer',
       margin : 'none',

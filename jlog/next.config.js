@@ -8,16 +8,16 @@ const { withContentlayer } = require('next-contentlayer');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false,
-  compiler: (()=> {
-    if (process.env.NODE_ENV === 'production') {
-      compilerConfig = {
-        ...compilerConfig,
-        // 프로덕션 환경에서 리액트 테스팅 라이브러리에서 사용하는 data-testid 속성삭제
-        reactRemoveTestId: true,
-      }
-    }
-  })
+  swcMinify: true,
+  compiler: {}
 };
+
+if (process.env.NODE_ENV === 'production') {
+  nextConfig.compiler = {
+    ...nextConfig.compiler,
+    // 프로덕션 환경에서 리액트 테스팅 라이브러리에서 사용하는 data-testid 속성 삭제
+    reactRemoveTestId: true,
+  };
+}
 
 module.exports = withVanillaExtract(withContentlayer(nextConfig));

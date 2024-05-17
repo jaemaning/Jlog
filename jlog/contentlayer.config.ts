@@ -3,6 +3,7 @@ import highlight from 'rehype-highlight';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeImgSize from './rehype-img-size';
 
+
 export const Post = defineDocumentType(() => ({
   name: 'Post',
   filePathPattern: `**/*.mdx`, // mdx 파일경로 패턴
@@ -31,6 +32,11 @@ export const Post = defineDocumentType(() => ({
     },
   },
 }));
+
+const rehypeOptions = {
+  theme: 'slack-dark',
+  keepBackground: true,
+};
 
 const contentSource = makeSource({
   contentDirPath: 'posts',
