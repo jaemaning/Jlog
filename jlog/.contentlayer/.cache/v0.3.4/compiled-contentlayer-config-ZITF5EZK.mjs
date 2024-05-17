@@ -28,6 +28,7 @@ var rehypeImgSize = () => {
 var rehype_img_size_default = rehypeImgSize;
 
 // contentlayer.config.ts
+import MDXComponents from "@/components/atom/MDXcomponent/MDXComponent";
 var Post = defineDocumentType(() => ({
   name: "Post",
   filePathPattern: `**/*.mdx`,
@@ -72,7 +73,8 @@ var contentSource = makeSource({
       ],
       highlight,
       rehype_img_size_default
-    ]
+    ],
+    components: MDXComponents
   }
 });
 var contentlayer_config_default = contentSource;
@@ -80,4 +82,4 @@ export {
   Post,
   contentlayer_config_default as default
 };
-//# sourceMappingURL=compiled-contentlayer-config-N6WN5QT3.mjs.map
+//# sourceMappingURL=compiled-contentlayer-config-ZITF5EZK.mjs.map

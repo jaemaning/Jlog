@@ -2,6 +2,7 @@ import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import highlight from 'rehype-highlight';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeImgSize from './rehype-img-size';
+import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent';
 
 
 export const Post = defineDocumentType(() => ({
@@ -53,6 +54,7 @@ const contentSource = makeSource({
       highlight,
       rehypeImgSize,
     ],
+    components: MDXComponents,
   },
 });
 
