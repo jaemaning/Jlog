@@ -46,6 +46,7 @@ export const buttonStyle = recipe({
         fit: {
           width: 'fit-content',
           height: 'fit-content',
+          fontSize : vars.fontSizes.extraSmall
         },
         circle : {
           borderRadius: '50%',

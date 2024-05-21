@@ -2,6 +2,7 @@ import { useMDXComponent } from 'next-contentlayer/hooks';
 import { allPosts } from '.contentlayer/generated';
 import Button from '@/components/atom/button/button';
 import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent'
+import NameTag from '@/components/atom/nameTag/nameTag';
 
 
 export function generateStaticParams() {
@@ -34,6 +35,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }): 
               })}
             </div>
             <MDXComponent components={MDXComponents} />
+            <NameTag></NameTag>
         </div>
     );
 };

@@ -13,6 +13,7 @@ globalStyle(
     width: '1024px',
     margin: 'auto',
     boxSizing: 'border-box',
+    overflowX: 'hidden',
     '@media': {
         'screen and (max-width: 1024px)': {
             width: '100%',

@@ -17,6 +17,9 @@ const themeColor = createThemeContract({
       borderColor: null,
       gradient: null,
       loadingColor: null,
+      orange100: null,
+      orange200: null,
+      orange300: null
     },
   });
   
@@ -28,6 +31,9 @@ export const lightTheme = createTheme(themeColor, {
         borderColor: '#cbc9f9',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
         loadingColor: '#EEEEEE',
+        orange100 : style.colors['orange-bright'],
+        orange200 : style.colors['orange-soft'],
+        orange300 : style.colors['orange-burnt']
     },
 });
 
@@ -40,6 +46,9 @@ export const darkTheme = createTheme(themeColor, {
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
         loadingColor: '#303030',
+        orange100 : style.colors['orange-burnt'],
+        orange200 : style.colors['orange-soft'],
+        orange300 : style.colors['orange-bright']
     },
 });
 
@@ -66,7 +75,7 @@ globalStyle('body', {
     backgroundColor: vars.themeColor.color.mainBackground,
     color: vars.themeColor.color.mainFontColor,
     userSelect: 'none',
-    transition: 'all 0.25s linear',
+    transition: 'all 0.15s linear',
     minHeight: '100vh',
     boxSizing: 'border-box',
     padding: 0,
@@ -81,7 +90,7 @@ globalStyle('button', {
     fontSize: vars.fontSizes.medium,
     padding: vars.space.medium,
     borderRadius: '10px',
-    transition: 'all 0.25s linear',
+    transition: 'all 0.15s linear',
     backgroundColor: vars.themeColor.color.loadingColor,
     color: vars.themeColor.color.mainFontColor,
 });
