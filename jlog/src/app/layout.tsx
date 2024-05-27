@@ -4,6 +4,7 @@ import ThemeProvider from '@/utils/ThemeProvider';
 import NavBar from "@/components/mole/navBar/navBar";
 import Footer from "@/components/mole/footer/footer";
 import { mainContainer} from "./main.css";
+
 // import './globals.css';
 
 export const metadata: Metadata = {

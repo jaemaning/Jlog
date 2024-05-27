@@ -1,5 +1,10 @@
-import { style } from '@vanilla-extract/css';
+import { style, fontFace } from '@vanilla-extract/css';
 import { vars } from '@/styles/globalTheme.css';
+
+const Hack = fontFace({
+  src: 'url("/fonts/Hack-Regular.ttf")',
+})
+
 
 export const preStyle = style({
   overflowX: 'auto',
@@ -24,7 +29,7 @@ export const codeTitleNextPreStyle = style({
 });
 
 export const codeStyle = style({
-  fontFamily: "'Fira Code', monospace",
+  fontFamily: Hack,
   fontSize: '0.9rem',
   lineHeight: 1.5,
   padding: '0.2rem 1rem',
