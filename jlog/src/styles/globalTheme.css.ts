@@ -28,7 +28,7 @@ export const lightTheme = createTheme(themeColor, {
         mainBackground: '#f7f9fa',
         contentBackground: '#ffffff',
         mainFontColor: '#2c2c2c',
-        borderColor: '#cbc9f9',
+        borderColor: '#a1a1a3',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
         loadingColor: '#EEEEEE',
         orange100 : style.colors['orange-bright'],

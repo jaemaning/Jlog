@@ -1,22 +1,29 @@
 import { cardStyle } from './card.css'
+import { titleStyle, descriptionStyle } from './cardContent.css'
 import React from 'react';
 import classNames from 'classnames';
+import { format } from 'date-fns'
+
 
 interface CardProps {
-    responsive? : 'mobile' | 'tablet' | 'desktop';
-    className?: String;
-    children : React.ReactNode;
+    className?: string;
+    title: string;
+    date: string;
+    description: string;
 }
 
 
 const Card: React.FC<CardProps> = ({
-    responsive,
     className,
-    children
+    title,
+    date,
+    description
 }) => {
     return (
-        <div className={classNames(cardStyle({ responsive }), className)}>
-            {children}
+        <div className={classNames(cardStyle, className)}>
+            <h2 className={titleStyle}>{title}</h2>
+            <p className={descriptionStyle}>{description}</p>
+            <p>{format(new Date(date), 'yyyy.MM.dd')}</p>
         </div>
     );
 }
