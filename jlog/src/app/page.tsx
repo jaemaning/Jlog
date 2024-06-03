@@ -6,6 +6,7 @@ import * as styles from './main.css'
 import { format } from "date-fns";
 
 
+
 export default async function Home() {
   const posts = await parsePost('./posts');
 
@@ -18,7 +19,8 @@ export default async function Home() {
           className={styles.gridItem} 
           title={post.graayMatterData.title} 
           description={post.graayMatterData.description} 
-          date={post.graayMatterData.date} 
+          date={post.graayMatterData.date}
+          id={index}
           />
         ))}
       </div>

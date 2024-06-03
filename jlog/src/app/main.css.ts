@@ -13,13 +13,13 @@ export const gridContainer = style({
   display: 'grid',
   gap: '16px',
   '@media': {
-    '(max-width: 768px)': {
+    '(max-width: 720px)': {
       gridTemplateColumns: 'repeat(1, 1fr)',
     },
-    '(min-width: 769px) and (max-width: 1200px)': {
+    '(min-width: 721px) and (max-width: 920px)': {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
-    '(min-width: 1201px)': {
+    '(min-width: 921px)': {
       gridTemplateColumns: 'repeat(3, 1fr)',
     },
   },

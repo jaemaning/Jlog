@@ -7,6 +7,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }): 
 
     return (
         <div>
+          <p>{params.id}</p>
           <NameTag></NameTag>
         </div>
     );

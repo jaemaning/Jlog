@@ -12,7 +12,7 @@ export const descriptionStyle = style({
   fontSize: '1rem',
   lineHeight: '1.5',
   overflow: 'hidden',
-//   textOverflow: 'ellipsis',
-//   whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+  height: '100px',
   color: vars.themeColor.color.borderColor,
 });
