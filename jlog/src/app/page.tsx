@@ -4,6 +4,7 @@ import { parsePost } from "@/utils/getPost";
 import Card from "@/components/atom/card/card";
 import * as styles from './main.css'
 import { format } from "date-fns";
+import PostList from "@/components/mole/PostList/PostList";
 
 
 
@@ -12,18 +13,7 @@ export default async function Home() {
 
   return (
     <main className={styles.mainContainer}>
-      <div className={styles.gridContainer}>
-        {posts.map((post, index) => (
-          <Card 
-          key={index} 
-          className={styles.gridItem} 
-          title={post.graayMatterData.title} 
-          description={post.graayMatterData.description} 
-          date={post.graayMatterData.date}
-          id={index}
-          />
-        ))}
-      </div>
+      <PostList category="python" />
     </main>
   );
 }

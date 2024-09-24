@@ -3,8 +3,7 @@ import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent'
 import NameTag from '@/components/atom/nameTag/nameTag';
 
 
-export default function PostDetailPage({ params }: { params: { id: string } }): JSX.Element {
-
+export default function PostDetailPage({ params }: { params: { id: string } }) {
     return (
         <div>
           <p>{params.id}</p>

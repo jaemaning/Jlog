@@ -13,6 +13,6 @@ export const descriptionStyle = style({
   lineHeight: '1.5',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  height: '100px',
+  height: '70px',
   color: vars.themeColor.color.borderColor,
 });

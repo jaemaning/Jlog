@@ -8,26 +8,3 @@ export const mainContainer = style({
     minHeight: calc.subtract('100vh', '340px'), // 250px margin + 24px footer height + 66px navBar height
     marginTop: '50px'
 });
-
-export const gridContainer = style({
-  display: 'grid',
-  gap: '16px',
-  '@media': {
-    '(max-width: 720px)': {
-      gridTemplateColumns: 'repeat(1, 1fr)',
-    },
-    '(min-width: 721px) and (max-width: 920px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
-    '(min-width: 921px)': {
-      gridTemplateColumns: 'repeat(3, 1fr)',
-    },
-  },
-});
-
-export const gridItem = style({
-  backgroundColor: '#f0f0f0',
-  padding: '16px',
-  border: '1px solid #ccc',
-  borderRadius: '8px',
-});

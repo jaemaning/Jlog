@@ -3,6 +3,8 @@ type PostMatter = {
   description: string;
   date: string;
   tags: string[];
+  category: string;
+  thumbnail: string;
 };
 
 type Post = PostMatter & {
