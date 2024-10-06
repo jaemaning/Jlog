@@ -2,14 +2,14 @@ import React from 'react';
 import Box from '@/components/atom/box/box';
 import Button from '@/components/atom/button/button';
 import { container } from './CategoryList.css';
-import { parseCategoryPost } from '@/utils/getPost';
+import { getCategoryPostLists } from '@/utils/getPost';
 
 interface CategoryListProps {
   category : string;
 }
 
 const CatogoryList: React.FC<CategoryListProps> = ({category}) => {
-  const categoryPosts = parseCategoryPost('./posts', category)
+  const categoryPosts = getCategoryPostLists('./posts', category)
   
   // categories 전체 조회 후 뿌려줘야함
 
