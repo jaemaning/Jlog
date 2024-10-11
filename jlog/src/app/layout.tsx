@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import '../styles/globals.css';
-import ThemeProvider from '@/utils/ThemeProvider';
+import Provider from '@/utils/ThemeProvider';
 import NavBar from "@/components/mole/navBar/navBar";
 import Footer from "@/components/mole/footer/footer";
 import { mainContainer} from "./main.css";
@@ -20,13 +20,13 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <ThemeProvider>
-            <NavBar />
+        <Provider>
+          <NavBar />
             <div className={mainContainer}>
               {children}
             </div>
           <Footer />
-        </ThemeProvider>
+        </Provider>
       </body>
     </html>
   );

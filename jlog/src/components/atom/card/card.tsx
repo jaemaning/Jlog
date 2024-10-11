@@ -5,7 +5,7 @@ import { titleStyle, descriptionStyle } from './cardContent.css'
 import React from 'react';
 import classNames from 'classnames';
 import { format } from 'date-fns'
-import { useRouter } from 'next/navigation';
+
 
 interface CardProps {
     className?: string;
@@ -20,17 +20,11 @@ const Card: React.FC<CardProps> = ({
     className,
     title,
     date,
-    description,
-    id
+    description
 }) => {
-    const router = useRouter();
-
-    const navigateTo = (id:number) => {
-      router.push(`/post/${id}`);
-    };
 
     return (
-        <div className={classNames(cardStyle, className)} onClick={()=>{navigateTo(id)}}>
+        <div className={classNames(cardStyle, className)}>
             <h2 className={titleStyle}>{title}</h2>
             <p>{format(new Date(date), 'yyyy.MM.dd')}</p>
             <p className={descriptionStyle}>{description}</p>

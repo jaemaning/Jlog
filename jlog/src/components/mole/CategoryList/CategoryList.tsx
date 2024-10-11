@@ -19,7 +19,6 @@ const CatogoryList: React.FC<CategoryListProps> = ({category}) => {
   return (
     <div className={container}>
       <Button>All</Button>
-      
     </div>
   );
 };
