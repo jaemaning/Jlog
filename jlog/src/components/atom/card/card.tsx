@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 interface CardProps {
     className?: string;
     title: string;
-    date: string;
+    date: Date;
     description: string;
     id: number;
 }

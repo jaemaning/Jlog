@@ -12,6 +12,8 @@ export const cardStyle = style({
     verticalAlign: 'middle', // 세로 가운데 정렬
     justifyContent: 'center', // 가로 가운데 정렬
     alignItems: 'center', // 세로 가운데 정렬
+    height: '200px',
+    overflow: 'hidden',
     padding: vars.space.large,
     ':hover': {
         backgroundColor: vars.themeColor.color.loadingColor,  // hover 시 배경색 변경

@@ -22,7 +22,7 @@ const PostList: React.FC<PostListProps> = async ({category}) => {
             className={styles.gridItem} 
             title={post.grayMatterData.title} 
             description={post.grayMatterData.description} 
-            date={post.grayMatterData.date}
+            date={new Date(post.grayMatterData.date)}
             id={index}
           >
           </Card>

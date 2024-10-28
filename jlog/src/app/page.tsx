@@ -13,7 +13,10 @@ export default async function Home() {
 
   return (
     <main className={styles.mainContainer}>
-      {/* <PostList /> */}
+      <Typo size="h3">All Posts - {posts.length}</Typo>
+      <hr/>
+      <br/>
+      <PostList />
     </main>
   );
 }
