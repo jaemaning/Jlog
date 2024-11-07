@@ -21,3 +21,7 @@ export const gridContainer = style({
     border: '1px solid #ccc',
     borderRadius: '8px',
   });
+
+  export const postLink = style({
+    textDecoration: 'none'
+  });

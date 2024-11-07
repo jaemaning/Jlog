@@ -16,7 +16,7 @@ const PostList: React.FC<PostListProps> = async ({category}) => {
   return (
     <div className={styles.gridContainer}>
       {posts.map((post, index) => (
-        <Link key={index} href={`/posts/${index}`}>
+        <Link className={styles.postLink} key={index} href={`/posts/${index}`}>
           <Card 
             key={index} 
             className={styles.gridItem} 

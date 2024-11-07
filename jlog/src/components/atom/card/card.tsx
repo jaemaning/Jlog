@@ -17,14 +17,13 @@ interface CardProps {
 
 
 const Card: React.FC<CardProps> = ({
-    className,
     title,
     date,
     description
 }) => {
 
     return (
-        <div className={classNames(cardStyle, className)}>
+        <div className={cardStyle}>
             <h2 className={titleStyle}>{title}</h2>
             <p>{format(new Date(date), 'yyyy.MM.dd')}</p>
             <p className={descriptionStyle}>{description}</p>
