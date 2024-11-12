@@ -5,6 +5,7 @@ import NavBar from "@/components/mole/navBar/navBar";
 import Footer from "@/components/mole/footer/footer";
 import { mainContainer } from "./main.css";
 import SearchOverlay from "@/components/mole/SearchBox/SearchOverlay";
+import MDXProvider from "@/utils/MDXProvider"
 // import './globals.css';
 
 export const metadata: Metadata = {
@@ -36,7 +37,7 @@ export default function RootLayout({
           <NavBar />
             <SearchOverlay></SearchOverlay>
             <div className={mainContainer}>
-              {children}
+              <MDXProvider>{children}</MDXProvider>
             </div>
           <Footer />
         </Provider>

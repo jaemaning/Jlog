@@ -6,8 +6,6 @@ import * as styles from './main.css'
 import { format } from "date-fns";
 import PostList from "@/components/mole/PostList/PostList";
 
-
-
 export default async function Home() {
   const posts = await getPostAll('./posts');
 

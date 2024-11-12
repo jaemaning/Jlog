@@ -26,9 +26,9 @@ const NameTag = () => {
           </div>
           <div className={`${styles.cardInner} ${styles.cardBack}`}>
             <div>
-              <Typo size='h2' margin='large'>김재만입니다.</Typo>
-              <Typo size='p1' margin='small'>Frontend Developer</Typo>
-              <Typo size='p1' margin='small'>lovesay00@naver.com</Typo>
+              <Typo size='h2' margin='large'>Kim Jaeman</Typo>
+              <Typo size='p1' margin='small'>Thank you for visit</Typo>
+              <Typo size='p1' margin='small'>my Jlog</Typo>
             </div>
           </div>
         </div>
