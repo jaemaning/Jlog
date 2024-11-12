@@ -5,7 +5,7 @@ export const cardStyle = style({
     border: `solid 1px ${vars.themeColor.color.borderColor}`,
     borderRadius: '5px',
     cursor: 'pointer',
-    margin: '2px',
+    margin: '5px 20px 5px 20px',
     backgroundColor: vars.themeColor.color.mainBackground,  // 기본 배경색
     color: vars.themeColor.color.mainFontColor,  // 기본 폰트색
     textAlign: 'center', // 텍스트 가운데 정렬

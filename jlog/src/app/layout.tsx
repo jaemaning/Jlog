@@ -3,8 +3,8 @@ import '../styles/globals.css';
 import Provider from '@/utils/ThemeProvider';
 import NavBar from "@/components/mole/navBar/navBar";
 import Footer from "@/components/mole/footer/footer";
-import { mainContainer} from "./main.css";
-
+import { mainContainer } from "./main.css";
+import SearchOverlay from "@/components/mole/SearchBox/SearchOverlay";
 // import './globals.css';
 
 export const metadata: Metadata = {
@@ -34,6 +34,7 @@ export default function RootLayout({
       <body>
         <Provider>
           <NavBar />
+            <SearchOverlay></SearchOverlay>
             <div className={mainContainer}>
               {children}
             </div>

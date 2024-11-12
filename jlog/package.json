@@ -27,7 +27,7 @@
     "glob": "^10.4.1",
     "gray-matter": "^4.0.3",
     "mini-css-extract-plugin": "^2.9.0",
-    "next": "14.2.3",
+    "next": "^14.2.17",
     "next-mdx-remote": "^5.0.0",
     "next-themes": "^0.3.0",
     "react": "^18",
@@ -36,7 +36,8 @@
     "rehype-pretty-code": "^0.13.1",
     "remark-gfm": "^4.0.0",
     "shiki": "^1.5.1",
-    "styled-components": "^6.1.11"
+    "styled-components": "^6.1.11",
+    "zustand": "^5.0.1"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.3.5",
