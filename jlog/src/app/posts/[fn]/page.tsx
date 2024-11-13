@@ -1,8 +1,5 @@
-import Button from '@/components/atom/button/button';
-import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent'
+import MDXContent from '@/components/atom/MDXContent/MDXContent';
 import NameTag from '@/components/atom/nameTag/nameTag';
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import BinarySearch from '@/../posts/BinarySearch12.mdx'
 import { getPost } from '@/utils/getPost';
 
 export default async function PostDetailPage({ params }: { params: { fn: string } }) {
@@ -13,10 +10,7 @@ export default async function PostDetailPage({ params }: { params: { fn: string 
       <div>
         <article>
           <h1>{post.grayMatterData.title}</h1>
-          <MDXRemote 
-            source={post.content}
-            components={MDXComponents}
-          />
+          <MDXContent fn={post.content}></MDXContent>
         </article>
         <NameTag></NameTag>
       </div>

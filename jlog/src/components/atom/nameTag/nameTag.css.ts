@@ -17,8 +17,8 @@ export const cardContainer = style({
 })
 
 export const card = style({
-  width: '200px',
-  height: '200px',
+  width: '300px',
+  height: '300px',
   position: 'relative',
   transformStyle: 'preserve-3d',
   transition: 'transform 0.6s',

@@ -2,15 +2,14 @@ import React from 'react';
 import { 
   preStyle, 
   codeTitleStyle, 
-  codeTitleNextPreStyle, 
-  // codeStyle,
+  codeStyle,
   headingStyle,
   paragraphStyle,
   listStyle,
   linkStyle,
   blockquoteStyle,
   tableStyle,
-  imageStyle
+  imageStyle,
 } from './MDXComponent.css';
 
 // Props 타입 정의
@@ -18,7 +17,7 @@ type CommonProps<T extends keyof JSX.IntrinsicElements> = React.ComponentPropsWi
 
 const MDXComponents = {
   pre: (props : CommonProps<'pre'>) => <pre className={preStyle} {...props} />,
-  // code: (props : CommonProps<'code'>) => <code className={codeStyle} {...props} />,
+  code: (props : CommonProps<'code'>) => <code className={codeStyle} {...props} />,
   figcaption: (props : CommonProps<'figcaption'>) => <figcaption className={codeTitleStyle} {...props} />,
   // 헤딩 컴포넌트
   h1: (props: CommonProps<'h1'>) => <h1 className={headingStyle.h1} {...props} />,
@@ -41,7 +40,6 @@ const MDXComponents = {
   blockquote: (props: CommonProps<'blockquote'>) => (
     <blockquote className={blockquoteStyle} {...props} />
   ),
-
   // 테이블 컴포넌트
   table: (props: CommonProps<'table'>) => <table className={tableStyle.table} {...props} />,
   th: (props: CommonProps<'th'>) => <th className={tableStyle.header} {...props} />,

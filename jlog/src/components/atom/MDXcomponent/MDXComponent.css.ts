@@ -16,7 +16,7 @@ export const preStyle = style({
 export const codeTitleStyle = style({
   fontSize: '1.1rem',
   fontWeight: 500,
-  padding: '0.4rem 1rem',
+  padding: '0.6rem 0.8rem',
   border: '1px solid #8b8b8b',
   borderTopLeftRadius: '0.4rem',
   borderTopRightRadius: '0.4rem',
@@ -28,26 +28,26 @@ export const codeTitleNextPreStyle = style({
   borderTopRightRadius: 0,
 });
 
-// export const codeStyle = style({
-//   fontFamily: Hack,
-//   fontSize: '0.9rem',
-//   lineHeight: 1.5,
-//   padding: '0.2rem 1rem',
-//   borderRadius: '0.2rem',
-// });
+export const codeStyle = style({
+  fontFamily: Hack,
+  fontSize: '1rem',
+  lineHeight: 1.5,
+  padding: '0.2rem 1rem',
+  borderRadius: '0.2rem',
+});
 
 export const headingStyle = {
   h1: style({
     fontSize: '2.7rem',
     fontWeight: 'bold',
     marginBottom: '1.5rem',
-    lineHeight: 1.3
+    lineHeight: 1.5
   }),
   h2: style({
     fontSize: '2.2rem',
     fontWeight: 'bold',
     marginBottom: '1.25rem',
-    lineHeight: 1.4
+    lineHeight: 1.5
   }),
   h3: style({
     fontSize: '1.95rem',
@@ -72,12 +72,12 @@ export const paragraphStyle = style({
 export const listStyle = {
   unordered: style({
     listStyleType: 'disc',
-    marginLeft: '1.5rem',
+    marginLeft: '0.5rem',
     marginBottom: '1rem'
   }),
   ordered: style({
     listStyleType: 'decimal',
-    marginLeft: '1.5rem',
+    marginLeft: '0.5rem',
     marginBottom: '1rem'
   }),
   item: style({
@@ -95,7 +95,7 @@ export const linkStyle = style({
 
 export const blockquoteStyle = style({
   borderLeft: '4px solid #e2e8f0',
-  paddingLeft: '1rem',
+  paddingLeft: '0.7rem',
   marginLeft: 0,
   marginRight: 0,
   marginTop: '1.5rem',
@@ -111,12 +111,12 @@ export const tableStyle = {
   }),
   header: style({
     backgroundColor: '#f7f7f7',
-    padding: '0.75rem',
+    padding: '0.6rem',
     borderBottom: '2px solid #e2e8f0',
     textAlign: 'left'
   }),
   cell: style({
-    padding: '0.75rem',
+    padding: '0.6rem',
     borderBottom: '1px solid #e2e8f0'
   })
 };
