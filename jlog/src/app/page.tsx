@@ -11,7 +11,7 @@ export default async function Home() {
 
   return (
     <main className={styles.mainContainer}>
-      <Typo size="h3">All Posts - {posts.length}</Typo>
+      <Typo size="p1">All Posts - {posts.length}</Typo>
       <hr/>
       <br/>
       <PostList />

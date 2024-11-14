@@ -13,6 +13,11 @@ export const preStyle = style({
   marginTop: '0',
 });
 
+export const strongStyle = style({
+  fontWeight: 550,
+  color: vars.color['orange-bright']
+})
+
 export const codeTitleStyle = style({
   fontSize: '1.1rem',
   fontWeight: 500,
@@ -86,10 +91,10 @@ export const listStyle = {
 };
 
 export const linkStyle = style({
-  color: '#0066cc',
+  color: '#6daff2',
   textDecoration: 'none',
   ':hover': {
-    textDecoration: 'underline'
+    textDecoration: 'none'
   }
 });
 
@@ -122,7 +127,9 @@ export const tableStyle = {
 };
 
 export const imageStyle = style({
+  display: 'block',
   maxWidth: '100%',
   height: 'auto',
-  marginBottom: '1rem'
+  margin: '1rem',
+  objectFit: 'contain',
 });

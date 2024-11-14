@@ -50,7 +50,8 @@ export const typoStyle = recipe({
           textDecoration: 'none',
           cursor: 'pointer',
           ':hover': {
-            textDecoration: 'underline'
+            textDecoration: 'none',
+            color: vars.color['orange-bright']
           },
           transform: 'skew(-10deg)'
         },
@@ -60,7 +61,8 @@ export const typoStyle = recipe({
           textDecoration: 'none',
           cursor: 'pointer',
           ':hover': {
-            textDecoration: 'underline'
+            textDecoration: 'none',
+            color: vars.color['orange-bright']
           },
           transform: 'skew(-10deg)'
         }

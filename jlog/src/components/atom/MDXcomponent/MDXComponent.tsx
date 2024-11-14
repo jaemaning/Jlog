@@ -10,6 +10,7 @@ import {
   blockquoteStyle,
   tableStyle,
   imageStyle,
+  strongStyle
 } from './MDXComponent.css';
 
 // Props 타입 정의
@@ -19,6 +20,7 @@ const MDXComponents = {
   pre: (props : CommonProps<'pre'>) => <pre className={preStyle} {...props} />,
   code: (props : CommonProps<'code'>) => <code className={codeStyle} {...props} />,
   figcaption: (props : CommonProps<'figcaption'>) => <figcaption className={codeTitleStyle} {...props} />,
+  strong: (props : CommonProps<'strong'>) => <strong className={strongStyle} {...props} />,
   // 헤딩 컴포넌트
   h1: (props: CommonProps<'h1'>) => <h1 className={headingStyle.h1} {...props} />,
   h2: (props: CommonProps<'h2'>) => <h2 className={headingStyle.h2} {...props} />,
