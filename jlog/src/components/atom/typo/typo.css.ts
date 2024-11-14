@@ -104,6 +104,9 @@ export const typoStyle = recipe({
         },
         origin : {
           color: vars.themeColor.color.mainFontColor
+        },
+        gray : {
+          color: vars.themeColor.color.gray
         }
       },
       margin: vars.recipeMargin,

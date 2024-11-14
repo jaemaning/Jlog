@@ -19,7 +19,8 @@ const themeColor = createThemeContract({
       loadingColor: null,
       orange100: null,
       orange200: null,
-      orange300: null
+      orange300: null,
+      gray: null
     },
   });
   
@@ -33,7 +34,8 @@ export const lightTheme = createTheme(themeColor, {
         loadingColor: '#EEEEEE',
         orange100 : style.colors['orange-bright'],
         orange200 : style.colors['orange-soft'],
-        orange300 : style.colors['orange-burnt']
+        orange300 : style.colors['orange-burnt'],
+        gray : style.colors['gray-700']
     },
 });
 
@@ -48,7 +50,8 @@ export const darkTheme = createTheme(themeColor, {
         loadingColor: '#303030',
         orange100 : style.colors['orange-burnt'],
         orange200 : style.colors['orange-soft'],
-        orange300 : style.colors['orange-bright']
+        orange300 : style.colors['orange-bright'],
+        gray : style.colors['gray-500']
     },
 });
 

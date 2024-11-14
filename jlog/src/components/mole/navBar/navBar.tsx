@@ -15,8 +15,6 @@ const NavBar: React.FC<NavBarProps> = ({
         <Box justifyContent='spaceBetween' alignItems='center'>
             <Typo size='ha' margin='medium' href='/'>JLOG</Typo>
             <Box justifyContent='end'>
-                <Typo size='a' margin='medium'>Test1</Typo>
-                <Typo size='a' margin='medium'>Test2</Typo>
                 <DarkModeBtn />
                 <SearchBtn />
             </Box>
