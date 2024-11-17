@@ -1,10 +1,9 @@
 'use client';
 
-import Provider from '@/components/utils/MDXProvider';
+import { MdxProvider } from '@/app/_providers';
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import rehypePrism from 'rehype-prism-plus'
 import rehypeCodeTitles from 'rehype-code-titles'
-import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import MDXComponents from '../MDXcomponent/MDXComponent';
 import './MDXContent.css'
@@ -15,7 +14,7 @@ interface MDXContentType {
 
 const MDXContent : React.FC<MDXContentType> = ({ fn }) => {
   return (
-    <Provider>
+    <MdxProvider>
         <MDXRemote 
             source={fn}
             components={MDXComponents}
@@ -26,7 +25,7 @@ const MDXContent : React.FC<MDXContentType> = ({ fn }) => {
                 }
             }}
         />
-    </Provider>
+    </MdxProvider>
   );
 }
 

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import '../shared/styles/globals.css';
-import Provider from '@/components/utils/ThemeProvider';
+import { ThemeProvider } from '@/app/_providers';
 import NavBar from "@/app/navBar/navBar";
 import Footer from "@/app/footer/footer";
 import { mainContainer } from "./main.css";
-import SearchOverlay from "@/components/mole/SearchBox/SearchOverlay";
+import SearchOverlay from "@/entities/SearchBox/SearchOverlay";
 
 // import './globals.css';
 
@@ -33,14 +33,14 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <Provider>
+        <ThemeProvider>
           <NavBar />
             <SearchOverlay></SearchOverlay>
             <div className={mainContainer}>
               {children}
             </div>
           <Footer />
-        </Provider>
+        </ThemeProvider>
       </body>
     </html>
   );

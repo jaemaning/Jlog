@@ -1,11 +1,12 @@
 'use client'
 
 import { darkTheme, lightTheme } from '@/shared/styles/globalTheme.css';
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider as NextThemeProvider } from 'next-themes';
+import { type ThemeProviderProps } from 'next-themes/dist/types';
 
-const Provider = ({ children }: { children: React.ReactNode }) => {
+export function ThemeProvider ({children, ...props} : ThemeProviderProps) {
     return (
-        <ThemeProvider
+        <NextThemeProvider
             attribute="class"
             defaultTheme={'light'}
             value={{
@@ -14,8 +15,6 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
             }}
             >
             {children}
-        </ThemeProvider>
+        </NextThemeProvider>
     );
 };
-  
-  export default Provider;
