@@ -1,5 +1,5 @@
-import Typo from "@/components/atom/typo/typo";
-import { vars } from "@/styles/globalTheme.css";
+import Typo from "@/shared/atom/typo/typo";
+import { vars } from "@/shared/styles/globalTheme.css";
 import { Box } from "@mui/material";
 
 

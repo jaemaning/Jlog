@@ -1,6 +1,6 @@
 import React from 'react';
-import Box from '@/components/atom/box/box';
-import Button from '@/components/atom/button/button';
+import Box from '@/shared/atom/box/box';
+import Button from '@/shared/atom/button/button';
 import { container } from './CategoryList.css';
 import { getCategoryPostLists } from '@/utils/getPost';
 
@@ -9,7 +9,7 @@ interface CategoryListProps {
 }
 
 const CatogoryList: React.FC<CategoryListProps> = ({category}) => {
-  const categoryPosts = getCategoryPostLists('./posts', category)
+  const categoryPosts = getCategoryPostLists(category)
   
   // categories 전체 조회 후 뿌려줘야함
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import '../styles/globals.css';
-import Provider from '@/utils/ThemeProvider';
-import NavBar from "@/components/mole/navBar/navBar";
-import Footer from "@/components/mole/footer/footer";
+import '../shared/styles/globals.css';
+import Provider from '@/components/utils/ThemeProvider';
+import NavBar from "@/app/navBar/navBar";
+import Footer from "@/app/footer/footer";
 import { mainContainer } from "./main.css";
 import SearchOverlay from "@/components/mole/SearchBox/SearchOverlay";
 

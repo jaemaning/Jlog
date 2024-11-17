@@ -1,7 +1,7 @@
 import React from 'react';
 import * as styles from './PostList.css';
 import { getCategoryPostLists, getPostAll } from '@/utils/getPost';
-import Card from '@/components/atom/card/card';
+import Card from '@/shared/atom/card/card';
 import Link from 'next/link';
 
 interface PostListProps {
@@ -9,14 +9,14 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = async ({category}) => {
-  const posts = category != null ? await getCategoryPostLists('./posts' , category) : await getPostAll('./posts')
+  const posts = category != null ? await getCategoryPostLists(category) : await getPostAll()
   // categories 전체 조회 후 뿌려줘야함
 
   // 해당 category 버튼 클릭시 아래 보여지는 list가 변경되어야함.
   return (
     <div className={styles.gridContainer}>
       {posts.map((post, index) => (
-        <Link className={styles.postLink} key={index} href={`/posts/${post.rf}`}>
+        <Link className={styles.postLink} key={index} href={`/posts/${post.domainFileName}`}>
           <Card 
             key={index} 
             className={styles.gridItem} 
