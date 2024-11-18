@@ -9,14 +9,14 @@ import MDXComponents from '../MDXcomponent/MDXComponent';
 import './MDXContent.css'
 
 interface MDXContentType {
-    fn : string
+    postName : string
 }
 
-const MDXContent : React.FC<MDXContentType> = ({ fn }) => {
+const MDXContent : React.FC<MDXContentType> = ({ postName }) => {
   return (
     <MdxProvider>
         <MDXRemote 
-            source={fn}
+            source={postName}
             components={MDXComponents}
             options={{
                 mdxOptions: {

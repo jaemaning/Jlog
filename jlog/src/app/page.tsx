@@ -5,7 +5,7 @@ import Card from "@/shared/atom/card/card";
 import * as styles from './main.css'
 import { format } from "date-fns";
 import PostList from "@/entities/PostList/PostList";
-import IntroBox from "@/entities/intro/inrtro";
+import IntroBox from "@/shared/intro/inrtro";
 
 export default async function Home() {
   const posts = await getPostAll();

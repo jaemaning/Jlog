@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 interface CardProps {
     className?: string;
     title: string;
-    date: Date;
+    date: string;
     description: string;
     id: number;
 }
@@ -25,7 +25,7 @@ const Card: React.FC<CardProps> = ({
     return (
         <div className={cardStyle}>
             <h2 className={titleStyle}>{title}</h2>
-            <p>{format(new Date(date), 'yyyy.MM.dd')}</p>
+            <p>{date}</p>
             <p className={descriptionStyle}>{description}</p>
         </div>
     );

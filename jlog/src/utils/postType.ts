@@ -7,11 +7,15 @@ type PostMatter = {
   thumbnail: string;
 };
 
-type Post = PostMatter & {
-  slug: string;
+type Post = {
+  category : string;
+  name : string;
+  grayMatterData: PostMatter;
   content: string;
   readingMinutes: number;
-  wordCount: number;
-};
+  dateString: string;
+}
+
+type Posts = Post[]
 
 export type {PostMatter, Post}
