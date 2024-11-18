@@ -3,7 +3,7 @@ import { recipe } from '@vanilla-extract/recipes';
 
 // 기본적인 box 구성
 
-export const buttonStyle = recipe({
+export const badgeStyle = recipe({
     base: {
       display : 'flex',
       borderRadius: '8px',

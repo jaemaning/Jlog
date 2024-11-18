@@ -1,8 +1,8 @@
 import React from 'react';
-import { buttonStyle } from '@/shared/atom/button/button.css';
+import { badgeStyle } from '@/shared/atom/badge/badge.css';
 import { vars } from '@/shared/styles/globalTheme.css';
 
-interface ButtonProps {
+interface BadgeProps {
     children: React.ReactNode;
     onClick?: () => void; // onClick 타입을 정의
     color? : keyof typeof vars.recipeColor;
@@ -11,7 +11,7 @@ interface ButtonProps {
     border? : keyof typeof vars.recipeBorder;
 }
 
-function Button (props: ButtonProps) {
+function Badge (props: BadgeProps) {
     const {
         children, 
         onClick,
@@ -22,8 +22,8 @@ function Button (props: ButtonProps) {
     } = props
 
     return (
-        <button className={buttonStyle({ color, size, margin, border })} onClick={onClick}>{children}</button>
+        <button className={badgeStyle({ color, size, margin, border })} onClick={onClick}>{children}</button>
     );
 }
 
-export default Button;
+export default Badge;

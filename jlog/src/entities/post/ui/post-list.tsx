@@ -1,14 +1,15 @@
 import React from 'react';
-import * as styles from './PostList.css';
 import { getPostAll } from '@/utils/getPost';
 import Card from '@/shared/atom/card/card';
 import Link from 'next/link';
+import * as styles from './post-list.css'
+
 
 interface PostListProps {
   category? : string;
 }
 
-const PostList: React.FC<PostListProps> = async ({category}) => {
+export async function PostList ({category} : PostListProps) {
   const posts = await getPostAll(category)
   // categories 전체 조회 후 뿌려줘야함
 
@@ -31,5 +32,3 @@ const PostList: React.FC<PostListProps> = async ({category}) => {
   </div>
   );
 };
-
-export default PostList;

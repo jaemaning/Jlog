@@ -1,14 +1,14 @@
 import React from 'react';
 import Box from '@/shared/atom/box/box';
-import Button from '@/shared/atom/button/button';
-import { container } from './CategoryList.css';
+import { Button } from '@/shared/atom/button';
+import { container } from './category-list.css';
 import { getCategoryPostLists } from '@/utils/getPost';
 
 interface CategoryListProps {
   category : string;
 }
 
-const CatogoryList: React.FC<CategoryListProps> = ({category}) => {
+export async function CatogoryList({category} : CategoryListProps) {
   const categoryPosts = getCategoryPostLists(category)
   
   // categories 전체 조회 후 뿌려줘야함
@@ -22,5 +22,3 @@ const CatogoryList: React.FC<CategoryListProps> = ({category}) => {
     </div>
   );
 };
-
-export default CatogoryList;

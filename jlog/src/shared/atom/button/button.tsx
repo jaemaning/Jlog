@@ -1,5 +1,5 @@
 import React from 'react';
-import { buttonStyle } from '@/shared/atom/button/button.css';
+import { buttonStyle } from './button.css';
 import { vars } from '@/shared/styles/globalTheme.css';
 
 interface ButtonProps {
@@ -11,17 +11,15 @@ interface ButtonProps {
     border? : keyof typeof vars.recipeBorder;
 }
 
-const Button: React.FC<ButtonProps> = ({
+export function Button({
     children, 
     onClick,
     color,
     size,
     margin,
     border
-}) => {
+} : ButtonProps) {
     return (
         <button className={buttonStyle({ color, size, margin, border })} onClick={onClick}>{children}</button>
     );
 };
-
-export default Button;

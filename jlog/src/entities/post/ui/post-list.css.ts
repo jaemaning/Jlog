@@ -15,13 +15,13 @@ export const gridContainer = style({
     },
   });
   
-  export const gridItem = style({
-    backgroundColor: '#f0f0f0',
-    padding: '16px',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-  });
+export const gridItem = style({
+  backgroundColor: '#f0f0f0',
+  padding: '16px',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+});
 
-  export const postLink = style({
-    textDecoration: 'none'
-  });
+export const postLink = style({
+  textDecoration: 'none'
+});

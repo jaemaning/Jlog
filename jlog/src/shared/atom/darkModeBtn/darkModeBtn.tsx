@@ -3,7 +3,7 @@
 import * as style from './darkModeBtn.css';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import Button from '../button/button';
+import { Button } from '@/shared/atom/button';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import NightsStayIcon from '@mui/icons-material/NightsStay';
 

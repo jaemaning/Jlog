@@ -1,13 +1,13 @@
 'use client';
 
-import Button from "../button/button"
+import { Button } from '@/shared/atom/button';
 import SearchIcon from '@mui/icons-material/Search';
-import * as styles from './searchBtn.css'
-import { useSearchStore } from '@/store';
+import * as styles from './search-button.css'
+import { useSearchStore } from '../model/search-store';
 import { useEffect } from 'react'
 
 
-const SearchBtn = () => {
+export const SearchButton = () => {
     const { isSearchOpen, toggleSearch } = useSearchStore()
 
     useEffect(() => {
@@ -18,8 +18,8 @@ const SearchBtn = () => {
             root.style.overflow = 'hidden'
             root.style.paddingRight = `${scrollbarWidth+10}px`
         } else {
-            root.style.overflow = ''
-            root.style.paddingRight = ''
+            root.style.removeProperty('overflow');
+            root.style.removeProperty('padding-right');
         }
     }, [isSearchOpen]);
 
@@ -34,5 +34,3 @@ const SearchBtn = () => {
         </div>
     );
 }
-
-export default SearchBtn

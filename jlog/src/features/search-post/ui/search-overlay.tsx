@@ -1,9 +1,9 @@
 // SearchOverlay.tsx
 'use client';
-import { useSearchStore } from '@/store';
-import * as styles from './SearchOverlay.css';
+import { useSearchStore } from '../model/search-store';
+import * as styles from './search-overaly.css';
 
-const SearchOverlay = () => {
+export const SearchOverlay = () => {
     const { isSearchOpen, toggleSearch } = useSearchStore();
 
     if (!isSearchOpen) return null;
@@ -24,5 +24,3 @@ const SearchOverlay = () => {
         </div>
     );
 };
-
-export default SearchOverlay;
