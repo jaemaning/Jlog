@@ -10,8 +10,7 @@ export default {
 export const BaseCard = () => {
   return <Card
     title='제목 : 기본 카드'
-    description='설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. '
-    date={new Date('2024-10-28')}
+    date='2024.12.10'
     id={1}
   ></Card>;
 };
@@ -30,8 +29,7 @@ export const ColorPaletteCard = () => {
         border: '1px solid #ccc',
         borderRadius: '8px'`}
         title='제목 : 검정색 카드'
-        description='설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. '
-        date={new Date('2024-10-28')}
+        date='2024.12.20'
         id={1}
       >
       </Card>
@@ -42,8 +40,7 @@ export const ColorPaletteCard = () => {
         border: '1px solid #ccc',
         borderRadius: '8px'`}
         title='제목 : 검정색 카드'
-        description='설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. 설명하는 글입니다. '
-        date={new Date('2024-10-28')}
+        date='2024.12.20'
         id={1}
       >
       </Card>

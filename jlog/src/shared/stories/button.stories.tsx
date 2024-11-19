@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@/shared/atom/button/button';
+import { Button } from '@/shared/atom/button/button';
 
 export default {
   title: 'components/Button',

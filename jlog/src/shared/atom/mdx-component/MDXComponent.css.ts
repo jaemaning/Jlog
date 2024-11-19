@@ -10,12 +10,12 @@ export const preStyle = style({
   overflowX: 'auto',
   padding: '1rem 0',
   border: '1px solid #8b8b8b',
-  marginTop: '0',
+  marginTop: '50px',
 });
 
 export const strongStyle = style({
   fontWeight: 550,
-  color: vars.color['orange-bright']
+  color: vars.themeColor.color.mainFontColor
 })
 
 export const codeTitleStyle = style({
@@ -39,6 +39,7 @@ export const codeStyle = style({
   lineHeight: 1.5,
   padding: '0.2rem 1rem',
   borderRadius: '0.2rem',
+  margin: '20px 0'
 });
 
 export const headingStyle = {
@@ -71,7 +72,8 @@ export const headingStyle = {
 export const paragraphStyle = style({
   marginBottom: '1rem',
   lineHeight: 1.7,
-  fontSize: '1.15rem'
+  fontSize: '1.15rem',
+  padding: '10px 0'
 });
 
 export const listStyle = {

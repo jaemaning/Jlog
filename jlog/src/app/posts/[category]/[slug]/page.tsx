@@ -1,6 +1,6 @@
 import MDXContent from '@/shared/atom/mdx-content/MDXContent';
 import NameTag from '@/shared/atom/name-tag/name-tag';
-import { container } from './page.css'
+import { container, extraSetting } from './page.css'
 import { getPostDetail } from '@/utils/getPost';
 
 type Props = {
@@ -23,7 +23,9 @@ export default async function PostDetailPage({ params : { category, slug } } : P
             <p>{post.dateString}</p>
           </div>
           <hr />
-          <MDXContent postName={post.content}></MDXContent>
+          <div className={extraSetting}>
+            <MDXContent postName={post.content}></MDXContent>
+          </div>
         </article>
         <NameTag></NameTag>
       </div>

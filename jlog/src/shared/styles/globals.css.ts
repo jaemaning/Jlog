@@ -1,5 +1,7 @@
 // // global style 지정
+import { colors } from '@mui/material';
 import { globalStyle, fontFace } from '@vanilla-extract/css'
+import { vars } from './globalTheme.css';
 
 const GowunDodum = fontFace({
     src: 'url("/fonts/GowunDodum-Regular.ttf")',
@@ -23,3 +25,9 @@ globalStyle(
     }
 });
 
+globalStyle('hr',{
+    height: '0.5px',
+    backgroundColor: vars.themeColor.color.gray,
+    border: 'none',
+    margin: '20px 0',
+})

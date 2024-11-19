@@ -1,5 +1,5 @@
 import React from 'react';
-import Typo from '@/shared/atom/typo/typo';
+import { Typo } from '@/shared/atom/typo/typo';
 
 
 export default {

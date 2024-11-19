@@ -63,11 +63,9 @@ export const yearStyle = style({
   }
 })
 
-
 export const grayColor = style({
   color: vars.themeColor.color.gray
 })
-
 
 
 // export const gridContainer = style({
