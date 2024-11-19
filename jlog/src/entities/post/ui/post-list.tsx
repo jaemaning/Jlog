@@ -1,9 +1,9 @@
 import React from 'react';
 import { getPostAll } from '@/entities/post/lib/get-post';
-import Card from '@/entities/post/ui/post-card';
 import Link from 'next/link';
 import * as styles from './post-list.css'
 import { GroupDictionary, Posts, Post } from '../model/model';
+import { sorting } from '../lib/sort-post'
 
 
 interface PostListProps {
@@ -12,27 +12,11 @@ interface PostListProps {
 
 export async function PostList ({category} : PostListProps) {
   const posts = await getPostAll(category)
+  const sortedPost = await sorting(posts)
   // categories 전체 조회 후 뿌려줘야함
   const groups : GroupDictionary = {
 
   }
-
-  // 월 일만 비교하기, 연도는 그룹으로 관리
-  const sorting = (posts: Posts) : Posts => {
-    return [...posts].sort((a, b) => {
-      const [_a, aMonth, aDay] = a.dateString.split(".").map(Number);
-      const [_b, bMonth, bDay] = b.dateString.split(".").map(Number);
-      
-      // 월 비교
-      if (bMonth !== aMonth) {
-        return bMonth - aMonth;
-      }
-      // 일 비교
-      return bDay - aDay;
-    });
-  };
-
-  const sortedPost = sorting(posts)
   
   // 날짜별 분리해서 넣어주기
   sortedPost.map((post : Post)=>{

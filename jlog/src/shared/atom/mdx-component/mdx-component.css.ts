@@ -37,8 +37,11 @@ export const codeStyle = style({
   fontFamily: Hack,
   fontSize: '1rem',
   lineHeight: 1.5,
-  padding: '0.2rem 1rem',
+  padding: '0.2rem 0.4rem',
   borderRadius: '0.2rem',
+  border: `1px solid ${vars.themeColor.color.grayBackground}`,
+  backgroundColor: vars.themeColor.color.grayBackground,
+  color: vars.themeColor.color.mainFontColor,
   margin: '20px 0'
 });
 

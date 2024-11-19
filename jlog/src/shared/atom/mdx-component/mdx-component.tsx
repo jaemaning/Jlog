@@ -11,7 +11,7 @@ import {
   tableStyle,
   imageStyle,
   strongStyle
-} from './MDXComponent.css';
+} from './mdx-component.css';
 
 // Props 타입 정의
 type CommonProps<T extends keyof JSX.IntrinsicElements> = React.ComponentPropsWithoutRef<T>;

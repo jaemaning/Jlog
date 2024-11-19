@@ -1,4 +1,4 @@
-import MDXContent from '@/shared/atom/mdx-content/MDXContent';
+import MDXContent from '@/shared/atom/mdx-content/mdx-content';
 import NameTag from '@/shared/atom/name-tag/name-tag';
 import { container, extraSetting } from './page.css'
 import { getPostDetail } from '@/entities/post/lib/get-post';

@@ -3,9 +3,8 @@ import Box from '@/shared/atom/box/box';
 import { Typo } from '@/shared/atom/typo/typo';
 import { container, svgClass } from './footer.css';
 
-interface FooterProps {}
 
-const Footer: React.FC<FooterProps> = ({}) => {
+export function Footer() {
   return (
     <div className={container}>
       <svg
@@ -28,5 +27,3 @@ const Footer: React.FC<FooterProps> = ({}) => {
     </div>
   );
 };
-
-export default Footer;
