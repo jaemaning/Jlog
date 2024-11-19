@@ -4,13 +4,8 @@ import { Typo } from '@/shared/atom/typo/typo';
 import DarkModeBtn from '../../shared/atom/dark-mode-button/dark-mode-button';
 import { SearchButton } from '@/features/search-post/ui/search-button'
 
-interface NavBarProps {
 
-}
-
-const NavBar: React.FC<NavBarProps> = ({
-
-}) => {
+export function Navbar() {
     return (
         <Box justifyContent='spaceBetween' alignItems='center'>
             <Typo size='ha' margin='medium' href='/'>JLOG</Typo>
@@ -21,5 +16,3 @@ const NavBar: React.FC<NavBarProps> = ({
         </Box>
     );
 };
-
-export default NavBar;

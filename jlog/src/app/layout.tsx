@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import '../shared/styles/globals.css';
 import { ThemeProvider } from '@/app/_providers';
-import NavBar from "@/app/navbar/navbar";
+import { Navbar } from "@/app/navbar/navbar";
 import Footer from "@/app/footer/footer";
 import { mainContainer } from "./main.css";
 import { SearchOverlay } from "@/features/search-post/ui/search-overlay";
@@ -34,7 +34,7 @@ export default function RootLayout({
     <html>
       <body>
         <ThemeProvider>
-          <NavBar />
+          <Navbar />
             <SearchOverlay></SearchOverlay>
             <div className={mainContainer}>
               {children}
