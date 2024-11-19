@@ -47,25 +47,29 @@ export const headingStyle = {
     fontSize: '2.7rem',
     fontWeight: 'bold',
     marginBottom: '1.5rem',
-    lineHeight: 1.5
+    lineHeight: '1.5',
+    color: vars.themeColor.color.mainFontColor
   }),
   h2: style({
     fontSize: '2.2rem',
     fontWeight: 'bold',
     marginBottom: '1.25rem',
-    lineHeight: 1.5
+    lineHeight: '1.5',
+    color: vars.themeColor.color.mainFontColor
   }),
   h3: style({
     fontSize: '1.95rem',
     fontWeight: 'bold',
     marginBottom: '1rem',
-    lineHeight: 1.5
+    lineHeight: '1.5',
+    color: vars.themeColor.color.mainFontColor
   }),
   h4: style({
     fontSize: '1.7rem',
     fontWeight: 'bold',
     marginBottom: '0.75rem',
-    lineHeight: 1.5
+    lineHeight: '1.5',
+    color: vars.themeColor.color.mainFontColor
   })
 };
 

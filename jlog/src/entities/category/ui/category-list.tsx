@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@/shared/atom/box/box';
 import { Button } from '@/shared/atom/button';
 import { container } from './category-list.css';
-import { getPostAll } from '@/utils/getPost';
+import { getPostAll } from '@/entities/post/lib/get-post';
 
 interface CategoryListProps {
   category : string;

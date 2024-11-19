@@ -1,5 +1,5 @@
 import { Typo } from "@/shared/atom/typo/typo";
-import { getPostAll } from "@/utils/getPost";
+import { getPostAll } from "@/entities/post/lib/get-post";
 import Card from "@/entities/post/ui/post-card";
 import * as styles from './main.css'
 import { format } from "date-fns";

@@ -1,9 +1,9 @@
 import React from 'react';
-import { getPostAll } from '@/utils/getPost';
+import { getPostAll } from '@/entities/post/lib/get-post';
 import Card from '@/entities/post/ui/post-card';
 import Link from 'next/link';
 import * as styles from './post-list.css'
-import { GroupDictionary } from '../model/model';
+import { GroupDictionary, Posts, Post } from '../model/model';
 
 
 interface PostListProps {
@@ -17,8 +17,25 @@ export async function PostList ({category} : PostListProps) {
 
   }
 
-  // 카테고리 분리
-  posts.map((post)=>{
+  // 월 일만 비교하기, 연도는 그룹으로 관리
+  const sorting = (posts: Posts) : Posts => {
+    return [...posts].sort((a, b) => {
+      const [_a, aMonth, aDay] = a.dateString.split(".").map(Number);
+      const [_b, bMonth, bDay] = b.dateString.split(".").map(Number);
+      
+      // 월 비교
+      if (bMonth !== aMonth) {
+        return bMonth - aMonth;
+      }
+      // 일 비교
+      return bDay - aDay;
+    });
+  };
+
+  const sortedPost = sorting(posts)
+  
+  // 날짜별 분리해서 넣어주기
+  sortedPost.map((post : Post)=>{
     const [year, month, day] = post.dateString.split(".")
     if(year in groups) {
       groups[year].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
@@ -26,7 +43,8 @@ export async function PostList ({category} : PostListProps) {
       groups[year] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
     }
   })
-  // 연도별로 정렬 (내림차순)
+
+  // 여기서 연도 한번 더 분류
   const sortedYears = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
 
   return (

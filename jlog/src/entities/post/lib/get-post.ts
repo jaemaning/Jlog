@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { PostMatter, Post } from './postType';
-import { notFound } from 'next/navigation';
+import { PostMatter, Post } from '../model/model';
 import { sync } from 'glob';
 import readingTime from 'reading-time';
 import dayjs from 'dayjs';
@@ -63,9 +62,6 @@ export async function getPostDetail(category: string, name: string) {
   const detail = await parsePost(postPath[0]);
   return detail;
 }
-
-
-
 
 
 
