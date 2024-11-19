@@ -32,19 +32,19 @@ import time
 
 
 try:
-	_NEED_FIELS = ['Mep.exe', 'test.bat', 'test2.bat']
-	f1 = os.listdir('./')
+    _NEED_FIELS = ['Mep.exe', 'test.bat', 'test2.bat']
+    f1 = os.listdir('./')
 
-	for filen in _NEED_FIELS:
-		if not filen in fl:
-			print("Mep.exe, test.bat, test2.bat 파일이 존재하지않습니다.")
+    for filen in _NEED_FIELS:
+        if not filen in fl:
+            print("Mep.exe, test.bat, test2.bat 파일이 존재하지않습니다.")
         else:
-        	shutil.copy(f'./{filen}', f'./output/{_TITLE}/')
+            shutil.copy(f'./{filen}', f'./output/{_TITLE}/')
     else:
-    	commands = ['test.bat', 'test2.bat']
+        commands = ['test.bat', 'test2.bat']
         path_to_directory = f'output/{_TITLE}'
         for command in commands:
-        	time.sleep(1)
+            time.sleep(1)
             proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=path_to_directory)
             time.sleep(1)
 
@@ -71,7 +71,7 @@ try:
 
 
 ## 🔭 전체코드
-```python title="excelFileRange.py"
+```python
 import xlwings as xw
 import pandas as pd
 import os
@@ -124,7 +124,7 @@ if __name__ == '__main__':
             folder_path = f"./output/{_TITLE}"
             
             if os.path.exists(folder_path):
-            	result = input("현재 해당 폴더가 이미 존재합니다. 덮어 씌워 작성하시겠습니까? (Y/N)"
+            	result = input("현재 해당 폴더가 이미 존재합니다. 덮어 씌워 작성하시겠습니까? (Y/N)")
             else:
             	result = "Y"
                
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                     except:
                     	print("error: [에러코드]")
                 except:
-                	print("error: [에러코드]
+                	print("error: [에러코드])
             else:
             	print("작업이 취소되었습니다.")
         

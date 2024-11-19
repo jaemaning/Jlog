@@ -12,7 +12,7 @@ export default async function PostDetailPage({ params : { category, slug } } : P
   const post = await getPostDetail(category, slug)
 
   if (!post) {
-    return null
+    return <div>데이터를 가져오고 있습니다.</div>
   }
 
   return (
