@@ -40,7 +40,7 @@ export async function PostList ({category} : PostListProps) {
                 <li key={index} >
                   <Link href={`/posts/${category}/${name}`} className={styles.FlexContainer}>
                     <p className={styles.pStyle}>{title}</p>
-                    <p className={`${styles.pStyle} ${styles.grayColor}`}>{date}</p>
+                    <p className={`${styles.grayColor} ${styles.pStyle}`}>{date}</p>
                   </Link>
                 </li>
               ))}

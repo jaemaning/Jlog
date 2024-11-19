@@ -3,33 +3,27 @@ import { vars } from '@/shared/styles/globalTheme.css';
 
 export const container = style({
   padding: '10px',
-  '@media': {
-    '(max-width: 1000px)': {
-      fontSize: '1rem',
-    },
-    '(min-width: 1001px)': {
-      fontSize: '1rem',
-    }
-  },
+
 })
 
 export const uiContainer = style({
   margin: '0',
-  listStyleType: 'none'
+  listStyleType: 'none',
+  width: '100%'
 })
 
 export const FlexContainer = style({
   display : 'flex',
   justifyContent : 'space-between',
-  width: '45rem',
+  width: '100%',
   color: vars.themeColor.color.mainFontColor,
   textDecoration: 'none',
-
 })
 
 export const groupContainer = style({
   display : 'flex',
   justifyContent : 'space-between',
+  width: '100%',
   ':hover' : {
     color: vars.themeColor.color.orange200,
   }
@@ -39,6 +33,7 @@ export const pStyle = style ({
   border: `1px solid ${vars.themeColor.color.mainBackground}`,
   borderRadius: '5px',
   padding: '3px 10px 3px 10px',
+  display: 'block',
   selectors: {
     [`${groupContainer}:hover &`] : {
       color: vars.themeColor.color.gray
@@ -54,7 +49,9 @@ export const yearStyle = style({
   border: `1px solid ${vars.themeColor.color.mainBackground}`,
   borderRadius: '5px',
   padding: '3px 10px 3px 10px',
+  width: '30px',
   height: '100%',
+  display: 'block',
   selectors: {
     [`${groupContainer}:hover &`]: {
       color: vars.themeColor.color.orange200,
@@ -66,7 +63,6 @@ export const yearStyle = style({
 export const grayColor = style({
   color: vars.themeColor.color.gray
 })
-
 
 // export const gridContainer = style({
 //     display: 'grid',

@@ -30,4 +30,5 @@ globalStyle('hr',{
     backgroundColor: vars.themeColor.color.gray,
     border: 'none',
     margin: '20px 0',
+    width: '100%'
 })

@@ -132,6 +132,6 @@ export const imageStyle = style({
   display: 'block',
   maxWidth: '100%',
   height: 'auto',
-  margin: '1rem',
+  margin: '1rem 0',
   objectFit: 'contain',
 });
