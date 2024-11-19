@@ -20,7 +20,8 @@ const themeColor = createThemeContract({
       orange100: null,
       orange200: null,
       orange300: null,
-      gray: null
+      gray: null,
+      grayBackground: null,
     },
   });
   
@@ -33,9 +34,10 @@ export const lightTheme = createTheme(themeColor, {
         gradient: 'linear-gradient(#39598A, #79D7ED)',
         loadingColor: '#EEEEEE',
         orange100 : style.colors['orange-bright'],
-        orange200 : style.colors['orange-soft'],
-        orange300 : style.colors['orange-burnt'],
-        gray : style.colors['gray-700']
+        orange200 : style.colors['orange-burnt'],
+        orange300 : style.colors['orange-soft'],
+        gray : '#6c757d',
+        grayBackground: '#f4f4f4',
     },
 });
 
@@ -51,7 +53,8 @@ export const darkTheme = createTheme(themeColor, {
         orange100 : style.colors['orange-burnt'],
         orange200 : style.colors['orange-soft'],
         orange300 : style.colors['orange-bright'],
-        gray : style.colors['gray-500']
+        gray : style.colors['gray-500'],
+        grayBackground: '#262626',
     },
 });
 

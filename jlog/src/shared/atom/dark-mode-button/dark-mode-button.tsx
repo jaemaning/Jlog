@@ -1,6 +1,6 @@
 'use client';
 
-import * as style from './darkModeBtn.css';
+import * as style from './dark-mode-button.css';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '@/shared/atom/button';

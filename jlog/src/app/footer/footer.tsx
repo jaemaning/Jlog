@@ -1,6 +1,6 @@
 import React from 'react';
 import Box from '@/shared/atom/box/box';
-import Typo from '@/shared/atom/typo/typo';
+import { Typo } from '@/shared/atom/typo/typo';
 import { container, svgClass } from './footer.css';
 
 interface FooterProps {}

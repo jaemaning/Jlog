@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import '../shared/styles/globals.css';
 import { ThemeProvider } from '@/app/_providers';
-import NavBar from "@/app/navBar/navBar";
+import NavBar from "@/app/navbar/navbar";
 import Footer from "@/app/footer/footer";
 import { mainContainer } from "./main.css";
 import { SearchOverlay } from "@/features/search-post/ui/search-overlay";

@@ -9,7 +9,7 @@ export const container = style({
   marginLeft: '-25%',
   textAlign: 'center',
   bottom: '5px',
-  marginTop: '200px',
+  marginTop: '500px',
 });
 
 export const svgClass = style({

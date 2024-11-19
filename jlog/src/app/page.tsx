@@ -1,7 +1,6 @@
-import Box from "@/shared/atom/box/box";
-import Typo from "@/shared/atom/typo/typo";
+import { Typo } from "@/shared/atom/typo/typo";
 import { getPostAll } from "@/utils/getPost";
-import Card from "@/shared/atom/card/card";
+import Card from "@/entities/post/ui/post-card";
 import * as styles from './main.css'
 import { format } from "date-fns";
 import { PostList } from "@/entities/post";

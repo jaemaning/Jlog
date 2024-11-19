@@ -27,7 +27,8 @@ const colors = {
     'gray-900': '#212529',  // 가장 어두운 회색, 극도로 강조 필요한 요소용
     'orange-soft': '#f9ac55',  // 부드러운 주황색, 미묘한 강조에 적합
     'orange-bright': '#fb8c00',  // 밝은 주황색, 눈에 띄는 강조에 적합
-    'orange-burnt': '#cc5500'  // 어두운 주황색, 성숙한 강조에 적합
+    'orange-burnt': '#cc5500',  // 어두운 주황색, 성숙한 강조에 적합
+    'grayBackground': '#262626'
 };
 
 

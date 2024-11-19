@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from '@/shared/atom/card/card';
+import Card from '@/entities/post/ui/post-card';
 
 
 export default {

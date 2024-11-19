@@ -5,7 +5,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import rehypePrism from 'rehype-prism-plus'
 import rehypeCodeTitles from 'rehype-code-titles'
 import remarkGfm from 'remark-gfm';
-import MDXComponents from '../MDXcomponent/MDXComponent';
+import MDXComponents from '../mdx-component/MDXComponent';
 import './MDXContent.css'
 
 interface MDXContentType {

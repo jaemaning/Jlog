@@ -1,5 +1,5 @@
-import MDXContent from '@/shared/atom/MDXContent/MDXContent';
-import NameTag from '@/shared/atom/nameTag/nameTag';
+import MDXContent from '@/shared/atom/mdx-content/MDXContent';
+import NameTag from '@/shared/atom/name-tag/name-tag';
 import { container } from './page.css'
 import { getPostDetail } from '@/utils/getPost';
 

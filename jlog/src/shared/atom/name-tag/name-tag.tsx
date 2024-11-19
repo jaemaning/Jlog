@@ -1,8 +1,8 @@
 'use client'
 
-import * as styles from './nameTag.css'
+import * as styles from './name-tag.css'
 import React, { useState } from 'react';
-import Typo from '../typo/typo';
+import { Typo } from '@/shared/atom/typo';
 
 const NameTag = () => {
   const [rotated, setRotated] = useState(false);

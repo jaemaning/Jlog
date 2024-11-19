@@ -3,7 +3,7 @@ const recipeColors: { [key: string]: { backgroundColor: string, color: string } 
     'white': { 'backgroundColor': '#ffffff', 'color': '#000000' },
     'gray-100': { 'backgroundColor': '#f8f9fa', 'color': '#212529' },
     'gray-300': { 'backgroundColor': '#dee2e6', 'color': '#343a40' },
-    'gray-500': { 'backgroundColor': '#adb5bd', 'color': '#495057' },
+    'gray-500': { 'backgroundColor': '#6c757d', 'color': '#495057' },
     'gray-700': { 'backgroundColor': '#495057', 'color': '#adb5bd' },
     'gray-800': { 'backgroundColor': '#343a40', 'color': '#dee2e6' },
     'gray-900': { 'backgroundColor': '#212529', 'color': '#f8f9fa' },

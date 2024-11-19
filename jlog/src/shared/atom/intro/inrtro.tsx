@@ -1,4 +1,4 @@
-import Typo from "@/shared/atom/typo/typo";
+import { Typo } from "@/shared/atom/typo/typo";
 import { vars } from "@/shared/styles/globalTheme.css";
 import { Box } from "@mui/material";
 

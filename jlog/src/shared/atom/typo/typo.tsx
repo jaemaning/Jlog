@@ -11,7 +11,7 @@ type TypoProps = {
     href?: string;
 };
 
-const Typo: React.FC<TypoProps> = ({ size, color, margin, padding, children, href }) => {
+export const Typo: React.FC<TypoProps> = ({ size, color, margin, padding, children, href }) => {
 		if (size === 'a' || size === 'ha') {
 			return (
 				<a className={typoStyle({ size, color, margin, padding })} {...(href ? { href } : {})}>
@@ -26,5 +26,3 @@ const Typo: React.FC<TypoProps> = ({ size, color, margin, padding, children, hre
 			)
 		}
 };
-
-export default Typo;
