@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import '../shared/styles/globals.css';
 import { ThemeProvider } from '@/app/_providers';
-import { Navbar } from "@/app/navbar/navbar";
-import Footer from "@/app/footer/footer";
+import { Navbar } from "@/entities/navbar/navbar";
+import Footer from "@/entities/footer/footer";
 import { mainContainer } from "./main.css";
 import { SearchOverlay } from "@/features/search-post/ui/search-overlay";
 
