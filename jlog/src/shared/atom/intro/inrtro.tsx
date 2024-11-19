@@ -1,12 +1,11 @@
 import { Typo } from "@/shared/atom/typo/typo";
-import { vars } from "@/shared/styles/globalTheme.css";
 import { Box } from "@mui/material";
 
 
 export default function IntroBox() {
     return (
         <Box marginBottom={'40px'}>
-            <Typo size='h1'>
+            <Typo size='h1' margin="mideum">
                 Blog
             </Typo>
             <Typo size='p1' margin="small" color='gray'>개발하면서 배운 내용을 정리하는 공간입니다.</Typo>
