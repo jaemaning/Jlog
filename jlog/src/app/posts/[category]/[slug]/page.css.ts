@@ -7,5 +7,7 @@ export const container = style({
 });
 
 export const extraSetting = style({
-    color: vars.themeColor.color.gray
+    color: vars.themeColor.color.gray,
+    fontSize: '1.1rem',
+    lineHeight: '2rem'
 })

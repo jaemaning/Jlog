@@ -1,5 +1,6 @@
 // SearchOverlay.css.ts
 import { style } from '@vanilla-extract/css';
+import { vars } from '@/shared/styles/globalTheme.css';
 
 export const overlay = style({
   position: 'fixed',
@@ -7,7 +8,7 @@ export const overlay = style({
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
   backdropFilter: 'blur(8px)',
   WebkitBackdropFilter: 'blur(8px)',
   zIndex: 1000,
@@ -22,27 +23,15 @@ export const overlay = style({
 export const searchContainer = style({
   width : '95%',
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
 });
 
-export const searchInput = style({
-  width: '80vw',
-  padding: '1rem',
-  margin: 'auto',
-  border: '2px solid #eee',
-  borderRadius: '8px',
-  fontSize: '1.1rem',
-  outline: 'none',
-  transition: 'border-color 0.2s ease',
-  ':focus': {
-    borderColor: '#2196F3'
-  }
-});
 
 export const searchContents = style({
-  width: '80vw',
+  width: '80%',
   padding: '1rem',
   margin: 'auto',
   fontSize: '1rem',
   outline: 'none',
+  maxHeight: '15rem'
 });

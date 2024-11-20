@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/app/_providers';
 import { Navbar } from "@/entities/navbar/ui/navbar";
 import { Footer } from "@/entities/footer/ui/footer";
 import { mainContainer } from "./main.css";
-import { SearchOverlay } from "@/entities/search-post/ui/search-overlay";
+import { SearchOverlay } from "@/features/search-post/ui/search-overlay";
 
 // import './globals.css';
 

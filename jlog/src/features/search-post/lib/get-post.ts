@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { PostMatter, Post } from '../model/model';
+import { PostMatter, Post } from '@/features/search-post/model/model'
 import { sync } from 'glob';
 import readingTime from 'reading-time';
 import dayjs from 'dayjs';
@@ -10,7 +10,7 @@ const BASE_PATH = '/src/posts';
 const POSTS_PATH = path.join(process.cwd(), BASE_PATH);
 
 
-// 포스트 저장 위치 확인
+// 포스트 저장 위치 확인`
 function getPostPaths(category? : string) {
   const path = category || '**'
   const postPaths = sync(`${POSTS_PATH}/${path}/*.mdx`)

@@ -1,9 +1,8 @@
 import React from 'react';
-import { getPostAll } from '@/entities/post/lib/get-post';
+import { getPostAll } from '@/features/search-post/lib/get-post';
 import Link from 'next/link';
-import * as styles from './post-list.css'
-import { GroupDictionary, Posts, Post } from '../model/model';
-import { sorting } from '../lib/sort-post'
+import * as styles from './post-list.css';
+import { postSortByMonDay, objectSortByYear, postSortByCategory } from '../lib/sort-post';
 
 
 interface PostListProps {
@@ -11,25 +10,11 @@ interface PostListProps {
 }
 
 export async function PostList ({category} : PostListProps) {
-  const posts = await getPostAll(category)
-  const sortedPost = await sorting(posts)
-  // categories 전체 조회 후 뿌려줘야함
-  const groups : GroupDictionary = {
 
-  }
-  
-  // 날짜별 분리해서 넣어주기
-  sortedPost.map((post : Post)=>{
-    const [year, month, day] = post.dateString.split(".")
-    if(year in groups) {
-      groups[year].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
-    } else {
-      groups[year] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
-    }
-  })
-
-  // 여기서 연도 한번 더 분류
-  const sortedYears = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
+  const posts = await getPostAll(category) // 전체 포스트 조회  
+  const sortedPost = await postSortByMonDay(posts) // 월, 일 별 sorting
+  const groups = await postSortByCategory(sortedPost) // category 별 분류
+  const sortedYears = await objectSortByYear(groups) // 연도 sorting 후 리스트 처리
 
   return (
     <div className={styles.container}>

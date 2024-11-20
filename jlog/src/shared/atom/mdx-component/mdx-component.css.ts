@@ -10,7 +10,7 @@ export const preStyle = style({
   overflowX: 'auto',
   padding: '1rem 0',
   border: '1px solid #8b8b8b',
-  marginTop: '50px',
+  marginTop: '50px'
 });
 
 export const strongStyle = style({
@@ -37,7 +37,7 @@ export const codeStyle = style({
   fontFamily: Hack,
   fontSize: '1rem',
   lineHeight: 1.5,
-  padding: '0.2rem 0.4rem',
+  padding: '0.1rem 0.2rem',
   borderRadius: '0.2rem',
   border: `1px solid ${vars.themeColor.color.grayBackground}`,
   backgroundColor: vars.themeColor.color.grayBackground,
@@ -54,21 +54,21 @@ export const headingStyle = {
     color: vars.themeColor.color.mainFontColor
   }),
   h2: style({
-    fontSize: '2.2rem',
+    fontSize: '2rem',
     fontWeight: 'bold',
     marginBottom: '1.25rem',
     lineHeight: '1.5',
     color: vars.themeColor.color.mainFontColor
   }),
   h3: style({
-    fontSize: '1.95rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold',
     marginBottom: '1rem',
     lineHeight: '1.5',
     color: vars.themeColor.color.mainFontColor
   }),
   h4: style({
-    fontSize: '1.7rem',
+    fontSize: '1.6rem',
     fontWeight: 'bold',
     marginBottom: '0.75rem',
     lineHeight: '1.5',
@@ -78,8 +78,6 @@ export const headingStyle = {
 
 export const paragraphStyle = style({
   marginBottom: '1rem',
-  lineHeight: 1.7,
-  fontSize: '1.15rem',
   padding: '10px 0'
 });
 
