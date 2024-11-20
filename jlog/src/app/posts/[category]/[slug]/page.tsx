@@ -10,7 +10,7 @@ type Params = {
 
 export default async function PostDetailPage({ params } : Params) {
   const post = await getPostDetail(params.category, params.slug)
-  
+
   return (
       <div>
         <article>

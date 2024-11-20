@@ -8,13 +8,12 @@ type PostMatter = {
 };
 
 type Post = {
-json(): unknown;
-category : string;
-name : string;
-grayMatterData: PostMatter;
-content: string;
-readingMinutes: number;
-dateString: string;
+    category : string;
+    name : string;
+    grayMatterData: PostMatter;
+    content: string;
+    readingMinutes: number;
+    dateString: string;
 }
 
 type Posts = Post[]

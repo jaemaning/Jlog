@@ -5,6 +5,7 @@ import { PostMatter, Post } from '@/features/search-post/model/model'
 import { sync } from 'glob';
 import readingTime from 'reading-time';
 import dayjs from 'dayjs';
+import { notFound } from 'next/navigation';
 
 const BASE_PATH = '/src/posts';
 const POSTS_PATH = path.join(process.cwd(), BASE_PATH);
@@ -58,9 +59,14 @@ export async function getPostAll(category?: string): Promise<Post[]> {
 
 // 단일 페이지 조회
 export async function getPostDetail(category: string, name: string) {
-  const postPath = sync(`${POSTS_PATH}/${category}/${name}.mdx`)
-  const detail = await parsePost(postPath[0]);
-  return detail;
+  const postPath = await sync(`${POSTS_PATH}/${category}/${name}.mdx`)
+  if (!Array.isArray(postPath) || postPath.length === 0) {
+    return notFound()
+  } else {
+    console.log(postPath)
+    const detail = await parsePost(postPath[0]);
+    return detail;
+  }
 }
 
 
