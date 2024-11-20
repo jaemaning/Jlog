@@ -2,19 +2,15 @@ import MDXContent from '@/shared/atom/mdx-content/mdx-content';
 import NameTag from '@/shared/atom/name-tag/name-tag';
 import { container, extraSetting } from './page.css'
 import { getPostDetail } from '@/features/search-post/lib/get-post';
+import { notFound } from 'next/navigation';
 
-type Props = {
+type Params = {
   params: { category: string; slug: string };
 };
 
-
-export default async function PostDetailPage({ params : { category, slug } } : Props) {
-  const post = await getPostDetail(category, slug)
-
-  if (!post) {
-    return <div>데이터를 가져오고 있습니다.</div>
-  }
-
+export default async function PostDetailPage({ params } : Params) {
+  const post = await getPostDetail(params.category, params.slug)
+  
   return (
       <div>
         <article>

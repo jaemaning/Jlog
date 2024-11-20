@@ -8,6 +8,7 @@ type PostMatter = {
 };
 
 type Post = {
+json(): unknown;
 category : string;
 name : string;
 grayMatterData: PostMatter;

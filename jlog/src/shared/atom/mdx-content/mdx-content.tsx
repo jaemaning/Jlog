@@ -1,5 +1,3 @@
-'use client';
-
 import { MdxProvider } from '@/app/_providers';
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import rehypePrism from 'rehype-prism-plus'
