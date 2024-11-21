@@ -26,12 +26,36 @@ export const searchContainer = style({
   flexDirection: 'column',
 });
 
-
 export const searchContents = style({
   width: '80%',
   padding: '1rem',
   margin: 'auto',
+  marginTop: '20px',
   fontSize: '1rem',
   outline: 'none',
-  maxHeight: '15rem'
+  height: '300px',
+  overflowX: 'hidden',
+  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+
 });
+
+export const postBox = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  paddingRight: '1.5rem',
+  color: vars.color['gray-500'],
+  ':hover': {
+    color: 'white',
+    cursor: 'pointer'
+  }
+})
+
+export const fgp1 = style({
+  paddingRight: '40px'
+})
+
+export const linkStyle = style({
+  textDecoration: 'none'
+})

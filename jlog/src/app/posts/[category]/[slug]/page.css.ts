@@ -11,3 +11,7 @@ export const extraSetting = style({
     fontSize: '1.1rem',
     lineHeight: '2rem'
 })
+
+export const articleStyle = style({
+    width: '95%'
+})

@@ -1,6 +1,6 @@
 import MDXContent from '@/shared/atom/mdx-content/mdx-content';
 import NameTag from '@/shared/atom/name-tag/name-tag';
-import { container, extraSetting } from './page.css'
+import { container, extraSetting, articleStyle } from './page.css'
 import { getPostDetail } from '@/features/search-post/lib/get-post';
 import { notFound } from 'next/navigation';
 
@@ -13,7 +13,7 @@ export default async function PostDetailPage({ params } : Params) {
 
   return (
       <div>
-        <article>
+        <article className={articleStyle}>
           <div className={container}>
             <h1>{post.grayMatterData.title}</h1>
             <p>{post.dateString}</p>

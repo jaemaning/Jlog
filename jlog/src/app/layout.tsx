@@ -5,6 +5,7 @@ import { Navbar } from "@/entities/navbar/ui/navbar";
 import { Footer } from "@/entities/footer/ui/footer";
 import { mainContainer } from "./main.css";
 import { SearchOverlay } from "@/features/search-post/ui/search-overlay";
+import { getPostAll } from "@/features/search-post/lib/get-post";
 
 // import './globals.css';
 
@@ -25,17 +26,19 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const posts = await getPostAll();
+
   return (
     <html>
       <body>
         <ThemeProvider>
           <Navbar />
-            <SearchOverlay></SearchOverlay>
+            <SearchOverlay posts={posts} />
             <div className={mainContainer}>
               {children}
             </div>
