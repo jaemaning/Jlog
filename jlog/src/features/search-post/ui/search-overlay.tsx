@@ -22,7 +22,11 @@ export function SearchOverlay({ posts } : {posts : Posts}) {
                 <div className={styles.searchContents}>
                         {postSortByDate(postValues).map((post)=>{
                             return (
-                                <Link href={`/posts/${post.category}/${post.name}`} className={styles.linkStyle} onClick={()=>toggleSearch()}>
+                                <Link
+                                    key={`${post.category}-${post.name}`} 
+                                    href={`/posts/${post.category}/${post.name}`} 
+                                    className={styles.linkStyle} 
+                                    onClick={()=>toggleSearch()}>
                                     <div className={styles.postBox}>
                                         <p className={styles.fgp1}>{post.grayMatterData.title}</p>
                                         <div className='fgp2'> </div>
