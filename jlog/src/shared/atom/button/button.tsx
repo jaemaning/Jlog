@@ -1,6 +1,7 @@
 import React from 'react';
 import { buttonStyle } from './button.css';
 import { vars } from '@/shared/styles/globalTheme.css';
+import clsx from 'clsx';
 
 interface ButtonProps {
     children: React.ReactNode;
@@ -9,6 +10,7 @@ interface ButtonProps {
     size? : 'small' | 'medium' | 'large' | 'fit' | 'circle';
     margin? : keyof typeof vars.recipeMargin;
     border? : keyof typeof vars.recipeBorder;
+    cls? : string | string[];
 }
 
 export function Button({
@@ -17,9 +19,15 @@ export function Button({
     color,
     size,
     margin,
-    border
+    border,
+    cls
 } : ButtonProps) {
+    const combinedClassName = clsx(
+        buttonStyle({ color, size, margin, border }), // 기존 스타일
+        cls
+    );
+
     return (
-        <button className={buttonStyle({ color, size, margin, border })} onClick={onClick}>{children}</button>
+        <button className={combinedClassName} onClick={onClick}>{children}</button>
     );
 };

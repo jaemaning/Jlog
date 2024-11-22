@@ -1,5 +1,5 @@
 import { Posts, Post } from '@/features/search-post/model/model'
-import { GroupDictionary } from '../model/model';
+import { GroupDictionary } from '../../../features/category-select-post/model/model';
 
 // 월 일만 비교하기, 연도는 그룹으로 관리
 export function postSortByMonDay (posts: Posts) : Posts {
@@ -27,13 +27,26 @@ export function postSortByCategory(posts: Posts) : GroupDictionary {
 
     }
     
-    // 날짜별 분리해서 넣어주기
+    // 날짜별, 카테고리별 분리해서 넣어주기
     posts.map((post : Post)=>{
       const [year, month, day] = post.dateString.split(".")
+
       if(year in groups) {
-        groups[year].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
+        if ("All" in groups[year]) {
+          groups[year]["All"].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
+        } else {
+          groups[year]["All"] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+        }
+        
+        if (post.category in groups[year]) {
+          groups[year][post.category].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
+        } else {
+          groups[year][post.category] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+        }
       } else {
-        groups[year] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+        groups[year] = {  }
+        groups[year][post.category] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+        groups[year]["All"] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
       }
     })
 

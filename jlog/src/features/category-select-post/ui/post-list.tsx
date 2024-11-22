@@ -1,31 +1,24 @@
 import React from 'react';
-import { getPostAll } from '@/features/search-post/lib/get-post';
 import Link from 'next/link';
 import * as styles from './post-list.css';
-import { postSortByMonDay, objectSortByYear, postSortByCategory } from '../lib/sort-post';
+import { GroupDictionary } from '../model/model';
 
 
-interface PostListProps {
-  category? : string;
-}
-
-export async function PostList ({category} : PostListProps) {
-
-  const posts = await getPostAll(category) // 전체 포스트 조회  
-  const sortedPost = await postSortByMonDay(posts) // 월, 일 별 sorting
-  const groups = await postSortByCategory(sortedPost) // category 별 분류
-  const sortedYears = await objectSortByYear(groups) // 연도 sorting 후 리스트 처리
+export function PostList ({ sortedYears, groups, category } : { sortedYears :string[], groups : GroupDictionary, category: string }) {
+  console.log(groups)
+  console.log(sortedYears)
 
   return (
     <div className={styles.container}>
       {sortedYears.map((year) => (
+        groups[year][category]? 
         <div key={year}>
           <div className={styles.groupContainer}>
             <p className={`${styles.yearStyle} ${styles.grayColor}`}>{year}</p>
             <ul className={styles.uiContainer}>
-              {groups[year].map(([title, category, date, name], index) => (
+              {groups[year][category].map(([title, categ, date, name], index) => (
                 <li key={index} >
-                  <Link href={`/posts/${category}/${name}`} className={styles.FlexContainer}>
+                  <Link href={`/posts/${categ}/${name}`} className={styles.FlexContainer}>
                     <p className={styles.pStyle}>{title}</p>
                     <p className={`${styles.grayColor} ${styles.pStyle}`}>{date}</p>
                   </Link>
@@ -37,7 +30,7 @@ export async function PostList ({category} : PostListProps) {
           <hr />
           <br />
         </div>
-      ))}
+      :null))}
     </div>
   );
 
