@@ -23,7 +23,7 @@ export const buttonStyleAdd = style({
     fontSize: '0.75rem',
     fontWeight: '500',
     ":hover" : {
-        backgroundColor : '#363636'
+        backgroundColor : vars.themeColor.color.loadingColor
     }
 })
 
