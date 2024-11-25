@@ -10,8 +10,8 @@ export function Navbar() {
         <Box justifyContent='spaceBetween' alignItems='center'>
             <Typo size='ha' margin='medium' href='/'>JLOG</Typo>
             <Box justifyContent='end'>
-                <DarkModeBtn />
                 <SearchButton />
+                <DarkModeBtn />
             </Box>
         </Box>
     );
