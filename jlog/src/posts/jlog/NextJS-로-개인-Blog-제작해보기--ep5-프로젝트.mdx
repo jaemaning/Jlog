@@ -1,0 +1,402 @@
+---
+title: "NextJS 로 개인 Blog 제작해보기 - ep.5 프로젝트"
+description: "ContentLayer 적용 0.1.0 버전 이후 Contentlayer 에서 타입 명시를 하지 않으면 에러가 발생하게되었습니다. 이를 해결하기 위해 contentType 을 반드시 명시해줘야합니다."
+date: 2024-05-21T08:15:11.035Z
+tags: ["Contentlayer","NestJS","blog","vanilla-extract","velog 글 추출"]
+category : "Python"
+---
+## ContentLayer 적용
+
+### Contentlayer
+
+
+![](/images/635bec23-c034-4099-9c4f-5db59471ccb5-image.png)
+
+
+0.1.0 버전 이후 Contentlayer 에서 타입 명시를 하지 않으면 에러가 발생하게되었습니다.
+
+이를 해결하기 위해 contentType 을 반드시 명시해줘야합니다.
+mdx 파일로 진행 예정이기에 mdx를 설정하겠습니다.
+
+이전에 설정해주었지만, 저는 md 파일로 설정해보려다가 위 문제를 겪었습니다.
+
+동일한 현상을 겪는다면 ```contentlayer.config.ts``` 파일에서 (없다면 생성해주셔야합니다. 이전 시간에 생성함) 다음처럼 ```contentType: 'mdx',```  로 contentType을 명시합니다.
+
+```typescript
+import { defineDocumentType, makeSource } from 'contentlayer/source-files';
+import highlight from 'rehype-highlight';
+import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeImgSize from './rehype-img-size';
+
+export const Post = defineDocumentType(() => ({
+  name: 'Post',
+  filePathPattern: `**/*.mdx`,
+  contentType: 'mdx', // contentType 명시 필수
+  fields: {
+    title: {
+      type: 'string',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      required: true,
+    },
+    date: {
+      type : 'date',
+      required: true,
+    },
+    thumbnail: {
+      type: 'string',
+      required: false,
+    },
+    tags: {
+      type: 'list',
+      of: { type: 'string' },
+      required: true,
+    },
+  },
+}));
+
+const contentSource = makeSource({
+  contentDirPath: 'posts',
+  documentTypes: [Post],
+  mdx: {
+    remarkPlugins: [],
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        {
+          theme: 'github-dark', // 코드작성시 적용할 테마
+        },
+      ],
+      highlight,
+      rehypeImgSize,
+    ],
+  },
+});
+
+export default contentSource;
+
+```
+
+다시 돌아와서
+
+```/posts/~~.mdx``` 파일로 정상적으로 처리하게된다면 ```.contentlayer/generate``` 위치에 ```.mdx.json``` 파일이 생성되게 됩니다.
+
+> 💡  이 때 기존에 ```/posts``` 폴더에 저장되어 있던 ```.mdx``` 파일의 이름은 반드시 **영문+숫자** 조합이어야합니다. (띄어씌기, 한글, 특수문자가 포함될 경우 allPosts 함수 사용시 해당 항목은 모두 제거되어 영문+숫자만을 기준으로 import 하기 때문에 allPosts import 시 import 에러가 발생할 수 있습니다.)
+
+## Velog 글을 mdx File 로 추출하기
+
+### 라이브러리 사용으로 간단히 가져오기
+https://github.com/cjaewon/velog-backup
+
+위 오픈 소스 라이브러리를 사용하여 벨로그 글을 백업하였습니다.
+
+### 소스코드 분석
+
+1. Velog 글 직접 가져오기
+Velog API를 사용하여 글을 가져올 수 있습니다. Velog는 공식적인 API 를 제공하는지는 모르겠으나 ```https://v2.velog.io/@userName``` 이 주소를 통하여 API 데이터를 제공 받을 수 있는 것 같습니다. 소스코드에 아래와 같은 조회용 url 을 볼 수 있었습니다.
+
+```javascript
+async getPosts() {
+  const url = `https://velog.io/@${this.username}`;
+  let response;
+  let posts = [];
+  ```
+
+2. MDX 파일로 변환
+내부소스 코드를 완벽히 이해하진 못했지만, 내부적으로 velog 글에 포함되어있는 이미지 파일을 다운로드하고 해당 이미지 파일을 새로운 이름으로 저장 및 매칭 시켜주는 기능이 있어 편리하게 사용할 수 있을 것 같습니다.
+
+```javascript
+async getImage(body) {
+  const regex = /!\[[^\]]*\]\((.*?.png|.jpeg|.jpg|.webp|.svg|.gif|.tiff)\s*("(?:.*[^"])")?\s*\)|!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/g;
+
+  body = body.replace(regex, (_, url) => {
+    if (!url) return;
+
+    const filename = url.replace(/\/\s*$/,'').split('/').slice(-2).join('-').trim();
+    const path = join('backup', 'images', decodeURI(filename));
+
+    this.__api({
+      method: 'get',
+      url: encodeURI(decodeURI(url)),
+      responseType: 'stream',
+    })
+      .then(resp => resp.data.pipe(fs.createWriteStream(path)))
+      .catch(e => console.error(`⚠️ 이미지를 다운 받는데 오류가 발생했습니다 / url = ${url} , e = ${e}`));
+
+    return `undefined`;
+  });
+
+  return body;
+}
+```
+
+
+### contentlayer 추가 설정
+이렇게 파일을 추출했다면 contentlayer 라이브러리에서 활용할 수 있도록 input data 를 처리해주는 과정이 필요합니다.
+
+contentlayer 에서 처리할 수 있는 방식으로 변경해야하므로 조금 처리해주겠습니다.
+
+> 💡 제가 확인해본 바로는 현재 변경해야하는 데이터는 다음과같습니다.
+> 1. 파일명이 중복되지않는 영문명이어야함.(파일의 영문만을 찾고 뒤에 인덱스번호를 넣는 식으로 구분하겠습니다.) - 영문이 존재하지않을 수 있기때문에
+> 2. 특정 이미지 파일 (.png, .jpg) 외의 다른 이미지 파일형식은 왜인지 velog api 를 이용해서 긁어올때 가져올 수 없었습니다. => 해당 부분은 많지 않으므로 직접 가져와 넣는 방식을 택하였습니다.
+
+
+
+```python
+# md 파일이 위치한 곳에서 해당 python run
+
+import os
+import re
+
+def changeFileName(path):
+    dir = os.listdir(path)
+    for i in range(len(dir)):
+        fileName = dir[i]
+        if fileName.endswith('.md'):
+            fileName = fileName.split('.')[0]
+            newFileName = fileName.replace(' ', '_')
+            newFileName = re.sub(r"[^a-zA-Z]", "", newFileName) # 영문자만 남기기
+            os.rename(os.path.join(path, fileName+'.mdx'), os.path.join(path, newFileName + f'_{i}.mdx'))
+            print('File name changed from {} to {}'.format(fileName, newFileName))
+            
+
+if __name__ == '__main__':
+    changeFileName('.')
+    
+```
+
+이렇게 영문명으로 변환 및 ```.mdx``` 파일로 변환하여 ```root/posts/``` 폴더로 넣어주겠습니다. 이후 이미지 파일들은 ```root/public/``` 폴더로 넣어줍니다.
+
+이렇게하면 아래처럼 간단한 mdx 파일처리를 해주어 브라우저에서 띄울 수 있게 됩니다.
+
+
+![](/images/22ed093e-c5c3-49c3-a5ee-75677d1e6996-image.png)
+
+
+
+![](/images/6928be06-a253-43d3-bfc7-582b5494d800-image.png)
+
+
+테스트형식으로 여기서 마무리하고 스타일은 나중에 해도 되겠으나, 보기 너무 좋지않아 간단하게 스타일링 하는 법에대해 알아보겠습니다.
+
+
+![](/images/3862767c-e3bc-4b2c-b6ae-33e0dd90233c-image.png)
+
+
+개발자 도구를 열어서 보면 위 그림처럼 code, pre 등 다양한 tags 로 구성되어 있는 것을 볼 수 있습니다. 이 때 저희가 따로 커스텀을 하려면 해당 tag를 수정하면 가능한데, 이또한 vanilla-extract 를 사용해 커스텀해보도록 하겠습니다. (일부 옵션은 다른 옵션과 중첩되어 적용되지 않는 사례가 있어 !important 옵션을 적용해야할 수 있습니다.)
+
+먼저 아래처럼 
+```typescript
+// @/components/atom/MDXcomponent/MDXcomponent
+
+import { style } from '@vanilla-extract/css';
+import { vars } from '@/styles/globalTheme.css';
+
+export const preStyle = style({
+  overflowX: 'auto',
+  padding: '1rem 0',
+  border: '1px solid #8b8b8b',
+  marginTop: '0',
+});
+
+export const codeTitleStyle = style({
+  fontSize: '0.9rem',
+  fontWeight: 500,
+  padding: '0.4rem 1rem',
+  border: '1px solid #8b8b8b',
+  borderTopLeftRadius: '0.4rem',
+  borderTopRightRadius: '0.4rem',
+  borderBottomStyle: 'none',
+});
+
+export const codeTitleNextPreStyle = style({
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+});
+
+export const codeStyle = style({
+  fontFamily: "'Fira Code', monospace",
+  fontSize: '0.9rem',
+  lineHeight: 1.5,
+  padding: '0.2rem 1rem',
+  borderRadius: '0.2rem',
+});
+
+```
+
+```typescript
+// @src/components/atom/MDXcomponent/MDXComponent.tsx
+import { preStyle, codeTitleStyle, codeTitleNextPreStyle, codeStyle } from './MDXComponent.css';
+
+const MDXComponents = {
+  pre: (props) => <pre className={preStyle} {...props} />,
+  code: (props) => <code className={codeStyle} {...props} />,
+  figcaption: (props) => <figcaption className={codeTitleStyle} {...props} />,
+};
+
+export default MDXComponents;
+
+```
+
+
+```typescript
+// @/app/posts/[id]/page.tsx
+
+import { useMDXComponent } from 'next-contentlayer/hooks';
+import { allPosts } from '.contentlayer/generated';
+import Button from '@/components/atom/button/button';
+import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent'
+
+
+export function generateStaticParams() {
+  return allPosts.map((post) => ({
+    id: post._raw.flattenedPath,
+  }));
+}
+
+export function fetchPost(id: string) {
+  const post = allPosts.find((p) => p._raw.flattenedPath === id);
+
+  if (!post) {
+    throw new Error(`Post with id ${id} not found`);
+  }
+
+  return post;
+}
+
+export default function PostDetailPage({ params }: { params: { id: string } }): JSX.Element {
+    const post = fetchPost(params.id);
+
+    const MDXComponent = useMDXComponent(post?.body.code);
+
+    return (
+        <div>
+            <h1>{post.title}</h1>
+            <div>
+              {post.tags.map((postTag)=> {
+                return <Button size='fit' border='thin' margin='small'>{postTag}</Button>
+              })}
+            </div>
+            <MDXComponent components={MDXComponents} />
+        </div>
+    );
+};
+```
+
+```typescript
+// root/contentlayer.config.ts
+
+import { defineDocumentType, makeSource } from 'contentlayer/source-files';
+import highlight from 'rehype-highlight';
+import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeImgSize from './rehype-img-size';
+import MDXComponents from '@/components/atom/MDXcomponent/MDXComponent';
+
+
+export const Post = defineDocumentType(() => ({
+  name: 'Post',
+  filePathPattern: `**/*.mdx`, // mdx 파일경로 패턴
+  contentType: 'mdx',
+  fields: {
+    title: {
+      type: 'string',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      required: true,
+    },
+    date: {
+      type : 'date',
+      required: true,
+    },
+    thumbnail: {
+      type: 'string',
+      required: false,
+    },
+    tags: {
+      type: 'list',
+      of: { type: 'string' },
+      required: true,
+    },
+  },
+}));
+
+const rehypeOptions = {
+  theme: 'slack-dark',
+  keepBackground: true,
+};
+
+const contentSource = makeSource({
+  contentDirPath: 'posts',
+  documentTypes: [Post],
+  mdx: {
+    remarkPlugins: [],
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        {
+          theme: 'github-dark', // 코드작성시 적용할 테마
+        },
+      ],
+      highlight,
+      rehypeImgSize,
+    ],
+    // 이 부분 추가
+    components: MDXComponents,
+  },
+});
+
+export default contentSource;
+
+```
+적용된 스타일링은 아래와 같이 코드템플릿이 보기 좋게 변했습니다.
+
+
+![](/images/39222f6a-41d5-418a-99b6-f45440cc357e-image.png)
+
+
+이렇게 간단하게 MDXcomponents 에 원하는 custom style 을 적용시켜 볼 수 있습니다. 아직 완벽하게 마음에 들지 않지만 우선 깨지는 코드 스타일과 이미지를 스타일을 적용시켰고 나머지 스타일링은 추후 업데이트하겠습니다.
+
+navbar, footer, nameTag 등의 간단한 스타일은 소개하지 않고 넘어가겠습니다.
+
+자세한 스타일링, 소스코드가 궁금하신 분들은 제 [Github](https://github.com/jaemaning/Jlog)를 참고부탁드립니다.
+
+## 현재까지 진행 상황
+
+### NameTag + Footer
+undefined
+
+### NavBar
+
+![](/images/12051308-21a7-4524-becf-2d14b4a905d3-image.png)
+
+
+## 마무리
+
+### 어려웠던점.
+
+
+![](/images/4d056b74-a3b2-46c9-b13d-c8da670654b4-image.png)
+
+
+이사를 진행하면서 contentlayer의 인풋데이터 타입과 cjaewon님의 velog-backup 라이브러리를 통한 아웃풋데이터 형식을 맞추는 작업이 난해했습니다. 
+contentlayer 의 필요한 인풋데이터 형식을 알기 위해 소스코드를 찾아봐야했고, cjaewon 님의 라이브러리에서 추출하는 값과 contentlayer 인풋데이터 형식에 맞게 변경해야 했습니다.
+
+위 그림처럼 복잡한 과정은 아니였지만 설계도를 하나하나 찾아봐야 했다는 점이 어려웠던 것 같습니다. 하지만 재미있는 과정이었고 다른 좋은 개발자분들의 코드를 보며 많이 배우는 계기가 되었습니다.
+
+### 오늘 한일 / 내일 할일
+아직 좀 다듬어야할 것들이 많지만 우선 contentLayer 라이브러리와 cjaewon님의 /velog-backup 라이브러리를 통해 이사를 해보았고 간단한 화면구성 초안까지 어느정도 마무리 된 것 같습니다.
+
+다음에는 aws 서버에 배포를 진행하고 배포환경 테스트까지 진행해보도록 하겠습니다. 시간이 남는다면 무중단 배포 pipeline 까지 구축해보겠습니다. 
+
+부족하지만 긴 글 읽어주셔서 감사합니다.
+
+---
+### 참고자료
+
+- 출처 : https://github.com/contentlayerdev/contentlayer/issues/180
+- 출처 : https://github.com/cjaewon/velog-backup
+

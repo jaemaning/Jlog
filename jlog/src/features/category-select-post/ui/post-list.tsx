@@ -5,8 +5,6 @@ import { GroupDictionary } from '../model/model';
 
 
 export function PostList ({ sortedYears, groups, category } : { sortedYears :string[], groups : GroupDictionary, category: string }) {
-  console.log(groups)
-  console.log(sortedYears)
 
   return (
     <div className={styles.container}>

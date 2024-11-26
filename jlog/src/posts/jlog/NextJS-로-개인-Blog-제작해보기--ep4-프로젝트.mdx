@@ -1,0 +1,568 @@
+---
+title: "NextJS 로 개인 Blog 제작해보기 - ep.4 프로젝트"
+description: "이번 글은 '캐치테이블 B2C 서비스에서 vanilla-extract를 사용하는 방법'을 보고 많은 영감을 얻었습니다."
+date: 2024-05-13T07:50:21.612Z
+tags: []
+category : "Python"
+---
+이번 글은 "[캐치테이블 B2C 서비스에서 vanilla-extract를 사용하는 방법](https://medium.com/catchtable/how-to-use-vanilla-extract-in-catchtable-b2c-6c4e712c471f)"을 보고 많은 영감을 얻었습니다.
+
+사실 api 로직을 설계하고 mdx 파일을 SSG, SSR 하여 구현하는 것도 어렵지만, 단순 반복을 죽어도 싫어하는 저는 CSS 에서 신경을 많이 쓰는 편입니다. 그래서 저는 Atomic design pattern 의 vanilla-extract 최적화 버전으로 구현하고자 하였습니다. 제가 원하는 **조건은 3가지** 였습니다.
+
+> 1. **zero-runtime css 환경**으로 동작해야한다.
+> 2. 코드의 **중복을 최소화**해야한다.
+> 3. 예외 사항 발생 시 위 두 사항을 무시하더라도 **편하게 구현가능한 방법이 존재**해야한다.
+
+
+기존의 styled-component 같은 편하고 사용해본 경험이 있는 라이브러리가 아닌 vanilla-extract를 도입한 이유는 zero-runtime 환경인 것이 크다. (사실 큰 웹사이트가 아닌이상 엄청난 퍼포먼스 차이가 나는 것은 아닙니다.)
+
+그렇기에 최대한 zero-runtime 환경을 구축해야겠다고 생각했습니다.
+
+제가 생각한 방식은 아래와 같습니다. 기본적으로 base 가 되는 atomic 한 components 들을 제작합니다. 
+
+## atomic design pattern In Vanilla-extract
+
+### zero runtime 확인
+
+```typescript
+// style Merge
+
+import { style } from '@vanilla-extract/css';
+import { vars } from '@/styles/globalTheme.css';
+
+// 1
+
+export const Button = style({
+  color : vars.color.gray-700,
+  backgroundColor : vars.themeColor.btnColor // darkMode, lightMode 에 따라 적용
+});
+
+// 2
+
+export const smallButton = style([button, {
+  fontSize: vars.fontSizes.small,
+  padding : vars.space.small
+}]);
+
+export const largeButton = style([button, {
+  fontSize: vars.fontSizes.large,
+  padding : vars.space.large
+}]);
+
+// 3
+
+export const styleMerged = style([base, {
+  color: '#FFFFFF',
+}]);
+```
+
+극단적인 예시를 들었지만, 1번 처럼 기본적인 뼈대 button component 를 만들고 해당 component에 여러 파생 버전(2번)을 mergeStyle 을 활용해 만들어 줍니다. 이후 실 사용할때 조금 변경사항이 필요하다면 3번 처럼 다시 mergeStyle 을 활용해 최대한 compile 환경에서 css 를 주입해 zero-runtime 하도록 구현하였습니다. (일반적인 상황에서 간단히 스타일을 적용할 떄 위처럼 구현하였습니다.)
+
+다음은 recipe를 이용한 style 설정입니다. 아래 방식을 통해 atomic design pattern 을 최대한 적용해보려고 노력하였습니다.
+
+우선 recipe 를 통하여 기본 틀을 잡고 props 를 통해 일부 옵션들을 적용하는 방식입니다. 모든 옵션을 적용해두고 사용한다면 편하겠지만 우선 자주 사용하는 옵션들만 적용해 두었습니다.
+
+
+```typescript
+// button.css.ts
+import { vars } from '@/styles/globalTheme.css';
+import { recipe } from '@vanilla-extract/recipes';
+
+export const buttonStyle = recipe({
+    base: {
+      display : 'flex',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      margin : 'none',
+      boxSizing : 'border-box',
+      transition: 'background-color 0.3s, color 0.3s',  // 부드러운 색상 전환 효과
+      backgroundColor: vars.themeColor.color.mainBackground,  // 기본 배경색
+      color: vars.themeColor.color.mainFontColor,  // 기본 폰트색
+      textAlign: 'center', // 텍스트 가운데 정렬
+      verticalAlign: 'middle', // 세로 가운데 정렬
+      justifyContent: 'center', // 가로 가운데 정렬
+      alignItems: 'center', // 세로 가운데 정렬
+      ':hover': {
+        backgroundColor: vars.themeColor.color.btnColor,  // hover 시 배경색 변경
+      }
+    },
+  
+    variants: {
+      color: vars.recipeColor,
+      size: {
+        small: {
+          fontSize: vars.fontSizes.small,
+          padding : vars.space.small,
+          width: '50px',
+          height: '30px',
+        },
+        medium: {
+          fontSize: vars.fontSizes.medium,
+          padding : vars.space.medium,
+          width: '100px',
+          height: '50px',
+        },
+        large: {
+          fontSize: vars.fontSizes.large,
+          padding : vars.space.large,
+          width: '150px',
+          height: '70px',
+        },
+        fit: {
+          width: 'fit-content',
+          height: 'fit-content',
+        },
+        circle : {
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+        }
+      },
+      margin: vars.recipeMargin,
+      border: vars.recipeBorder
+    },
+  
+    defaultVariants: {
+      size: 'medium',
+      border : 'none'
+    }
+  });
+```
+
+이렇게 정의하고 사용하게 된다면 아래와 같이 사용하게 됩니다.
+
+```typescript
+// button.tsx
+
+import React from 'react';
+import { buttonStyle } from '@/components/atom/button/button.css';
+import { vars } from '@/styles/globalTheme.css';
+
+interface ButtonProps {
+    children: React.ReactNode;
+    onClick?: () => void; // onClick 타입을 정의
+    color? : keyof typeof vars.recipeColor;
+    size? : 'small' | 'medium' | 'large' | 'fit' | 'circle';
+    margin? : keyof typeof vars.recipeMargin;
+    border? : keyof typeof vars.recipeBorder;
+}
+
+const Button: React.FC<ButtonProps> = ({
+    children, 
+    onClick,
+    color,
+    size,
+    margin,
+    border
+}) => {
+    return (
+        <button className={buttonStyle({ color, size, margin, border })} onClick={onClick}>{children}</button>
+    );
+};
+
+export default Button;
+```
+
+```typescript
+// darkModeButton.tsx
+
+'use client';
+
+import * as style from './darkModeBtn.css';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+import Button from '../button/button';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import NightsStayIcon from '@mui/icons-material/NightsStay';
+
+const DarkModeBtn = () => {
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <div className={style.container}>
+      <Button
+        onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+        aria-label="DarkModeBtn"
+        size='circle'
+      >
+        {mounted && (
+          resolvedTheme === 'light' ? <NightsStayIcon fontSize='small' /> : <WbSunnyIcon fontSize='small' />
+        )}
+      </Button>
+    </div>
+  );
+};
+
+export default DarkModeBtn;
+```
+
+이 때 제가 가장 먼저 들었던 생각은 style-component 방식으로 css 를 component 안에 js class 로 넣어서 zero-runtime 이 아니지 않을까 하는 걱정이었습니다.
+
+하지만 vanilla-extract 에서 동작하는 방식은 component 를 새로 javascript에서 즉 브라우저 단에서 만드는 과정이 아닌 compile 과정에서 class 를 만들어주고 넘겨 주고 있습니다. 아래 console.log 를 찍어서 만들어진 class 명을 알 수 있습니다. 
+
+> 💡 vanilla-extract 측에서 빌드 과정시 class 명을 중복없이 관리해주기 때문에 safe 한 class 관리가 자동으로 적용됩니다.
+
+```typescript
+console.log(button.classNames.base);
+// -> app_button__129pj250
+console.log(button.classNames.variants.color.black);
+// -> app_button_color_black__129pj251
+console.log(button.classNames.variants.size.small);
+// -> app_button_size_small__129pj254
+```
+
+사전에 모든 .css.ts 파일을 compile 과정에서 css 파일로 만들고 중복되지않는 class 를 만드는 것을 발견했습니다. 여기서부턴 제 추측이지만, component에선 해당 class 명 매칭 작업만 이루어지므로 완전한 zero-runtime 환경은 아니겠지만, 부분적인 zero-runtime 환경으로 제 코드가 구현되었다고 생각했습니다. (이부분에 대해 자세하 알고 계신분은 댓글 남겨주시면 감사하겠습니다. 레퍼런스를 아무리 찾아봐도 명확한 답변을 찾지 못했습니다.)
+
+추가적으로 만약 위 recipe 외의 부가적인 옵션이 필요할 경우 ex) marginTop : 10px 새로 recipe 에 계속해서 추가하는 것은 공동 작업시 공동의 파일을 건드리는 작업으로 지양됩니다. 이경우 앞서 말씀드린대로 assignInlineVars 혹은 styleMerge 를 이용하면 되는데 간단하게 assignInlineVars 를 사용하겠습니다. 
+
+> 💡 assignInlineVars 는 runtime 시 빌드됩니다. 하지만 라이브러리 자체가 매우 가벼워 가끔씩 사용한다면 성능에 큰 차이가 없습니다
+
+
+### 반응형 구현
+
+반응형을 효과적으로 구현하면서 atomic design pattern 을 따르는 방식은 없을까를 고민하던 중 recipe 와 sprinkles 를 결합 하는 방법을 생각했습니다. 그런데 아쉽게도 recipe 내에선 순수 style 옵션만 사용가능하며 sprinkles 를 지원하지 않았습니다.
+
+
+```typescript
+import { style } from '@vanilla-extract/css';
+import { recipe } from '@vanilla-extract/recipes';
+import { sprinkles } from '@/styles/sprinkles.css';
+
+// 박스는 div, section 형태의 기본적인 단위
+
+export const box = recipe({
+    base: {
+      width : '100%',
+      // 이 부분에서 에러 발생 - recipe 내부에 sprinkles 사용 불가
+      sprinkles({
+        display : { mobile: 'block', tablet : 'flex', desktop : 'flex' }
+      }),
+      
+
+    },
+  
+    variants: {
+
+    },
+  
+    defaultVariants: {
+
+    }
+  });
+```
+
+조금 번거롭긴 하지만 sprinkles 로 사전정의 된 방법을 사용하지 못한다면 직접 media query 를 이용하면 해결되는 문제입니다.
+
+```typescript
+import { style } from '@vanilla-extract/css';
+import { recipe } from '@vanilla-extract/recipes';
+
+// 박스는 div, section 형태의 기본적인 단위
+
+export const box = recipe({
+    base: {
+      width : '100%',
+      display : 'block',
+      // 수정한 부분
+      '@media' : {
+        'screen and (min-width: 768px)': {
+          display : 'flex'
+        },
+      }
+    },
+  
+    variants: {
+
+    },
+  
+    defaultVariants: {
+
+    }
+  });
+```
+
+'이렇게 되면 sprinkles 는 괜히 만든거 아닌가?' 라고 생각 할 수 있지만, '언제든지 내가 설정해둔 값을 편하게 가져와 쓸 수 있다' 라는 sprinkls 의 목적을 생각해보면, 추후 assignInlineVars 를 통해 값을 상황에 맞게 지정해줘야할 경우 sprinkles 는 생각보다 유용하게 사용할 수 있습니다.
+
+최종적으로 box Component 를 atomic 한 방식으로 제작한 코드입니다.
+
+```typescript
+// box.css.ts
+
+import { vars } from '@/styles/globalTheme.css';
+import { recipe } from '@vanilla-extract/recipes';
+
+// 박스는 div, section 형태의 기본적인 단위
+
+export const box = recipe({
+    base: {
+      width : '100%',
+      display : 'block',
+      '@media' : {
+        'screen and (min-width: 768px)': {
+          display : 'flex'
+        },
+      }
+    },
+  
+    variants: {
+      color: {
+        neutral: { backgroundColor: vars.themeColor.color.mainBackground },
+        primary: { backgroundColor: vars.themeColor.color.contentBackground },
+        secondary: { backgroundColor: vars.themeColor.color.btnColor }
+      },
+      padding: {
+        none: { padding: '0' },
+        small: { padding: vars.space.small },
+        medium: { padding: vars.space.medium },
+        large: { padding: vars.space.large }
+      },
+      margin: {
+        none: { margin: '0' },
+        small: { margin: vars.space.small  },
+        medium: { margin: vars.space.medium  },
+        large: { margin: vars.space.large  }
+      },
+      alignItems: {
+        start: { alignItems: 'flex-start' },
+        center: { alignItems: 'center' },
+        end: { alignItems: 'flex-end' }
+      },
+      justifyContent: {
+        start: { justifyContent: 'flex-start' },
+        center: { justifyContent: 'center' },
+        end: { justifyContent: 'flex-end' },
+        spaceBetween: { justifyContent: 'space-between' },
+        spaceAround: { justifyContent:'space-around' }
+      },
+      border: {
+        none: { border: 'none' },
+        thin: { border: '1px solid #ddd' },
+        thick: { border: '2px solid #333' }
+      }
+    },
+  
+    defaultVariants: {
+      padding: 'medium'
+    }
+  });
+
+```
+
+```typescript
+// box.tsx
+
+import React from 'react';
+import { box } from './box.css';
+
+interface BoxProps {
+    children: React.ReactNode;
+    color?: 'neutral' | 'primary' | 'secondary';
+    padding?: 'small' | 'medium' | 'large';
+    margin?: 'none' | 'small' | 'medium' | 'large';
+    border?: 'none' | 'thin' | 'thick';
+    alignItems?: 'start' | 'center' | 'end';
+    justifyContent?: 'start' | 'center' | 'end' | 'spaceBetween' | 'spaceAround';
+}
+
+const Box: React.FC<BoxProps> = ({  
+    color,
+    padding,
+    margin,
+    border,
+    alignItems,
+    justifyContent,
+    children
+}) => {
+    return (
+        <div className={box({color, padding, margin, border, alignItems, justifyContent})}>
+            {children}
+        </div>
+    );
+};
+
+export default Box;
+```
+
+```typescript
+// page.tsx
+
+import Box from "@/components/box/box";
+
+export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <Box justifyContent='spaceBetween'>
+        <div>
+          hello world
+          안녕하세요 폰트 확인용 글 작성 입니다.
+        </div>
+        <h1>폰트 확인</h1>
+        <a href="/about">About</a>
+      </Box>
+    </main>
+  );
+}
+
+```
+
+media query 역시 잘 적용되었고 에러가 없는 모습입니다.
+
+![](/images/image-2.gif)
+
+## Storybook
+
+### setting for Test
+
+
+![](/images/3c6f7d2f-3a40-489d-b302-cc0648309b27-image.png)
+
+
+- Storybook 최신버전으로 설치하니 위 같은 문제가 발생하였습니다.
+- Storybook8 버전에서 webpack5 와의 호환이 문제가 되는것 같습니다.
+- vite 로 bundler 변경시 문제는 해결되는 것 같지만, webpack 으로 처리하고 싶었습니다. (기억이 희미하지만 nextjs v12 이후 vite 를 권장하지 않는다는 글을 본거같습니다.. / 잘못된 정보일경우 댓글로 알려주시면 감사하겠습니다.)
+
+
+![](/images/dcf26740-7f72-4971-bb3e-922d9d3da9b1-image.png)
+
+
+
+- 이후 계속 에러에 대해 찾아봤지만, storybook8 에 대한 해결을 한 사람을 찾지못했습니다.
+- ```npx storybook automigrate``` 불안하지만 에러에서 알려준 오토 마이그레이션을 진행 해보았습니다.
+
+
+![](/images/51a7ab81-8ac8-4ae9-8b93-afdf74ec4fe7-image.png)
+
+
+
+![](/images/6b9b1a24-d64a-4b8e-9f20-684c7e6d9416-image.png)
+
+
+
+결과는 대성공, 괜히 걱정한 것 같습니다.
+
+위처럼 필요한 설정들을 물어보기도하니 불필요하다고 생각하는 부분은 제외하고 진행하셔도 될 것 같습니다. (저는 모두 Y 하였습니다.)
+
+아래는 최종적으로 변경된 storybook/main.ts 파일입니다.
+
+```typescript
+// .storybook/main.ts
+
+const { VanillaExtractPlugin } = require("@vanilla-extract/webpack-plugin");
+const { merge } = require("webpack-merge");
+
+module.exports = {
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+
+  addons: [
+    "@storybook/addon-links",
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+  ],
+
+  framework: {
+    name: "@storybook/nextjs",
+    options: {}
+  },
+
+  webpackFinal: async (config) =>
+    merge(config, {
+      plugins: [new VanillaExtractPlugin()],
+    }),
+
+  docs: {
+    autodocs: true
+  }
+};
+```
+
+### Test
+
+```typescript
+// @/src/stories/button.stories.tsx
+
+import React from 'react';
+import Button from '@/components/atom/button/button';
+
+export default {
+  title: 'components/Button',
+  component: Button
+};
+
+export const BaseButton = () => {
+  return <Button>BUTTON</Button>;
+};
+
+BaseButton.story = {
+  name: 'Default'
+};
+
+export const ColorPaletteButton = () => {
+  return (
+    <div>
+      <Button color='black'>color</Button>
+      <Button color='white'>color</Button>
+      <Button color='gray-100'>color</Button>
+      <Button color='gray-300'>color</Button>
+      <Button color='gray-500'>color</Button>
+      <Button color='gray-700'>color</Button>
+      <Button color='gray-800'>color</Button>
+      <Button color='gray-900'>color</Button>
+    </div>
+  );
+};
+
+export const SizePaletteButton = () => {
+  return (
+    <div>
+      <Button color='gray-700' size="small" margin='small'>size</Button>
+      <Button color='gray-700' size="medium" margin='small'>size</Button>
+      <Button color='gray-700' size="large" margin='small'>size</Button>
+      <Button color='gray-700' size="fit" margin='small'>size</Button>
+      <Button color='gray-700' size="circle" margin='small'>size</Button>
+    </div>
+  )
+};
+
+```
+
+- 색, 사이즈, margin 만으로 atomic button 을 간단히 제작해 테스트 하였습니다.
+
+
+![](/images/63d731cb-eff7-4c86-afb6-6bd963ae89c0-image.png)
+
+
+
+![](/images/d495e8d8-348d-4c5a-abb8-f6c409525daa-image.png)
+
+
+
+## 마무리
+
+### 어려웠던점.
+1. nextjs14 + storybook8 버전과 webpack 의 호환이 어려웠던 것 같습니다. 결국 automigrations 해주어 쉽게 해결할 순 있지만, 다른 references가 많이 없기 때문에 만약 설정이 완전히 꼬여 automigrations가 불가능한 경우 설정에서 어려움이 많을 것 같다고 생각했습니다.
+2. vanilla-extract 로 atomic design pattern 을 어떻게 적용해 볼 수 있을까? 라는 물음의 해답을 찾기위해 vanilla-extract 공식 문서를 3번 정도 정독한 것 같습니다. 제가 생각한 답은 recipe 와 sprinkles, styleMerge 정도 였지만, 더 좋은 아이디어가 있으신분은 댓글로 알려주시면 감사하겠습니다!
+3. 지금도 고민이지만 zero-runtime css(vanilla-extract) / client, server components 분리로 성능 최적화를하는 과정을 찾는 것은 프로젝트가 끝날 때까지 고민이 될 것 같습니다.
+
+그래도 새로운 기술을 배우는 것이 재미 있고 다음에도 새로운 기술, 버전이 나온다면 도전할 것 같습니다.
+
+### 오늘 한일 / 내일 할일
+atomic design pattern 을 vanilla-extract 의 recipe 로 구성하고 적용하며 storybook으로 test 진행했습니다.
+
+다음에는 본격적으로 제게 필요한 atoms 와 navbar, footer 등 moleculars 제작도 하며 개발의 속도를 올려보겠습니다.
+
+
+감사합니다.
+
+---
+### 참고자료
+
+- 출처 : https://medium.com/catchtable/how-to-use-vanilla-extract-in-catchtable-b2c-6c4e712c471f
+- 출처 : https://vanilla-extract.style/documentation/packages/recipes/
+- 출처 : https://yong-nyong.tistory.com/92
+- 출처 : https://velog.io/@velopert/create-your-own-design-system-with-storybook
+- 출처 : https://github.com/vanilla-extract-css/vanilla-extract/discussions/371

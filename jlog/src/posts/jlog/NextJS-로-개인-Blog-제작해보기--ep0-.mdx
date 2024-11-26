@@ -1,0 +1,52 @@
+---
+title: "NextJS 로 개인 Blog 제작해보기 - ep.0 "
+description: "💡 NextJS 알아보기  SSR 이 대세인 지금 제가 계속해서 만들고 싶었던 간단한 개인 블로그 만들기(+확장성 고려한 개발 추후 다른 기능 추가)에 도전하기 적기이지 않나 싶어 벨로그를 작성하게 되었습니다. 기록하지 않으면 제 나쁜 머리는 기억을 못하기에 0주차("
+date: 2024-03-12T06:15:44.809Z
+tags: ["blog","nextjs"]
+category : "Python"
+---
+## 💡 NextJS 알아보기 
+
+SSR 이 대세인 지금 제가 계속해서 만들고 싶었던 간단한 개인 블로그 만들기(+확장성 고려한 개발 추후 다른 기능 추가)에 도전하기 적기이지 않나 싶어 벨로그를 작성하게 되었습니다. 기록하지 않으면 제 나쁜 머리는 기억을 못하기에 0주차(ep0)부터 작성해보도록 하겠습니다.
+
+오늘은 프로젝트 만들기에 앞서 기존에 CSR로 진행한 웹 프로젝트들(CRA, Vite-React, Vue)을 뒤로하고 SSR 로 프로젝트를 제대로 시작하기 위해 NextJS 공식 문서를 살펴보겠습니다.
+
+![](/images/image-7.jpg)
+
+- NextJS 는 풀스택 웹 어플리케이션 개발을 위한 React 프레임워크.
+- NextJS 는 사용자가 웹 프로젝트에 집중할 수 있도록 추가적인 여러 특징과 최적화를 제공한다. (Bundling, Compiling 등)
+- NextJS 는 사용자가 상호작용적이며 역동적이고 빠른 React 어플리케이션을 만들 수 있도록 돕는다
+
+라고 NextJS 공식문서 상 NextJS 를 소개하고 있습니다. 추가적으로 위에서 언급되어 있지 않지만 NextJS 를 사용한다고 해서 무조건 SSR 이고 CSR 으로 프로젝트를 만들 수 없는 것은 아닙니다.
+
+SSR 웹 프로젝트를 위해 복잡하고 성능 최적화가 필요한 과정들인 Compiling, Bundling 등을 NextJS 가 도맡아 처리해주는 역할 정도로 이해하고 넘어가겠습니다 :)
+
+---
+
+## 🆚 React 와 NextJS 차이점은 ?
+
+
+![](/images/9cfd5638-7c4f-468a-8304-302efd9514c3-image.png)
+
+
+
+- NextJS 는 프레임워크 특성상 많은 편의 기능을 제공해주고 있지만, 그만큼 프레임워크의 규칙을 따라야한다는 제약사항이 있습니다.
+- JavaScript & TypeScript 언어에 기반한 React 프레임워크이다 보니 기존 JS, TS React 문법과 크게 차이나는 부분은 없지만, 공식문서를 읽으며 가장 크게 차이를 느낀 부분은 Page Route 부분입니다.(NextJS 13.4 버전 이후에는 App Routing 으로 변경됨)
+- 이젠 다들 아시다시피 NextJS 는 SSR(Server Side Rendering), SSG(Static Site Generator) 를 지원하는 프레임워크라는 것이 가장 큰 차이점이고 잘 알고 있어야 잘 다룰 수 있지만 모르더라도 웹 페이지를 제작하는데 큰 문제는 없습니다. (알고 사용할 때 성능과 최적화 등을 잘 관리할 순 있겠지만 제가 그 정도의 퍼포먼스가 필요한 웹 페이지를 제작하려고 하는 것은 아니기에, 우선 넘어가고 추후에 공부하겠습니다..)
+- 이외에도 Nested Layout, Data Fetching 등 레이아웃 중첩 기능과 컴포넌트 레벨에서 SSR, SSG 적용하는 기능은 유용하고 새로운 것 같지만 글이 너무 길어질 것 같아 추후에 자세히 이야기하겠습니다.
+
+---
+
+## 🎯 마치며
+![](/images/image-6.jpg)
+
+#### NextJS 14 의 등장
+
+사실 정확히 말하면 v13.4 부터 NextJS 는 대격변을 거쳤는데요, 그래서 현재 블로그 글들은 13.4 버전 이전에 작성된 버전의 내용인지 아닌지 확인부터 해야할 정도로 많은 점들이 변했습니다. 가장 큰 변화는 Page Route 에서 App Route 로 변경된 내용인데, 다음 글부터 NextJS 프로젝트를 시작하며 정리해보도록 하겠습니다.
+
+---
+출처 : https://nextjs.org/
+출처 : https://velog.io/@bbaa3218/Next-js-Route-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0
+출처 : https://brunch.co.kr/@jennyjang93/32
+출처 : https://velog.io/@khy226/Next.js-13-%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8-%EB%90%9C-%EB%82%B4%EC%9A%A9-%EC%A0%95%EB%A6%AC-App-%EB%9D%BC%EC%9A%B0%ED%84%B0-%EC%9E%90%EC%84%B8%ED%9E%88-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0
+출처 : https://yozm.wishket.com/magazine/detail/2324/

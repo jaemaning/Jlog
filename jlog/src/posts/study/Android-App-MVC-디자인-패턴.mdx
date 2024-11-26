@@ -1,0 +1,208 @@
+---
+title: "[Android App] MVC 디자인 패턴"
+description: "이 글은 MVC, MVP, MVVM 디자인 패턴을 공부하고 기록하는 첫 번째 블로그 글입니다. "
+date: 2024-09-13T07:48:04.524Z
+tags: ["MVC","MVC패턴","android"]
+category : "Python"
+---
+이 글은 MVC, MVP, MVVM 디자인 패턴을 공부하고 기록하는 첫 번째 블로그 글입니다.
+
+MVC 디자인 패턴에 대해서 Android Native App 개발자의 시점에서 알아보도록 하겠습니다.
+
+디자인 패턴 자체도 알아보지만 조금 더 디테일하기 안드로이드 앱 개발에서 해당 디자인 패턴을 어떻게 사용하는지도 함께 알아보겠습니다.
+
+## MVC 패턴
+
+### 특징
+- Model, View, Controller 로 구성되어 View 와 Model을 Controller가 통제함
+- Model과 View 의 분리를 위해 개발된 디자인패턴이지만 간접적으로 연결되어있습니다.
+- Controller(안드로이드에서는 Activity나 Fragment가 해당)에서 사용자의 입력을 직접 처리합니다.
+- 컨트롤러는 여러 뷰와 1대다로 매칭될 수 있습니다.
+
+### 장점
+- 사실상 구현이 단순하며 쉽습니다.
+- 쉽고 단순하기 때문에 간단한 프로젝트를 구현할 때 빠르게 구현이 가능합니다.
+- view- model간의 간접적이지만 분리가 가능하여 결합도를 낮출 수 있습니다.
+
+### 단점
+- controller가 담당해야하는 기능이 너무 많아 프로젝트가 커질 경우 controller 코드가 거대해질 수 있습니다.
+- controller와 view가 서로 너무 의존적이 되어 코드 리팩토링, 재사용, 유닛테스트가 힘듭니다.
+
+### 코드
+
+![](/images/f02d8905-b8f8-44f5-bcb2-022001c86922-image.png)
+
+
+직관적인 구현 방식은 위 그림처럼 멀티모듈(app[View], model, controller)로 분리해서 각 코드를 구현하여야하고, MVC 패턴에 맞는 의존성 방향인 app(view)와 model은 controller 의 존재를 모르는 상태로 진행이 되어야합니다.(그렇기 때문에 controller 모듈에서만 app, model 모듈의 의존성을 가집니다.)
+
+```kotlin
+// Model
+data class User(var name: String)
+
+class UserRepository {
+	// 데이터를 주고 받는 레포지토리
+    // interface 를 따로 만들어 깔끔하게 관리할 수도 있습니다.
+    private var user = User("Default Name")
+    
+    // Coroutine 같은 비동기처리 라이브러리를 이용해 API 통신을 구현하는게 일반적입니다.
+    // 이곳에선 생략하겠습니다. 
+    fun getUser(): User {
+        return user
+    }
+	
+    // model 은 controller 의 존재를 몰라야하므로 업데이트, 삭제 등의 추가적인 데이터 처리
+    // 작업이 필요하다면 모두 함수로 기능을 구현해주어야합니다.
+    fun updateUserName(newName: String) {
+        user.name = newName
+    }
+}
+
+// Controller
+class UserController(private val userRepository: UserRepository) {
+
+    // controller 는 중개역할만 담당하므로 UserRepository 기능을 가져와서 중개해줍니다.
+    fun getUserName(): String {
+        return userRepository.getUser().name
+    }
+
+    fun updateUserName(newName: String) {
+        userRepository.updateUserName(newName)
+    }
+}
+
+// View (Jetpack Compose)
+@Composable
+fun UserScreen(userController: UserController) {
+    // 여기서 문제가 발생. View 는 controller 를 몰라야하지만 데이터를 가져오려면 import 시킬 수밖에없고
+    // import 하여 쓰는순간 순환 참조 에러 발생 이를 해결하기위해 controller에서 app(view) 와의 연결을
+    // 해제하면 의존성이 반대로 적용되고 MVC 패턴이라고 볼 수 없게 된다.
+
+    var userName by remember { mutableStateOf(userController.getUserName()) }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(text = userName, fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            userController.updateUserName("New Name")
+            userName = userController.getUserName()
+        }) {
+            Text(text = "Change Name")
+        }
+    }
+}
+```
+
+하지만 이 경우 controller와 app(view)의 의존성 관계가 이상해진다. app은 controller 로부터 데이터를 전달 받아야하지만 app은 controller의 존재를 모른다. 물론 Room이나 EventBus를 사용한다면 데이터 전달 자체는 가능하지만 굉장히 복잡해진다.
+
+그렇게 많은 사람들이 Activity, Fragment를 controller로 보고 compose, xml을 view 로 생각하며 MVC 패턴을 구현한다. 이 경우엔 아래처럼 심플하게 구현이 가능해진다.
+
+```kotlin
+// model
+data class User(var name: String)
+
+class UserRepository {
+    private var user = User("Default Name")
+    
+    // 데이터를 가져오는 함수
+    fun getUser(): User {
+        return user
+    }
+
+    // 데이터를 업데이트하는 함수
+    fun updateUserName(newName: String) {
+        user.name = newName
+    }
+}
+
+// controller
+class MainActivity : ComponentActivity() {
+
+    private val userRepository = UserRepository()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MVCpatternAppTheme {
+                setContent {
+                    // View에 데이터와 이벤트 처리 함수를 전달
+                    UserScreen(
+                        userName = userRepository.getUser().name,
+                        onNameChange = { newName -> updateUserName(newName) }
+                    )
+                }
+            }
+        }
+    }
+
+    // 이름을 변경하는 함수 (Controller가 관리)
+    private fun updateUserName(newName: String) {
+        userRepository.updateUserName(newName)
+    }
+
+}
+
+// View (Jetpack Compose)
+@Composable
+fun UserScreen(userName: String, onNameChange: (String) -> Unit) {
+    // 초기 값으로 받은 userName을 로컬 상태로 관리
+    var name by remember { mutableStateOf(userName) }
+    var inputName by remember { mutableStateOf("") }  // 입력 필드의 값을 관리
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 현재 이름 표시
+        Text(text = "Current Name: $name", fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 사용자가 이름을 입력할 수 있는 TextField
+        TextField(
+            value = inputName,
+            onValueChange = { inputName = it }, // 사용자가 입력할 때마다 값 업데이트
+            label = { Text(text = "Enter new name") },
+            modifier = Modifier.padding(16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 버튼 클릭 시, 입력된 이름으로 변경
+        Button(onClick = {
+            if (inputName.isNotEmpty()) {
+                onNameChange(inputName)  // Controller로 입력된 이름 전달
+                name = inputName  // 로컬 상태도 업데이트
+                inputName = ""  // 입력 필드 초기화
+            }
+        }) {
+            Text(text = "Change Name")
+        }
+    }
+}
+```
+
+## 느낀점
+항상 MVVM 디자인패턴만을 적용해서 다른 디자인패턴을 공부해보고 싶었습니다.
+
+이번 기회에 MVC 디자인패턴을 공부해 보니 새로움도 있었지만, 왜 MVVM 이 FE 디자인 패턴에 가장 많이 나오는지 알 것 같습니다.
+
+그래도 초기 세팅이 거의 필요없다는 장점이 있지만 당장 한 예시 화면을 만드는 것인데도 앞으로가 굉장히 걱정되었습니다. 적어도 앞으로 추가로 공부하고 블로그 포스팅을 진행할 MVP, MVVM 정도는 되어야 할 것 같다는 생각이 들었습니다.
+
+그럼 계속해서 MVP, MVVM 디자인 패턴도 포스팅하도록 하겠습니다.
+
+
+---
+### 참고자료
+
+- 출처 : https://velog.io/@eunhye_k/MVC-패턴의-이해
+- 출처 : https://velog.io/@shin75492/kotlinMVC-kotlin에서-MVC를-적용
+- 출처 : https://velog.io/@ows3090/Android-MVC-MVP-MVVM-장단점을-알고-쓰자
+

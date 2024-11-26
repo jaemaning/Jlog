@@ -1,0 +1,605 @@
+---
+title: "[GPT API] 합격자소서 기반의 파인 튜닝 모델에 프롬프팅 해보기"
+description: "이전 글([GPT API] 합격자소서를 데이터셋으로 구축한 GPT4o-mini Fine-tuning Model 테스트 결과) 2탄 prompt engineering 관련 글입니다."
+date: 2024-09-10T12:37:55.760Z
+tags: []
+category : "Python"
+---
+[이전 글([GPT API] 합격자소서를 데이터셋으로 구축한 GPT4o-mini Fine-tuning Model 테스트 결과)](https://velog.io/@jaemaning/GPT-API-합격자소서를-데이터셋으로-구축한-GPT4o-mini-Fine-tuning-Model-테스트-결과)을 통하여 GPT API와 실제 합격 자소서 데이터셋을 구축하고 이를 이용하여 GPT-4o-mini 의 합격자소서 기반 Fine-tuning 모델을 얻었습니다.
+
+이를 보다 잘 활용하고 일부는 자동화하여 쉽게 잘 사용해 볼 수 있도록 프롬프트 엔지니어링을 진행해보았습니다.
+
+## 프롬프트 엔지니어링이란?
+
+프롬프트 엔지니어링이란, 생성형 AI나 대규모 언어 모델과 상호작용할 때 적절한 입력(프롬프트)을 설계하고 최적화하여 원하는 결과를 얻는 기술을 의미합니다. AI 모델은 사용자가 제공하는 프롬프트(질문, 요청 등)를 기반으로 답변이나 출력을 생성하기 때문에, 프롬프트의 설계가 매우 중요합니다.
+
+프롬프트 엔지니어링의 핵심 요소
+
+1.	**명확성:** AI에게 무엇을 요청하는지 명확하게 전달해야 합니다. 모호하거나 불분명한 프롬프트는 AI가 의도를 잘못 해석하게 만들 수 있습니다.
+2.	**구체성:** 프롬프트에서 원하는 세부 사항이나 목표를 명시적으로 설명해야 합니다. 프롬프트가 구체적일수록 AI는 더 정확한 결과를 생성할 수 있습니다.
+3.	**맥락 제공:** AI가 이해할 수 있도록 충분한 정보와 맥락을 제공하는 것이 중요합니다. 필요한 경우 예시를 포함시켜 AI가 올바르게 응답할 수 있도록 합니다.
+4.	**지시 제공:** AI가 출력할 내용이나 형식을 구체적으로 지시하는 것이 중요합니다. 예를 들어, 답변을 리스트 형식으로 요청하거나, 짧게 요약하라는 등의 형식적 요구사항을 포함할 수 있습니다.
+
+
+간단한 예시를 들어보면,
+
+**“기후 변화에 대해 설명해줘.”**
+이 프롬프트는 매우 광범위하며, AI가 어떻게 답해야 할지 정확히 알 수 없습니다.
+
+**“기후 변화의 주요 원인 3가지를 간단히 설명해줘.”**
+이 프롬프트는 AI에게 구체적인 요청을 하고 있으며, 답변이 간결하게 나올 가능성이 높습니다.
+
+
+프롬프트 엔지니어링은 AI의 성능과 활용도를 극대화하는 데 중요한 역할을 합니다. 이는 단순히 AI에 질문을 던지는 것이 아니라, AI가 의도를 이해하고 적절한 답변을 생성할 수 있도록 구체적이고 명확한 지시를 제공하는 기술입니다. 효과적인 프롬프트는 적은 노력으로 더 좋은 결과를 가져올 수 있는 중요한 도구입니다.
+
+
+
+![](/images/571e7fb3-18ad-4ceb-834d-ec29416b0774-image.png)
+
+
+위 [openAI](https://platform.openai.com/docs/guides/fine-tuning/when-to-use-fine-tuning)에서도 모델의 Fine-tuning 작업은 데이터셋을 구하고 데이터를 가공하고 Fine-tuning을 진행하는 등 주의깊은 시간과 노력의 투자가 필요하다고 말합니다. 
+
+그에 비해 prompt engineering, prompt chaining(체인처럼 여러번의 질문을 통해 결과를 도출하는 방법)은 적은 시간과 노력 대비 훌륭한 결과를 얻을 수 있다고 말하고 있습니다.
+
+그러면 바로 자소서 작성에 적합한 프롬프트 엔지니어링을 알아보겠습니다.
+
+## 자소서 프롬프트 엔지니어링 전략
+
+프롬프트 엔지니어링 전략은 하나하나 소개해드리기 어려울만큼 매우 다양한 전략들이 있습니다. 다양한 전략으로 자신의 프롬프트 엔지니어링을 만들어 사용하고 싶으신 분은 [OpenAI Prompt Engineering](https://platform.openai.com/docs/guides/prompt-engineering)를 참고 하시면 좋을 것 같습니다. 저는 이 다양한 전략중에서 [Strategy: Provide reference text](https://platform.openai.com/docs/guides/prompt-engineering/strategy-provide-reference-text)라는 전략을 사용해 자소서 프롬프트 엔지니어링을 진행하였습니다.
+
+### Strategy: Provide reference text : 참조 텍스트 제공 전략
+이 전략은 제목에서도 알 수 있듯이, 참조 텍스트(자료)를 활용하여 생성형AI(여기서는 chatGPT-4o-mini)에 해당 참조 텍스트(자료)를 제공하고 그 정보를 활용해 생성형AI가 답변 제공에 활용하는 방법입니다. 이를 통해 모델이 정확한 정보를 기반으로 응답을 생성하고, 오답 가능성을 줄일 수 있습니다.
+
+이를 이용해 자소서를 작성하는 프롬프트 엔지니어링 구현 방법은 아래에서 소개하도록 하겠습니다.
+
+### Strategy: Use external tools : 외부 도구 사용 전략
+위 Strategy: Provide reference text 전략의 상위 전략인 Strategy: Use external tools 전략도 있습니다. 이 전략의 경우 RAG(Retrieval-Augmented Generation)를 이용한 Chatbot을 구현할 때 주로 사용되는 전략으로 db를 구성하고 db에서 질문과 관련된 정보를 찾고 제공해주는 전략입니다. 이는 보다 많은 사람들을 타겟으로 하여 서비스를 제공할 때 효과적으로 만약 자소서 작성 서비스를 기획한다면, 이러한 방식으로 최신 뉴스 기사를 크롤링하여 db를 구축하고 해당 db에서 자소서를 작성할 때 타겟 기업의 업무와 관련된 뉴스 기사를 db에서 검색해 해당 뉴스기사를 자소서 참조 텍스트로 제공하는 방식을 사용할 수 있을 것입니다.
+
+물론 개인에 타겟팅하여 나의 경력, 프로젝트 정보등을 색인자료로 제공해 이를 자소서 항목에 알맞은 정보를 찾아 사용한다면 좋겠지만, 아주 많은 프로젝트(20개이상)를 진행한 사람이 아니라면 굳이 해당 전략을 사용할 필요는 없을 것 같습니다.
+
+따라서 이 전략처럼 맞춤화되고 자동화되어있는 분류 프로세싱을 구현하면 좋겠지만, 시간과 노력 대비 효율이 미비할 것으로 생각되어 사람이 직접 맞춤화하고 분류하는 수동적인 방식의 Strategy: Provide reference text : 참조 텍스트 제공 전략을 사용하였습니다.
+
+추후 시간이 남는다면 해당 전략을 통해 자동화된 분류 프로세싱을 구현해보도록 하겠습니다.
+
+
+## 나의 자소서 작성 프롬프트 엔지니어링 소개
+
+### 나의 경험
+```json
+{
+    "my_project": [
+      "1. Booking - 오프라인 독서모임 매칭 및 관리 안드로이드 앱 프로젝트 (안드로이드 앱 개발)\n- SSAFY (Samsung Software Academy) 에서의 팀프로젝트 활동으로 진행하였습니다.\n- Python Web Full stack 과정을 수료하였지만 App으로 개발하는 것이 더 나을것으로 판단되어 안드로이드 네이티브 앱으로 개발된 프로젝트입니다.\n\n다음은 제가 구현한 내용입니다.\n\n위치 권한 허용을 통한 위치 기반 회원 가입 & 로그인 페이지\n\nGoogle Social Login 구현\n- Google Firebase OAuth 2.0 SDK 인증 방식을 통하여 구현.\n- Firebase SDK 연결로 Firebase 실시간 데이터베이스를 사용할 수 있어 사용자 관리가 용이함.\n회원가입 페이지 구현\n- com.google.android.gms.location 라이브러리를 이용한 위치 권한 허용을 묻고 회원 정보에 위치 정보 전달.\n\n도서 검색 기능 및 관련 페이지\n- onValueChange 를 이용해 검색어 타이핑에 따른 실시간 책 검색 기능 제공\n- When 문을 통하여 BookSearchState.Loading, Error, Success 등 state에 따른 페이지 처리로 사용성 증대\n\n마이페이지\n- 회원 정보 수정, 팔로우-팔로워, 내 서재 등의 내 정보 관련 기능 구현\n- Naver Cloud API 에 프로필 Image 를 저장하고 프로필 이미지가 변경되었을 때 덮어 씌우며 수정\n\n프로젝트에서 사용한 기술 스택\n- Dagger - Hilt, Retrofit2, okHttp, Jetpack Compose\n- Coroutine 을 이용한 비동기 처리\n- Naver Cloud API 를 이용한 Image 처리\n- MVVM 디자인패턴 중 가장 기본이 되는 View / View Model 의 철저한 구분을 목표로 하여 적용해보았습니다.\n- Multi Module 기반(ui, domain, data) 의 기초적인 클린아키텍처 적용을 최대한 시도해보려 노력하였습니다.",
+      "2. Samsung ONE CAPI Pybinding For python runtime (Samsung Research & SSAFY) (open source 컴트리뷰터 활동)\n- SSAFY (Samsung Software Academy) 에서의 팀프로젝트일환으로 Samsung Research 연구원분들과 협업을 통해 비대면으로 진행되었습니다.\n- 기존에 CAPI 로 개발된 삼성 온디바이스 Runtime 엔진을 AI 개발자들이 선호하는 언어인 Python 으로 Pybinding 하는 프로젝트를 기획하였고 다양한 물리적환경(arm32, aarch64 등 디바이스)에서 많은 사용자들이 쉽게 온디바이스 runtime 환경 구동이 가능하도록 환경별 세팅을 한뒤 pypi에 배포하였습니다.\n\n다음은 제가 구현한 내용입니다.\n\nPython Binding\n- Pybind11 라이브러리를 사용하여 기존의 C++ 코드를 함수별로 1:1 매칭하였습니다.\n- 이 과정에서 C++의 포인터와 더블 포인터에 직관적으로 매칭되는 Python 개념이 없어, Python의 Class와 `__init__` 초기화 함수 및 `super().__init__`을 사용하여 문제를 해결하였습니다.\n- Cross Compile 지원을 통해 platform 라이브러리를 활용하여 아키텍처를 자동으로 인식하도록 로직을 구현하여 사용성을 향상시켰습니다.",
+      "3. GeoSR 해양예보부 인턴업무를 진행하며 수행한 프로젝트입니다.\n2021.12.01 ⏤ 2022.04.01\n\n국립해양 조사원의 시스템 엔지니어로 파견업무를 담당했습니다.\n1. System Engineer 로서 국립해양 조사원의 Linux(CentOS 7) 서버를 관리/운영하며 데이터 백업, 서버 이전, 충돌 해결 업무를 수행했습니다.\n2. 서버 별 Process & Threads 성능을 통한 (수치, AI) 모델의 수행 시간 예측을 계산하고 서버 이전을 진행하여 5%+ 서버 성능을 개선하였습니다."
+    ],
+    "my_achivement": "2023 SSAFY 최우수 교육생 (1위) 2023.06\nSSAFY 9기 광주 지역 교육생 150 명 중 1학기 성적 우수 시상\n그 중 상위 6명의 최우수 교육생을 선발함.\n- Python Web Full Stack 과정 수료 중 알고리즘, CS, Web Project 등의 다양한 평가에서 광주 지역 상위 6인에 선정\n\n2023 SDC Korea 2023 Project (2위) 2023.10\nSSAFY 9기 전체 교육생 1150명 중 상위 36인을 선정\n6인팀으로 된 교육생이 SDC Korea 2023 발표를 두고 프로젝트 경쟁하는 대회\n- Samsung Research 현업 개발자들과 ONE 오픈 소스에 참여하여 프로젝트를 진행\n- 위 프로젝트로 2위에 입상하여 SDC Korea 2023 에 참여함.\n\n2024 K-Water 대국민 물 빅데이터 공모전(우수상) 2024.08\n한국수자원공사에서 주최한 공공데이터를 활용한 물 관련 빅데이터 공모전에 참여\n2인팀으로 구성된 팀중 팀장을 맡아 지하수 수위 예보 안드로이드 앱을 제작, 배포함\n- 한국수자원공사 사내 개발 2인팀으로 구성하여 공모전에 참여\n- 위 프로젝트에서 팀장 및 개발 / 발표를 담당하며 우수상 수상"
+  }
+```
+
+### 최종 코드
+
+1. 저는 JSS, Exp, Company 3가지 클래스 구현을 통하여 객체를 분리하여 관리하도록 구현하였으며, 이를 통해 보다 여러개의 자소서를 효과적으로 관리하고 동작 시킬 수 있을 것으로 생각합니다.
+2. 이 중 Exp 클래스(나의 경험 관리하는 항목의 클래스) 는 JSS를 부모클래스로 가지며 자신은 Singleton Pattern으로 구현되어 처음 나의 경험을 정의하면 변경되기 전까지 다른 JSS 인스턴스를 만들어도 나의 경험은 초기화되지 않고 기존의 정의된 경험을 저장된 채 인스턴스가 생성됩니다.
+3. 모든 자식 클래스는 부모클래스인 JSS 클래스에서 함수 호출을 통해 자료를 불러오고(Get) 자료를 변경하는(Set, Init, Pop, Add 등) 동작을 수행할 수 있도록 구현하여 복잡한 호출과정을 통해 데이터 삽입이 필요 없습니다 -> ex) jss.job.company_name("삼성") - X / jss.set_company_name("삼성") - O
+
+
+
+
+- 자소서 생성 코드
+
+```python
+
+import subprocess
+import sys
+import os
+import json
+
+
+def install(package : str) -> None:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    
+def save_to_json(data, file_name):
+    with open(file_name, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+    
+
+# 직무 관련 정리 클래스
+class Job:
+    company_name : str = None
+    job_name : str = None
+    job_desc : str = None
+    news : list = []
+    
+    def get_all(self):
+        return f"""
+            지원 회사명 : {self.company_name}
+            지원 직무명 : {self.job_name}
+            ----------------------------------
+            지원 직무기술서 : 
+            {self.job_desc}
+            
+            ----------------------------------
+            지원 회사 & 직무 관련 뉴스 기사 :
+            {",\n\n".join(news for news in self.news)}
+            """
+    
+    def set_company_name(self, val):
+        self.company_name = val
+        return self.get_all()
+    
+    def set_job_name(self, val):
+        self.job_name = val
+        return self.get_all()
+    
+    def set_job_desc(self, val):
+        self.job_desc = val
+        return self.get_all()
+    
+    def add_news(self, val):
+        self.news.append(val)
+        return self.get_all()
+    
+    def pop_news(self, idx):
+        if len(self.news) <= idx:
+            raise IndexError(f"현재 저장된 뉴스 기사는 {len(self.news)}개 입니다. 삭제할 데이터의 번호를 {len(self.news)-1} 이하로 설정하세요.")
+        self.news.pop(idx)
+        return self.get_all()
+    
+    def init_all(self):
+        self.company_name = None
+        self.job_name = None
+        self.job_desc = None
+        self.news = []
+        return self.get_all()
+
+# 나의 경험 정리용 클래스 : Singleton
+class Exp:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Exp, cls).__new__(cls)
+            cls._instance.my_exp = []
+            cls._instance.my_achivement = ""
+        return cls._instance
+    
+    def get_exp(self):
+        return self.my_exp
+    
+    def add_exp(self, content : str):
+        self.my_exp.append(content)
+        return self.my_exp
+        
+    def update_exp(self, target_index : int, content: str):
+        if target_index >= len(self.my_exp):
+            if len(self.my_exp) != 0:
+                raise IndexError(f"너의 경험은 총 {len(self.my_exp)}개 입니다. 수정할 데이터의 번호를 {len(self.my_exp)-1} 이하로 설정하세요.")
+            else:
+                raise ValueError("현재 경험이 없습니다. 경험을 추가 후에 수정하세요.")
+        else:
+            self.my_exp[target_index] = content
+            return self.my_exp
+    
+    def remove_exp(self, target_index :int):
+        if target_index >= len(self.my_exp):
+            if len(self.my_exp) != 0:
+                raise IndexError(f"너의 경험은 총 {len(self.my_exp)}개 입니다. 삭제할 데이터의 번호를 {len(self.my_exp)-1} 이하로 설정하세요.")
+            else:
+                raise ValueError("현재 경험이 없습니다. 삭제가 불가능합니다.")
+        else:
+            del self.my_exp[target_index]
+            return self.my_exp
+        
+    def get_achivement(self):
+        return self.my_achivement
+        
+    def set_achivement(self, val):
+        self.my_achivement = val
+        return self.my_achivement
+        
+
+# 자소서 생성 객체 구현
+class JSS:
+    '''
+    #####
+    변수설명
+    
+    api_key : api 키 직접입력 or .env 파일 정의된 apikey 변수명
+    useEnv : True(.env 사용 안함) / False(.env 사용)
+    
+    #####
+    '''
+    gptAPIKey : str  # GPT API 키 저장 
+    client : object  # openAI 연결 인스턴스
+    response = []  # 최종 응답 답변을 저장
+    job : Job  # 직무 관련 정보 인스턴스
+    exp : Exp  # 내 경험 작성 인스턴스
+    questions = []  # 자소서 질문 -> [ 질문, max_len, t값(true or false), 프로젝트인덱스 ]
+    model = "gpt-4o-mini-2024-07-18"  # 기본 사용 모델 변경가능
+    
+    def __init__(self, api_key: str, useEnv=False, modelName=None):
+        if useEnv:
+            try:
+                from dotenv import load_dotenv, find_dotenv
+            except:
+                install('python-dotenv')
+                from dotenv import load_dotenv, find_dotenv
+
+            load_dotenv(find_dotenv())
+            self.gptAPIKey = os.getenv(api_key)
+        else:
+            self.gptAPIKey = api_key
+        
+        # openai Import
+        try:
+            import openai
+        except:
+            install('openai')
+            import openai
+        
+        if not self.gptAPIKey:
+            raise ValueError("GPT API Key를 찾을 수 없습니다.")
+        
+        if modelName:
+            self.model = os.getenv(modelName)
+        
+        self.client = openai.OpenAI(api_key=self.gptAPIKey)
+        self.exp = Exp()
+        self.job = Job()
+
+    # 경험관리 부분
+    def get_my_exp(self) -> list:
+        return self.exp.get_exp()
+    
+    def set_my_exp(self, content: str, *idx: int):
+        if idx:
+            return self.exp.update_exp(target_index=idx[0],content=content)
+        else:
+            return self.exp.add_exp(content=content)
+    
+    def remove_my_exp(self, idx: int):
+        return self.exp.remove_exp(target_index=idx)
+    
+    def set_achivement(self, val: str) -> str:
+        self.exp.set_achivement(val)
+        return self.exp.get_achivement()
+    
+    # 직무관리 부분
+    def get_job_all(self):
+        return self.job.get_all()
+    
+    def set_company_name(self, val : str):
+        return self.job.set_company_name(val)
+        
+    def set_job_name(self, val : str):
+        return self.job.set_job_name(val)
+        
+    def set_job_desc(self, val: str):
+        return self.job.set_job_desc(val)
+    
+    def add_news(self, val: str):
+        return self.job.add_news(val)
+    
+    def pop_new(self, idx: int):
+        return self.job.pop_news(idx)
+    
+    def init_job(self):
+        return self.job.init_all()
+    
+    '''
+    
+    기업 맞춤 자소서 생성 함수 - 예시 자소서 질문
+    
+    ex) OO기업 모바일앱/웹 서비스를 사용해 본 경험과 BigTech 기업의 플랫폼과 비교하여 강점 및 개선점에 대해 서술해 주세요.
+    ex) OO기업 OO 사업부의 OO 직무에 지원한 동기를 작성해 주세요.
+    
+    '''
+    def jss_for_company(self, question, max_length):
+        prompt = f"""
+        제공된 회사명과 직무 이름, 직무 설명, 회사 최근 뉴스 정보를 바탕으로 다음 자기소개서 질문의 답변을 작성하세요.
+        
+        **자기소개서 질문:**
+        {question}
+        
+        **회사명:**
+        {self.job.company_name}
+
+        **직무 이름:**
+        {self.job.job_name}
+
+        **직무 설명:**
+        {self.job.job_desc}
+        
+        **회사 최근 뉴스 정보:**
+        {self.job.news}
+
+        회사의 최근 뉴스와 직무 설명을 기반으로 자기소개서 질문에 맞게 작성하세요.:
+        - 자기소개서 질문에 대한 답변임을 항상 생각하고 연관성을 고려하여 작성해야합니다.
+        - 회사명과 직무 이름을 기입할 경우 제공된 회사명, 직무 이름으로 작성하세요.
+        - 되도록 간결하게 작성하며, 기회에 대해 전문적이고 열정적인 어조를 유지하세요.
+        """
+        
+        res = jss.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": f"너는 {self.job.company_name}라는 회사 {self.job.job_name} 직무에 지원한 입사지원자라고 생각하고 회사에서 제시한 자기소개서 질문인 {question} 에 대한 답변을 성실히 수행합니다. 글자수는 {max_length}자를 넘지 않도록 유의하여 작성합니다."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            top_p=0.1
+        )
+        
+        answer = res.choices[0].message.content
+        
+        return answer
+        
+        
+    '''
+    
+    나의 경험 맞춤 자소서 생성 함수 - 예시 자소서 질문
+    
+    ex) OO기업 모바일앱/웹 프론트엔드 개발팀에 기여할 수 있는 자신의 기술을 서술하세요.
+    ex) OO기업 OO직무와 관련된 경험을 토대로 본인이 적합한 사유를 서술하세요.
+    
+    '''
+    def jss_for_experience(self, question, max_length, *val):
+        if not val:
+            val = range(1, len(self.exp.get_exp()) + 1)  # 만약 val 값이 없으면 모든 경험을 선택
+            
+        prompt = f"""
+        제공된 회사명과 직무 이름, 나의 경험, 나의 프로젝트, 나의 성과를 바탕으로 다음 자기소개서 질문의 답변을 작성하세요.
+
+        **자기소개서 질문:**
+        {question}
+        
+        **회사명:**
+        {self.job.company_name}
+
+        **직무 이름:**
+        {self.job.job_name}
+
+        **직무 설명:**
+        {self.job.job_desc}
+        
+        **나의 경험 및 프로젝트:**
+        {"".join(self.exp.get_exp()[i-1] for i in val if isinstance(i, int))}
+
+        나의 경험, 나의 프로젝트, 나의 성과를 기반으로 자기소개서 질문에 맞게 작성하세요.:
+        - 자기소개서 질문에 대한 답변임을 항상 생각하고 연관성을 고려하여 작성해야합니다.
+        - 회사명과 직무 이름을 기입할 경우 제공된 회사명, 직무 이름으로 작성하세요.
+        - 되도록 간결하게 작성하며, 기회에 대해 전문적이고 열정적인 어조를 유지하세요.
+        - 나의 경험과 기술이 직무 설명과 일치하는 부분을 찾아 강조하세요.
+        - 직무 설명과 관련된 주요 성취와 기여를 강조하세요.
+        - 되도록 간결하게 작성하며, 기회에 대해 전문적이고 열정적인 어조를 유지하세요.
+        """
+
+        res = jss.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": f"너는 {self.job.company_name}라는 회사 {self.job.job_name} 직무에 지원한 입사지원자라고 생각하고 회사에서 제시한 자기소개서 질문인 {question} 에 대한 답변을 성실히 수행합니다. 글자수는 {max_length}자를 넘지 않도록 유의하여 작성합니다."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            top_p=0.1
+        )
+        
+        answer = res.choices[0].message.content
+        
+        return answer
+    
+    def run(self, questions):
+        self.questions = questions
+        
+        # t == true 일때 내 경험 토대 자소서 생성
+        for question, max_len, t, project_idx in questions:
+            if t:
+                ans = self.jss_for_experience(question, max_len, project_idx)
+            else:
+                ans = self.jss_for_company(question, max_len)
+
+            self.response.append({question : ans + f"\n\n글자수 : {len(ans)} / {max_len}글자"})
+            
+        return self.response
+    
+    def __repr__(self):
+        return str(self.response)
+        
+        
+if __name__ == "__main__":
+    jss = JSS("GPT_SECRET_KEY", useEnv=True, modelName="MODEL")
+    
+    with open("./data/exp.json", 'r', encoding="utf-8") as file:
+        my_exp = json.load(file)
+        for e in my_exp['my_project']:
+            jss.exp.add_exp(e)
+        jss.exp.set_achivement(my_exp['my_achivement'])
+    
+    # 예시 데이터입니다. 자소설닷컴에서 무작위로 선정된 1개 자소서항목을 가져왔습니다.
+    company_name = "OO기업"
+    job_name = "IT개발파트"
+    job_desc = """
+    IT개발파트는 보험상품(일반/장기/자동차/융자)
+    가입설계와 보유 계약관리를 위한 화면/서비스 개발 및 유지보수를 담당하는 부서입니다."
+    • 이를 위한 고객 지원, 디지털 전환, 프로젝트를 수행하여 혁신적인 IT 서비스를 제공하는 여할을 수행합니다.
+    이런 일을 합니다.
+    • 하나, 보험상품(일반/장기/자동차/융자)
+    가입설계/보유계약관리를 위한 화면/서비스 모듈을 개발하는 일을 합니다.
+    • 둘, 보험사고(보상/손사) 업무처리 및 관리를 위한 화면/서비스 모듈을 개발 하는 일을 합니다.
+    • 셋, 다양한 영업채널(대면/TM/다이렉트 등)의 영업Process 지원을 위한 화면/서비스 모듈을 개발하는 일을 합니다.
+    • 넷, 회사업무처리를 위한 그룹웨어/인사/포탈 등 지원 관련 화면/서비스 모듈을 개발하는 일을 합니다.
+    • 다섯, 대고객/임직원 모바일 환경의 업무처리 지원 관련 화면/서비스 모듈을 개발하는 일을 합니다.
+    "이런 분이었으면 좋겠습니다."
+    • 하나, 컴퓨터 및 전산관련 학과 졸업자
+    • 둘, Java개발이 가능하신 분
+    • 셋, 문제에 대한 응용능력과 해결능력이 있으신 분
+    • 넷, 꾸준히 직무에 대해 탐구하고 관심을 가지시는 분
+    • 다섯, 꼼꼼하고 세심한 성격을 갖고 계신 분
+    • 여섯, 원만한 커뮤니케이션 능력을 갖고 계신 분
+    """
+    news = """
+    OO기업가 'N잡러'를 대상으로 하는 새로운 영업 플랫폼 'OO기업 파트너스'를 26일 선보였다.
+    지원자들은 전용 애플리케이션에 업로드된 동영상과 자료를 통해 손해보험 자격시험 교육을 받을 수 있다. 자격증을 취득한 뒤에는 모바일 청약시스템을 통해 상품 설계, 보장 분석, 청약 고객관리 등 보험 상품과 관련한 모든 영업활동을 할 수 있다.
+    본인과 가족, 지인 등이 기존에 가입한 보험 상품을 재설계하는 것만으로도 수수료 수입을 얻을 수 있어 스마트 컨슈머 고객들의 관심을 끈다.
+    OO기업 파트너스는 기존 설계사와 달리 원하는 시간과 장소를 택해 자유롭게 활동할 수 있다. 파트타임 일거리를 찾는 자영업자와 대학생, 주부 등은 물론 주말 등을 알차게 활용하길 원하는 직장인들도 얼마든지 OO기업 파트너스로 활동 가능하다.
+    실적에 대한 압박 없이 본인이 원하는 때 원하는 만큼만 활동해 추가 소득을 올릴 수 있는 것이 가장 큰 장점으로 꼽힌다.
+    OO기업가 가장 중점을 둔 점은 전담 멘토 시스템이다. OO기업 파트너스를 신청하는 순간 전담 멘토가 배정돼 손해보험 관련 자격증 시험 준비에서부터 상품 계약 체결까지 모든 과정을 1대 1로 전담한다.
+    이미 공식 오픈 전 다양한 유형의 지원자가 참여한 파일럿 테스트도 진행했다. 자녀 학원비를 보태고 싶어 시작했다는 30대 워킹맘, 추가 부수입이 필요한 40대 직장인, 취미생활을 한 단계 업그레이드하고 싶어 지원한 사회 초년생 등 연령과 성별, 기존 직업과 관계없이 다양한 이들이 OO기업 파트너스를 사이드 잡(Side Job)으로 선택한 것으로 나타났다.
+    지원자를 대상으로 한 설문조사 결과 시간 대비 높은 소득, 자유로운 시간 배분 등이 매력적이란 답변이 가장 많았다. OO기업 파트너스 전용 홈페이지에 접속해 하단에 있는 ‘신청하기’ 버튼을 누르고 간단한 사항만 입력하면 지원이 완료된다.
+    """
+    # 5가지 자소서 항목 작성
+    # 질문 / 글자수 / 내경험맞춤(True) or 회사 맞춤(False) / 내 경험 프로젝트 중 몇번째 프로젝트와 연관되어 작성할지 인덱스 (복수 선택 가능)
+    questions = [
+        ["1.본인에 대한 소개 및 OO기업에 지원하게 된 동기를 소개해 주십시오.", 600, False, (0,)],
+        ["2.쉬운 목표보다는 높은 목표를 설정하고, 이를 달성하기 위해 노력했던 경험을 알려 주십시오.", 600, True, (1,)],
+        ["3.지원자가 입사 후 회사라는 새롭고 낯선 환경에서 기존 직원들과 원팀이 되어 적응해 나갈 수 있을지를 본인의 가치관과 지금까지의 경험을 토대로 서술해 주십시오.", 800, True, (2,)],
+        ["4.지원분야의 직무 수행을 위해 준비해 온 과정 및 갖추고 있는 역량, 입사 후 계획에 대해 자유롭게 서술해 주십시오.", 800, True, (3,)],
+        ["5.OO기업은 오로지 일과 실력으로만 평가받고, 평가에 따른 차별적인 보상을 원칙으로 합니다. 이러한 성과주의에 대한 지원자의 생각과 스스로가 성과주의에 어울리는 인재인지를 사례를 들어 서술해 주십시오.", 600, True, (1,2,3)]
+    ]
+    
+    example_jss = JSS("GPT_SECRET_KEY", useEnv=True, modelName="MODEL")
+    example_jss.set_company_name(company_name)
+    example_jss.set_job_name(job_name)
+    example_jss.set_job_desc(job_desc)
+    example_jss.add_news(news)
+    
+    # 질문 넣고 동작
+    ans = example_jss.run(questions)
+    
+    # json 형태로 저장
+    save_to_json(ans, "./output/emample_jss_answer.json")
+
+```
+
+### 경험 관련 클래스 구현 (Singleton Pattern)
+
+ Exp 클래스의 경우 내 경험은 어떤 회사에 지원을 하여도 변경되지 않는 동일한 자료를 사용할 것이므로 Singleton 패턴으로 구현하였습니다. 
+
+지원하는 회사마다 내 경험을 다시 작성해야할 필요가 없고 사용 초기 1회만 내 경험을 작성해주시면 됩니다.
+```python
+if __name__ == "__main__":
+    # 초기 1회 jss 샘플 인스턴스를 생성해 미리 내 경험을 저장
+    jss = JSS("GPT_SECRET_KEY", useEnv=True, modelName="MODEL")
+    
+    with open("./data/exp.json", 'r', encoding="utf-8") as file:
+        my_exp = json.load(file)
+        for e in my_exp['my_project']:
+            jss.exp.add_exp(e)
+        jss.exp.set_achivement(my_exp['my_achivement'])
+	
+    # samsungJss 인스턴스를 생성하면 싱글톤 패턴 적용으로 이전에 내 경험이 그대로 저장되어 있음
+    samsungJss = JSS("GPT_SECRET_KEY", useEnv=True, modelName="MODEL")
+    print(samsungJss.exp.get_achivement())  # 내 성과 ~~~
+    print(samsungJss.exp.get_exp())  # 내 경험 ~~~
+    print(samsungJss.exp)  # <__main__.Exp object at 0x10531f560>
+    
+    lgJss = JSS("GPT_SECRET_KEY", useEnv=True, modelName="MODEL")
+    print(lgJss.exp.get_achivement())  # 내 성과 ~~~
+    print(lgJss.exp.get_exp())  # 내 경험 ~~~
+    print(lgJss.exp)  # <__main__.Exp object at 0x10531f560>
+```
+최종적으로 코드를 분석해보면 JSS 아래 어떤 인스턴스를 만들든 Singleton 패턴으로 구현된 하위 class instance 인 **Exp 인스턴스의 주소값은 동일**한 것을 볼 수 있습니다.
+
+## 결과
+최종 결과물을 json 파일로 저장하여 관리할 수 있도록 구현되었습니다.
+
+
+![](/images/47bef452-eb79-44f4-bb64-119fa14f0edc-image.png)
+
+
+### 결과물
+> **1.본인에 대한 소개 및 OO기업에 지원하게 된 동기를 소개해 주십시오.**
+"IT개발에 열정을 가진 사람"
+보험은 고객의 소중한 자산을 지키는 중요한 서비스입니다. 때문에 IT개발자로서 고객에게 최적의 서비스를 제공하기 위해서는 깊은 이해와 열정이 필요하다고 생각합니다. 저는 학창 시절부터 IT개발에 열정을 가지고 다양한 프로젝트를 수행하였고, 현재에도 직무 관련 공부를 꾸준히 진행하고 있습니다. 이러한 열정과 경험을 바탕으로 고객에게 최적의 서비스를 제공하는 개발자가 되겠습니다.
+"고객에게 최적의 서비스 제공"저는 고객에게 최적의 서비스를 제공하기 위해서는 해당 분야에 대한 깊은 이해가 필요하다고 생각합니다. 이를 위해 보험에 대한 공부를 진행하였고, 다양한 사람들과 보험에 대해 이야기하며 경험을 공유하였습니다. 또한, Java, Spring, JPA 등 다양한 IT개발 관련 공부를 진행하며 프로젝트를 수행하였습니다. 이러한 경험을 바탕으로 고객에게 최적의 서비스를 제공하는 개발자가 되겠습니다.
+"OO기업의 디지털 전환에 기여하겠습니다"      
+OO기업는 디지털 전환을 통해 혁신적인 서비스를 제공하고 있습니다. 저는 이러한 디지털 전환에 기여하기 위해 IT개발자로서 최선을 다하겠습니다. 또한, 고객의 소중한 자산을 지키는 보험 서비스의 중요성을 깊이 이해하고 있기 때문에, 최적의 서비스를 제공하기 위해 끊임없이 노력하겠습니다.
+"고객과 함께 성장하는 OO기업"
+OO기업는 고객과 함께 성장하는 기업입니다. 저는 이러한 OO기업의 가치에 깊이 공감하며, IT개발자로서 최선을 다하겠습니다. 고객의 소중한 자산을 지키는 보험 서비스의 중요성을 깊이 이해하고 있기 때문에, 최적의 서비스를 제공하기 위해 끊임없이 노력하겠습니다.
+글자수 : 888 / 600글자
+**2.쉬운 목표보다는 높은 목표를 설정하고, 이를 달성하기 위해 노력했던 경험을 알려 주십시오.(개발자로서의 목표를 위해 노력한 경험)**
+저는 개발자로서의 목표를 위해 노력한 경험이 있습니다. 목표를 이루기 위해서 포기하지 않고 끈기 있게 노력하는 자세를 가지고 있습니다.
+저는 Java와 Spring을 활용한 웹 개발에 관심을 가지고 공부하던 중, 더 깊이 있는 공부를 위해 프로젝트를 계획하였습니다. 당시에는 Spring Security와 OAuth2에 대해 잘 알지 못하였고, 프론트엔드와 백엔드의 분리에 대해서도 잘 알지 못하였습니다. 하지만, 이러한 부분들을 공부하고 프로젝트에 적용하는 것을 목표로 하였습니다. 또한, TDD를 적용하여 개발하는 것도 목표로 하였습니다.
+프로젝트를 진행하면서, 처음 접하는 기술들이 많아 어려움이 많았습니다. 특히, Spring Security를 활용한 로그인 기능 구현에 어려움이 많았습니다. 여러 자료를 참고하였지만, 이해하는 데에 어려움이 많았습니다. 그래서, Spring Security에 대한 스터디를 진행하였습니다. 저와 같은 고민을 가지고 있던 다른 개발자들과 함께 자료를 공유하고, 토론하며 이해하는 과정을 가졌습니다. 그 결과, 서로의 이해도를 높일 수 있었고, 로그인 기능을 구현할 수 있었습니다. 이러한 과정을 통해서 저는 포기하지 않고, 끈기 있게 문제를 해결하는 개발자가 될 수 있었습니다.
+이 경험을 바탕으로, OO기업의 IT 개발 파트에서 새로운 기술을 도입할 때에도, 끈기 있게 공부하고 도전하는 자세로 프로젝트에 기여할 수 있을 것입니다.
+글자수 : 806 / 600글자
+...
+...
+**5.OO기업는 오로지 일과 실력으로만 평가받고, 평가에 따른 차별적인 보상을 원칙으로 합니다. 이러한 성과주의에 대한 지원자의 생각과 스스로가 성과주의에 어울리는 인재인지를 사례를 들어 서술해 주십시오.** 
+성과주의는 개인의 노력과 결과에 따라 공정하게 평가받을 수 있는 시스템이라고 생각합니다. 따라서 성과주의에 어울리는 인재는 결과를 위해 끊임없이 노력하고, 그 과정에서 문제를 해결할 수 있는 사람이라고 생각합니다.저는 '개발자'라는 직업을 선택하며 성과주의에 어울리는 인재가 되기 위해 노력했습니다. 그 노력의 결과로 2022년 1학기 소프트웨어공학 수업을 수강하며 팀장이 되어 A+라는 성적을 거두었습니다. 또한 2022년 2학기 자바프로그래밍 심화 수업을 수강하며 조장이 되어 A+라는 성적을 거두었습니다. 2023년 1학기부터 2023년 2학기까지 2학기에 걸쳐 소프트웨어개발방법론, 시스템프로그래밍 수업을 수강하며 팀장, 조장 역할을 수행하고 모두 A+라는 성적을 거두었습니다. 위의 경험은 제가 성과를 위해 노력한 경험입니다.그 노력의 시작은 '개발자'라는 직업을 선택하며부터 시작되었습니다. 제가 선택한 직업은 단순히 코드를 작성하는 것이 아니라 문제를 해결하는 직업이라고 생각했습니다. 따라서 문제를 해결하기 위해서는 문제를 정확히 이해하고, 그에 맞는 해결책을 제시할 수 있어야 한다고 생각했습니다. 또한 그 과정에서 다양한 기술을 접하고 공부해야 한다고 생각했습니다. 이러한 생각을 바탕으로 저는 매 수업마다 팀장, 조장 역할을 수행하며 프로젝트를 이끌어 갔습니다. 프로젝트를 진행하며 문제가 발생했을 때, 그 문제를 해결하기 위해 다양한 방법을 시도했습니다. 또한 새로운 기술을 적용하기 위해 공부했습니다. 그 결과 좋은 성적을 거두었고, 다양한 기술을 경험하며 제 능력을 향상시킬 수 있었습니다.이러한 경험은 OO기업보험 IT개발파트에 입사하여 업무를 수행하는 데에 도움이 될 것이라 생각합니다. 문제를 해결하기 위해 다양한 방법을 시도했던 경험은 업무를 수행하며 문제가 발생했을 때, 그 문제를 해결하는 데에 도움이 될 것입니다. 또한 새로운 기술을 적용하기 위해 공부했던 경험은 업무에 필요한 기술을 습득하는 데에 도움이 될 것입니다.
+글자수 : 987 / 600글자
+
+
+### 아쉬운점 & 보완점
+사실 아쉬운점이 많습니다. 전체적인 자소서 퀄리티가 많이 떨어져 40점 정도밖에 줄 수 없을 것 같습니다. 그 중 특히 아쉬운 점에 대해서 이야기해보겠습니다.
+
+1. **글자수 초과 / 미만**
+맥스 글자수를 선정하였고, 대략 해당 글자수에 비슷하게 작성하려는 경향은 있으나, 넘어서는 경우도 종종 발생하였습니다. **이러한 경우를 보완할 필요가 있을 것 같습니다.** 반대로 글자수가 너무 짧은 경우도 있어 **min_len 의 도입도 필요해 보였습니다.**
+2. **할루시네이션 발생**
+나의 경험을 입력해 주었지만, 내가 하지 않은 경험은 입력하지 않았기 때문에 흔히 말하는 할루시네이션(거짓된 정보)이 생성되는 케이스가 있었습니다. 실제로 저는 비전공자이지만, 이러한 정보를 주지 않아 마치 전공자이면서 전공수업을 들은  것처럼 그럴싸하게 묘사되어있었습니다. **할루시네이션을 줄이기 위해 나의 기본정보 입력, 내가 다룰 수 있는 언어, 나의 스킬 등 명확한 정보를 추가로 사전 입력해야할 것 같습니다.**
+3. **함정 문항에 그대로 빠지기 쉬움**
+마지막 자소서 문항을 보면 약간 함정성 문항이라고 생각됩니다. 해당 문항에서는 성과주의에 어울리는 인재인지를 묻고 있지만, 나의 그 동안의 성과만을 어필하는 것이 아닌 내가 관련 업무를 성실히 수행하였고 이렇게 성실히 수행한 결과 성과가 따라왔다는 식으로 어필하는 것이 효과적입니다. 하지만 너무 솔직힌 GPT이기에 함정성 문항에선 너무 정직한 모습입니다. **이 문제를 해결하기 위해선 자소서의 질문 자체를 GPT가 잘 답변할 수 있도록 조금 변경해서 작성할 필요가 있을 것 같습니다. ex) OO기업은 오로지 일과 실력으로만 평가받고, 평가에 따른 차별적인 보상을 원칙으로 합니다. 성과주의에 대한 본인의 생각과 본인의 성실함을 표현하면서 성과가 따라온 경험이 있다면 서술해주세요."**
+
+
+위 아쉬운 부분을 토대로 문제를 수정하고 다시 결과를 받아보았습니다.
+
+> **1.본인에 대한 소개 및 OO기업에 지원하게 된 동기를 소개해 주십시오.**
+저는 데이터 처리와 시스템 엔지니어링 경험을 바탕으로 IT 개발 분야에서 성장하고자 하는 지원자입니다. 대학교 재학 중 학부 연구원으로 코딩을 처음 접한 이후, GeoSR 해양예보부에서 서버 관리와 데이터 처리 업무를 수행하며 실무 경험을 쌓았습니다. 이후 삼성의 SSAFY 프로그램에 참여하여 웹 풀스택 개발을 학습하며 CS 지식과 알고리즘, 프로젝트 관리 능력을 키웠습니다. 이러한 경험들은 저에게 문제 해결 능력과 팀워크의 중요성을 깨닫게 해주었습니다.
+OO기업 IT에 지원하게 된 이유는 회사의 혁신적인 디지털 전환과 고객 중심의 서비스 제공에 깊이 공감했기 때문입니다. 최근 'OO기업 파트너스'라는 새로운 영업 플랫폼을 선보이며 다양한 고객층을 대상으로 한 유연한 영업 모델을 구축한 점은 특히 인상적이었습니다. 이러한 변화는 IT 개발파트에서의 제 역할이 더욱 중요해질 것이라는 확신을 주었습니다. 저는 고객의 니즈를 반영한 화면 및 서비스 모듈 개발에 기여하고, OO기업의 디지털 혁신을 함께 이끌어 나가고 싶습니다.
+또한, OO기업의 IT개발파트는 다양한 보험 상품과 고객 지원 시스템을 개발하는 중요한 역할을 수행하고 있습니다. 저는 데이터 처리와 시스템 관리 경험을 통해 얻은 기술적 역량을 바탕으로, 고객의 편의를 극대화하는 혁신적인 IT 서비스를 제공하는 데 기여할 수 있을 것입니다. 문제 해결 능력과 세심한 성격을 바탕으로, 팀원들과 원활한 커뮤니케이션을 통해 협력하며 목표를 달성하는 데 최선을 다하겠습니다.
+OO기업와 함께 성장하며, 고객에게 더 나은 서비스를 제공하는 데 기여하고 싶습니다. 감사합니다.
+글자수 : 820 / 600글자
+**2.쉬운 목표보다는 높은 목표를 설정하고, 이를 달성하기 위해 노력했던 경험을 알려 주십시오.**
+저는 OO기업 IT의 IT개발파트에 지원하며, 높은 목표를 설정하고 이를 달성하기 위해 노력했던 경험을 공유하고자 합니다. 대학교 재학 시절, 학부 연구원으로 처음 코딩을 접한 후 데이터 처리와 가시화에 대한 흥미를 느꼈습니다. 이 경험을 바탕으로 GeoSR 해양예보부에 입사하여 시스템 엔지니어로서 국립해양조사원 서버 관리 업무를 맡았습니다. 이 과정에서 단순한 서버 관리에 그치지 않고, 데이터의 효율적인 처리와 시스템 최적화를 목표로 삼았습니다. 
+특히, 서버의 성능을 30% 향상시키기 위해 기존 시스템을 분석하고, 자동화 스크립트를 개발하여 운영 효율성을 높였습니다. 이러한 경험은 저에게 문제 해결 능력과 응용 능력을 키워주었고, 높은 목표를 설정하는 것이 얼마나 중요한지를 깨닫게 해주었습니다.
+이후 SSAFY에서 1년간 웹 풀스택 개발을 공부하며, 다양한 프로젝트를 진행했습니다. 그 중 하나는 보험 관련 웹 애플리케이션 개발 프로젝트로, 고객의 가입 설계와 계약 관리 기능을 포함했습니다. 이 프로젝트에서 저는 팀원들과 협력하여 사용자 경험을 최우선으로 고려한 UI/UX 설계를 진행하였고, Java를 활용한 백엔드 개발을 통해 안정적인 서비스 제공을 목표로 했습니다. 결과적으로, 프로젝트는 성공적으로 완료되었고, 실제 사용자들로부터 긍정적인 피드백을 받았습니다.
+이러한 경험들은 OO기업 IT의 IT개발파트에서 요구하는 고객 지원 및 디지털 전환을 위한 혁신적인 IT 서비스 제공에 기여할 수 있는 기반이 되리라 확신합니다. 저는 항상 높은 목표를 설정하고 이를 달성하기 위해 끊임없이 노력하는 자세를 유지하고 있으며, OO기업의 발전에 기여하고 싶습니다.
+글자수 : 844 / 600글자
+...
+...
+**5.OO기업는 오로지 일과 실력으로만 평가받고, 평가에 따른 차별적인 보상을 원칙으로 합니다. 성과주의에 대한 본인의 생각과 본인의 성실함을 표현하면서 성과가 따라온 경험이 있다면 서술해주세요.** 
+OO기업 IT개발파트에 지원하게 되어 매우 기쁩니다. 성과주의는 개인의 노력과 실력이 정당하게 평가받는 시스템으로, 저는 이를 통해 더욱 발전할 수 있다고 믿습니다. 성과가 따라온 경험으로는 SSAFY에서의 프로젝트를 들 수 있습니다. 
+저는 SSAFY에서 웹 풀스택 개발을 배우며 팀 프로젝트를 진행했습니다. 이 과정에서 저는 데이터 처리와 가시화에 대한 경험을 바탕으로, 사용자 요구에 맞는 웹 애플리케이션을 설계하고 구현하는 데 기여했습니다. 특히, 고객의 피드백을 반영하여 UI/UX를 개선하고, 데이터베이스와의 연동을 통해 실시간 데이터를 제공하는 기능을 추가했습니다. 이러한 노력 덕분에 프로젝트는 성공적으로 마무리되었고, 팀원들과 함께 우수 프로젝트로 선정되었습니다. 
+또한, GeoSR 해양예보부에서 시스템 엔지니어로 근무하며 서버 관리와 데이터 처리 업무를 수행했습니다. 이 경험을 통해 문제 해결 능력과 세심한 성격을 기를 수 있었고, 이는 IT개발파트에서의 업무에 큰 도움이 될 것입니다. OO기업의 다양한 보험상품과 고객 지원 시스템을 개발하는 데 있어, 제가 쌓아온 경험과 기술이 큰 기여를 할 수 있을 것이라 확신합니다.
+저는 성과를 중시하는 OO기업의 가치관에 깊이 공감하며, 제 성실함과 노력으로 회사의 목표 달성에 기여하고 싶습니다. 지속적인 자기 개발과 팀워크를 통해, OO기업메리츠화재의 혁신적인 IT 서비스를 제공하는 데 최선을 다하겠습니다. 감사합니다.
+글자수 : 728 / 600글자
+
+### 여전히 아쉬운점
+
+1. **항목마다 내용이 중복됨**
+1번 문항에서 언급한 내용을 2, 3, 4번 문항에서도 계속해서 언급하여 해당 내용을 사용하지 않도록 하는 작업도 필요할 것으로 생각됩니다. -> 이 부분은 어떻게 처리하면 좋을지 프롬프트로 처리할지 데이터에서 제거하는 방식을 택할지 찾아보겠습니다.
+2. **불필요한 내용 언급이 많아짐**
+제 정보를 입력해주자 제 정보를 이용해야한다는 강박을 느끼는 것 같습니다. 해당 정보는 할루시네이션을 없애기 위함이었지만 불필요한 정보 언급이 늘어나 해당 부분은 프롬프트로 처리하는 방식을 고민해 보겠습니다.
+
+### 개선된 점
+
+1. min_len 입력을 통해 적은 글자수 커버가 가능해졌습니다.
+2. 나의 상세 정보 입력을 통해 할루시네이션이 크게 줄어들었습니다,
+3. 자소서 함정 항목이었던 5번 질문의 질문 자체를 조금 변경하여 답변 퀄리티가 향상되었습니다.
+
+
+### 이후 보완할 문제들
+1. 중복되는 정보를 계속해서 언급하지 않도록 만들것.
+2. 내 정보를 억지로 끼워맞추는 등 불필요한 정보를 언급하지 않게 만들것.
+3. 직무기술서, 관련 뉴스를 크롤링 작업으로 자동화 시킬것.
+4. 자료 생성을 Generator 객체를 사용해 하나가 완료되면 바로바로 자료를 확인 할 수 있게하여 많은 양을 한꺼번에 질문하게 될때 진행 정도를 확인 할 수 있도록 구현할 것.
+
+### 향후 추가하면 좋을만한 서비스
+1. 자소설닷컴, 잡코리아 등의 채용 안내 서비스와 연결 or 데이터 실시간 크롤링을 이용해 새로운 공고 스크랩
+
+
+![](/images/9d076764-40b4-4dc9-9383-53c405c26221-image.png)
+
+
+2. 스크랩된 자료 중 나의 경력과 매칭 자동화 -> 자소서 작성까지 한번에 진행
+
+### 결론 
+아직은 제 능력이 부족한 점이 많아 보입니다. 개인적으로 ChatGPT-4o-mini Fine-tuning 과 Prompt Engineering 을 통해 70점 짜리 자소서를 빠르게 생성하여 많은 사람들이 자소서를 쓰는데 스트레스를 덜 받으셨으면하는 목표로 70점 짜리 자소서를 만들 때까지 계속 포스팅 하겠습니다.
+
+GPT-4 대비 100배 효율의 GPT-5 모델이 올해 출시된다고 합니다. 추가로 제가 생각했던 보완점들을 보완하여 더 좋은 자소서를 작성할 수 있도록 노력하여 다시 돌아오도록 하겠습니다.
+
+추후 실시간으로 변경되며 개선되는 코드는 제 [github](https://github.com/jaemaning/JSS) 를 통해 확인 할 수 있도록 지속적으로 업로드 하겠습니다. 이는 Opensource 로서 자유롭게 활용이 가능하고 Issue/PR 을 통해 버그나 기타 추가적인 기능을 더해주시면 감사하겠습니다.
+
+해당 서비스를 이용하고자 하시는 분이 1분이라도 계신다면 댓글남겨주세요, Pypi 라이브러리화도 진행해보도록 하겠습니다.
+
+
+출처 : https://platform.openai.com/docs/guides/prompt-engineering

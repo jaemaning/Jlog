@@ -1,0 +1,66 @@
+---
+title: "[Android App] MVVM 디자인 패턴"
+description: "이 글은 MVC, MVP, MVVM 디자인 패턴을 공부하고 기록하는 마지막 블로그 글입니다."
+date: 2024-11-25T01:01:17.569Z
+tags: ["MVVM","android","디자인 패턴"]
+category : "Python"
+---
+이 글은 MVC, MVP, MVVM 디자인 패턴을 공부하고 기록하는 마지막 블로그 글입니다.
+
+MVVM 디자인 패턴에 대해서 Android Native App 개발자의 시점에서 알아보도록 하겠습니다.
+
+이번 MVVM 디자인 패턴에서는 안드로이드 앱 개발에 많은 예제 코드들이 있기에 코드로 보지 않고 MVC, MVP, MVVM 디자인 패턴을 공부하며 Frontend 에서 이를 활용하며 느낀점을 기술하겠습니다.
+
+## Frontend와 디자인패턴
+MVC, MVP, MVVM 을 모두 접하며 이 디자인 패턴들이 Frontend 에서 매우 적합한 디자인 패턴은 아니라고 생각하였습니다. 그 이유는 Frontend 에서는 웹/앱에서 보여지는 데이터가 사용자(클라이언트)와 상호작용하여 양방향으로 데이터 흐름이 자연스럽게 이루어져야하는데, 위 디자인 패턴들의 경우 모듈을 분리하고 순환 참조하지 않기 위해 단방향으로 진행되기 때문입니다.
+
+물론 React 전역 상태 관리 라이브러리의 경우에도 단방향으로 데이터를 처리하고 객체 감지를 통해 실시간성 문제를 해결하지만 다른 좋은 방법이 없을까? 끊임없이 고민하게 되는 주제인 것 같습니다.
+
+### 실시간성
+Frontend(화면개발) 에서 이러한 양방향 데이터 흐름 문제를 해결하고자 변경 가능한(mutable) 데이터를 두고 해당 상태의 변경을 감지하는 방식(observer, proxy, Flux 등)의 패턴으로 실시간성 문제를 해결합니다.
+
+```kotlin
+// 팔로우, 언팔로우 확인 - viewModel
+private var _isFollowNow = MutableLiveData<Boolean>(null)
+val isFollowNow : LiveData<Boolean> get() = _isFollowNow
+
+fun checkFollowNow(memberPk: Long, profileData:ProfileData) {
+    profileData.followers?.followers?.let {followerList->
+        followerList.forEach{follower->
+            if (follower?.memberPk == memberPk) {
+                _isFollowNow.value = true
+            }
+        }
+    }
+}
+
+// View
+val isFollowNow = viewModel.isFollowNow.observeAsState()
+```
+
+위에선 LiveData 를 통해 객체 데이터를 정의하고 observe 메서드를 통해 상태를 감지하여 실시간성을 확보해 팔로우 중인지 확인하는 토글 버튼을 만드는 코드를 이전 프로젝트에서 가져왔습니다.
+
+
+웹 개발 라이브러리 중 하나인 React 에서는 이러한 상태 관리만을 위한 Hooks(useState, useEffect, useRef 등)를 제공해주기도 하며 편의성을 제공하고 있습니다.
+
+## MVVM은 ?
+안드로이드 네이티브 앱에서 MVVM 디자인 패턴은 MVP의 단점을 일부 보완한 것이 특징입니다.
+
+### 특징
+
+- Model, View, ViewModel 로 구성되어 ViewModel 가 View-Model을 통제
+- Model과 View 의 분리를 위해 개발된 디자인패턴으로 서로 직접적인 의존성을 제거
+- ViewModel 와 View는 **1:N 관계**를 가짐
+
+### 장점
+
+- ViewModel 에서 기능을 구현하고 View 에서 보여주기에 코드의 분리가 가능
+- view - model간의 의존성 분리를 통해 결합도를 낮출 수 있음
+기능과 화면이 명확하고 분리가되었기 때문에 기능 테스트, 유지 보수성이 증가
+- **1:N 관계**를 가지므로 ViewModel 이 여러 View 에서 호출되어 사용될 수 있어 재사용성이 증가함
+
+### 단점
+
+- ViewModel이 들어오고 코드가 분리되면서 의존성에 대해서 생각을 해야하며 의존성 주입(DI)이라는 개념이 등장하여 유기적인 관계를 생각하며 개발해야함
+- 이로인해 비교적 높은 러닝커브가 발생
+

@@ -1,0 +1,80 @@
+---
+title: "[ncp/server] Cannot find a valid baseurl for repo: base/7/x86_64 - repo_baseurl 초기 설정"
+description: "NCP 가이드 - Linux OS Repository 설정 점검 참고하였습니다."
+date: 2024-09-12T07:41:25.069Z
+tags: ["Naver Cloud Platform","base_url","ncp","ncp server","repo"]
+category : "Python"
+---
+[NCP - Linux OS Repository 설정 점검](https://guide.ncloud-docs.com/docs/linux-os-repository-check)을 참고하였습니다.
+
+
+
+![](/images/857494ae-1301-4326-8b60-75f9b3a4530a-image.png)
+
+
+
+NCP server 에 접속하여 기본적인 환경 구축을 위해 ```yum update``` 만 진행했는데 바로 에러가 반겨주었습니다.
+
+에러 내용을 살펴보니 repo baseurl 설정 문제인듯 싶었고 정확한 문제를 알기위해 base-repo 를 확인해 보았습니다.
+
+```bash
+### base-repo 확인
+
+[root@jaeman-server yum.repos.d]# grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+# remarked out baseurl= line instead.
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+```
+
+확인 결과 baseurl이 모두 주석처리되어있었습니다. 해당 주석만 풀면 될 것 같지만, ncp에서 보안상 막아둔것일 수도 있어 ncp 가이드라인을 따르기로 하였습니다.
+
+현재 CentOS에 설정된 Base URL은 `http://mirror.ncloud.com/centos`이나, `http://repo.ncloud.com/centos`로 사용하는 것을 권장 드립니다. 변경 방법은 아래 2가지 중 하나로 설정 가능합니다.
+
+(1) yum-config-manager를 사용해서 리포지토리 설정 파일을 다운로드
+
+- CentOS 7.3yum-config-manager를 사용하기 위해서 yum-utils 패키지 설치한 후, 리포지토리 설정 파일을 다운로드해 주십시오.
+- CentOS 7.8 에선 yum-utils 가 설치 되어 있음
+
+```python
+[root@jaeman-server ~]# rpm -qa | grep yum-util
+**yum-util**s-1.1.31-54.el7_8.noarch
+```
+
+yum-utils가 설치 되었다면,
+
+```bash
+[root@centos78 ~]# yum-config-manager --add-repo http://init.ncloud.com/server/linux/repo/centos7/CentOS-Base.repo
+Loaded plugins: fastestmirror, langpacks
+adding repo from: http://init.ncloud.com/server/linux/repo/centos7/CentOS-Base.repo
+grabbing file http://init.ncloud.com/server/linux/repo/centos7/CentOS-Base.repo to /etc/yum.repos.d/CentOS-Base.repo
+repo saved to /etc/yum.repos.d/CentOS-Base.repo
+```
+
+(2) sed 명령어로 리포지토리 설정 파일을 변경
+```sed -i 's|baseurl=http://mirror.ncloud.com|baseurl=http://repo.ncloud.com|' /etc/yum.repos.d/CentOS-Base.repo``` 
+
+(1), (2) 중 편한 방법으로 baseURL 을 설정한뒤 다시 확인해보면,
+
+```bash
+[root@jaeman-server ~]# grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+# remarked out **baseurl**= line instead.
+baseurl=http://repo.ncloud.com/centos/$releasever/os/$basearch
+baseurl=http://repo.ncloud.com/centos/$releasever/updates/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/extras/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/centosplus/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/contrib/$basearch/
+```
+
+이제 정상적으로 업데이트, 다운로드가 가능해짐
+
+
+![](/images/1d8f0a8c-3569-46ff-802a-eb78c82c7fd7-image.png)
+
+
+
+---
+### 참고자료
+
+- 출처 : https://guide.ncloud-docs.com/docs/linux-os-repository-check

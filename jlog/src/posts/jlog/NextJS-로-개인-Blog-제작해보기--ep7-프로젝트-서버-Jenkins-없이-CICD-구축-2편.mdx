@@ -1,0 +1,764 @@
+---
+title: "NextJS 로 개인 Blog 제작해보기 - ep.7 프로젝트 서버 Jenkins 없이 CI/CD 구축 2편"
+description: "Jenkins 없이, github, nginx, flask, shellscript 만으로 클라우드서버에 CI/CD 를 구축해보았습니다."
+date: 2024-11-01T08:08:08.920Z
+tags: ["CI/CD","Nginx","blog","github","nextjs","webhook"]
+category : "Python"
+---
+# 이전 내용
+## [무료 서버 사용 CI/CD 구축](https://velog.io/@jaemaning/NextJS-로-개인-Blog-제작해보기-ep.6-프로젝트)
+이전에 ncp 무료 제공 서버를 사용하여 웹서비스 배포를 진행해보려 했습니다. 하지만 jenkins 컨테이너를 띄우는 것에서 CPU 사용률을 초과하였고 더 간단한 방법인 github webhook 을 flask 서버를 통해 받고 최신화된 프론트엔드 서버를 띄우는 과정을 진행하려 하였습니다. 
+
+
+![](/images/524869be-778a-487d-a30f-da7b5d1dcb79-image.png)
+
+
+그러나 이 과정에서도 CPU 사용률이 터져버렸습니다. 수동 배포한다면 사실 문제가 될 건 없지만 8월 이달의 nclouder 선정으로 ncp 200,000 point 도 받았겠다 과감하게 유료 서버를 사용하기로 결정했습니다.
+
+## [ncp 무료 서버 중단](https://velog.io/@jaemaning/NCP-server-중단반납)
+그렇게 ncp 무료 서버를 안전하게 중단하는 방법도 알려드렸습니다.
+
+# CI/CD 구축
+## [NCP 서버 생성](https://velog.io/@jaemaning/NCP-Server-생성-공인IP-설정-포트포워딩-몰아보기)
+NCP 서버 생성의 경우 사실 이전에도 다루었기 때문에 작성하진 않겟습니다. 만약 NCP 서버를 생성하고 싶은데 잘 모르시는 분은 위 링크를 참고하여 생성해주시면 되겠습니다.
+
+## 기본 세팅
+### 사용자 설정
+NCP, AWS, Azure 등 어떤 클라우드 서비스를 이용하셔서 서버를 구축하셨다면 기본적으로 세팅해주셔야하는 것이 있습니다. 사용자 설정과 비밀번호 설정입니다.
+
+1. 사용자 생성
+```bash
+sudo useradd [사용자명]
+```
+2. 비밀번호 설정
+```bash
+sudo passwd [사용자명]
+```
+3. 사용자에게 sudo 권한 부여
+```bash
+sudo usermod -aG sudo [사용자명]
+```
+4. 사용자 홈 디렉토리 추가
+```bash
+sudo useradd -m [사용자명]
+```
+
+
+#### 사용자 설정을 해야하는 이유
+- 보안
+  - root 계정으로 계속 접속하고 사용하게 된다면 root 계정이 해킹당할 위험이 증가합니다.
+  - 사용자 계정이 해킹당할 경우 권한에 따른 일부 파일만 해킹당하여 상대적으로 안전합니다.
+- 협업
+  - 동시에 작업하더라도 사용자별 작업 디렉토리가 분리되어 있어 충돌 리스크가 감소합니다.
+- 자원관리
+  - 자원 할당이 가능하여 효율적인 사용이 가능하며 로그기록도 사용자별로 남기때문에 책임 소지를 분명히하고 빠른 대응이 가능합니다.
+
+### 방화벽 설정
+NCP 를 쓰신다면 기본적으로 ACG 설정을 통해서 방화벽을 관리하게 됩니다. 아마 AWS 를 사용하셨으면 Security Group 이라는 이름이 더 익숙하실 것 같은데 같은 개념이라고 생각하시면 될 것 같습니다.
+
+- 한번 설정해둔 ACG 설정을 통해서 여러대의 서버에서 같은 ACG 규칙을 통해 방화벽을 빠르게 설정할 수 있습니다.
+- 서버를 이전할 때에도 사용했던 규칙을 통해 기존의 방화벽 설정을 빠르게 적용할 수 있습니다.
+- 서버에 접근하지 않고도 웹(NCP)에서 ACG 규칙을 변경할 수 있습니다.
+
+
+![](/images/e6ee32ec-8043-4d53-829b-a4d53346f82c-image.png)
+
+
+
+### base repository 설정
+여기부턴 NCP - centos7 서버를 기준 추가 세팅 방법입니다.
+
+```bash
+$ yum update
+
+[root@s19274e1ae0e ~]# yum update
+Loaded plugins: fastestmirror, langpacks
+Loading mirror speeds from cached hostfile
+Could not retrieve mirrorlist http://mirrorlist.centos.org/?release=7&arch=x86_64&repo=os&infra=stock error was
+14: curl#6 - "Could not resolve host: mirrorlist.centos.org; 알 수 없는 오류"
+
+
+ One of the configured repositories failed (Unknown),
+ and yum doesn't have enough cached data to continue. At this point the only
+ safe thing yum can do is fail. There are a few ways to work "fix" this:
+
+     1. Contact the upstream for the repository and get them to fix the problem.
+
+     2. Reconfigure the baseurl/etc. for the repository, to point to a working
+        upstream. This is most often useful if you are using a newer
+        distribution release than is supported by the repository (and the
+        packages for the previous distribution release still work).
+
+     3. Run the command with the repository temporarily disabled
+            yum --disablerepo=<repoid> ...
+
+     4. Disable the repository permanently, so yum won't use it by default. Yum
+        will then just ignore the repository until you permanently enable it
+        again or use --enablerepo for temporary usage:
+
+            yum-config-manager --disable <repoid>
+        or
+            subscription-manager repos --disable=<repoid>
+
+     5. Configure the failing repository to be skipped, if it is unavailable.
+        Note that yum will try to contact the repo. when it runs most commands,
+        so will have to try and fail each time (and thus. yum will be be much
+        slower). If it is a very temporary problem though, this is often a nice
+        compromise:
+
+            yum-config-manager --save --setopt=<repoid>.skip_if_unavailable=true
+
+Cannot find a valid baseurl for repo: base/7/x86_64
+```
+
+기본적인 업데이트를 진행하려는데 base repository 설정이 안되어 있는듯 합니다.
+
+#### $ grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+
+```bash
+[root@s19274e1ae0e ~]# grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+# remarked out baseurl= line instead.
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+```
+centOS 기반 레포지토리 코드를 보니 기본 미러사이트 주소들이 모두 주석처리 되어있습니다. 주석만 풀면 해결될 문제 같아 보이지만 [NCP 상 가이드라인](https://guide.ncloud-docs.com/docs/linux-os-repository-check)을 찾아보았습니다.
+
+현재 CentOS에 설정된 Base URL은 ```http://mirror.ncloud.com/centos```이나, ```http://repo.ncloud.com/centos```로 사용하는 것을 권장합니다.
+외부 미러사이트를 사용하는 것도 가능은 하지만 해당 ncloud 미러사이트를 추천한다고 합니다. 해당 가이드라인에서 친절하게 변경하는 방법을 제공하고 있으니 해당 가이드라인을 참고해주시면 수월하게 변경이 가능할 듯 합니다.
+
+가이드라인을 확인하기 귀찮으신 분들을 위해 5줄 정리하지면 (CentOS 기준입니다)
+
+1. rpm -qa | grep yum-utils | wc -l => 결과가 0 or 1
+2. 결과가 0일 경우 yum install yum-utils 통해 yum-utils 인스톨
+3. 결과가 1일 경우 위 인스톨 과정 필요 없음
+4. 레포지토리 등록
+```bash
+yum-config-manager --add-repo http://init.ncloud.com/server/linux/repo/centos7/CentOS-Base.repo
+``` 
+
+5. 설정 레포지토리 변경
+```bash
+sed -i 's|^baseurl=http://mirror.ncloud.com|baseurl=http://repo.ncloud.com|' /etc/yum.repos.d/CentOS-Base.repo
+``` 
+6. 설정 확인 - 가이드라인대로 진행 후 확인해보면 정상적으로 변경이 되었습니다.
+```bash
+$ grep ^baseurl /etc/yum.repos.d/CentOS-Base.repo
+
+[root@s192fjw1ae0e ~]# grep ^baseurl /etc/yum.repos.d/CentOS-Base.repo
+baseurl=http://repo.ncloud.com/centos/$releasever/os/$basearch
+baseurl=http://repo.ncloud.com/centos/$releasever/updates/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/extras/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/centosplus/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/contrib/$basearch/
+```
+## 서버 아키텍처
+
+![](/images/b9c91eae-0782-42cd-8730-0b3d00635aa8-image.png)
+
+
+
+## docker 설정
+위 기본 세팅을 마무리하셨으면 본격적인 CI/CD 구축을 시작하겠습니다.
+
+### 패키지 기본 업데이트
+```bash
+$ sudo yum update
+```
+
+### docker 레포지토리 등록
+```bash
+$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+```
+> 레포지토리 저장소는 소프트웨어 패키지들을 저장하고 관리하는 서버입니다.
+Docker의 공식 레포지토리 URL을 패키지 관리 시스템에 등록하게 되면, 설치 프로그램이 등록된 레포지토리에서 소프트웨어를 설치할 수 있습니다.
+
+따라서 가장 최신 버전의 docker 를 설치할 수 있도록 docker repository 를 등록하는 것입니다.
+
+### docker 설치 + docker compose plugin 설치
+```bash
+$ yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+```
+저는 기본적으로 docker compose 를 사용하여 여러대의 컨테이너를 자동으로 컨트롤하는 것을 선호하므로 설치하였습니다. 기호에따라 추가해주시면 될 것 같습니다.
+
+### docker 설치 확인
+```bash
+[root@asodkfowke33 ~]# yum list installed | grep docker
+containerd.io.x86_64               1.6.33-3.1.el7                      @docker-ce-stable
+docker-buildx-plugin.x86_64        0.14.1-1.el7                        @docker-ce-stable
+docker-ce.x86_64                   3:26.1.4-1.el7                      @docker-ce-stable
+docker-ce-cli.x86_64               1:26.1.4-1.el7                      @docker-ce-stable
+docker-ce-rootless-extras.x86_64   26.1.4-1.el7                        @docker-ce-stable
+docker-compose-plugin.x86_64       2.27.1-1.el7                        @docker-ce-stable
+```
+설치가 잘 된 것을 확인할 수 있습니다.
+### docker 버전 확인
+```bash
+[root@s19274e1ae0e ~]# docker version
+Client: Docker Engine - Community
+ Version:           26.1.4
+ API version:       1.45
+ Go version:        go1.21.11
+ Git commit:        5650f9b
+ Built:             Wed Jun  5 11:32:04 2024
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          26.1.4
+  API version:      1.45 (minimum version 1.24)
+  Go version:       go1.21.11
+  Git commit:       de5c9cf
+  Built:            Wed Jun  5 11:31:02 2024
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          1.6.33
+  GitCommit:        d2d58213f83a351ca8f528a95fbd145f5654e957
+ runc:
+  Version:          1.1.12
+  GitCommit:        v1.1.12-0-g51d5e94
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
+버전도 확인해보면 2024-06-05 최신 버전입니다.
+
+물론 최신버전이라고 무조건 좋은 것은 아니지만, 기존에 ncloud 기본 repository 에 있는 docker 버전을 설치해서 사용하다보니 버전 문제로 안되는 기능들이 몇가지 있었습니다. 그렇기 때문에 docker repository 를 등록하시고 docker 를 최신버전으로 설치해주시는 것을 추천드립니다. 원하시는 버전을 직접 설치해주시면 더 좋습니다.
+
+### docker service start
+```bash
+$ systemctl start docker
+$ systemctl enable docker
+$ systemctl status docker
+```
+도커를 실행하고 서버 재부팅시 자동으로 도커 서비스가 실행되도록 구성한 후 확인합니다.
+
+### docker image 검색 : nginx
+```bash
+$ docker search nginx
+
+[root@sowk33e1ae9i ~]# docker search nginx
+NAME                                     DESCRIPTION                                      STARS     OFFICIAL
+nginx                                    Official build of Nginx.                         20260     [OK]
+nginx/nginx-ingress                      NGINX and  NGINX Plus Ingress Controllers fo…   94        
+nginx/nginx-prometheus-exporter          NGINX Prometheus Exporter for NGINX and NGIN…   43        
+nginx/unit                               This repository is retired, use the Docker o…   63        
+nginx/nginx-ingress-operator             NGINX Ingress Operator for NGINX and NGINX P…   2         
+nginx/nginx-quic-qns                     NGINX QUIC interop                               1         
+nginx/unit-preview                       Unit preview features                            0         
+bitnami/nginx                            Bitnami container image for NGINX                193       
+linuxserver/nginx                        An Nginx container, brought to you by LinuxS…   219       
+ubuntu/nginx                             Nginx, a high-performance reverse proxy & we…   119       
+kasmweb/nginx                            An Nginx image based off nginx:alpine and in…   8         
+nginx/nginxaas-loadbalancer-kubernetes                                                    0         
+rancher/nginx                                                                             2         
+redash/nginx                             Pre-configured nginx to proxy linked contain…   2         
+youstin/nginx                                                                             0         
+nginx/nginxaas-operator                                                                   0         
+bitnamicharts/nginx                                                                       0         
+paketobuildpacks/nginx                                                                    0         
+rapidfort/nginx                          RapidFort optimized, hardened image for NGINX    15        
+wodby/nginx                              Generic nginx                                    2         
+bitwarden/nginx                          The Bitwarden nginx web server acting as a r…   13        
+starojanje/nginx                                                                          0         
+rasa/nginx                               Rasa X nginx server                              2         
+gluufederation/nginx                      A customized NGINX image containing a consu…   1         
+arm64v8/nginx                            Official build of Nginx.                         50   
+```
+위 명령어를 통해 이미지 설치 전에 docker 레지스트리에 어떤 이미지들이 있는지 간단히 확인해볼 수 있습니다.
+
+저는 대중적으로 쓰는 기본 nginx 를 설치하겠습니다.
+
+저는 이번 프로젝트에서 jenkins 를 쓰지않고 CI/CD 를 파이프라인 처리를 수동(?)으로 처리해볼 예정이기에 이정도면 도커에서 추가로 필요한 설치는 없는 것 같습니다.
+
+### DinD vs DooD
+호스트에서 직접 컨테이너를 관리하는 방식보다 보안상에 문제가 있지만, 도커 컨테이너에서 다른 컨테이너를 관리한다는건 상당한 장점도 존재합니다. 어떠한 방식을 선택할지는 자신의 서비스 환경에 달려있고 저는 host에서 webhook을 사용해 직접관리한다면 가장 좋겠지만 학습과 제 클라우드 컴퓨팅 성능 밸런스를 위해 DooD로 구축해 보겠습니다.
+
+
+![](/images/b81b41ce-eb38-49df-b543-ee92a30c6351-image.png)
+
+
+#### 1. 호스트에서 직접 컨테이너 관리
+가장 기본적이고 안전한 방식입니다.
+- 장점
+   - 직접적인 도커 데몬 접근으로 완전한 제어 가능
+   - 보안상 안전
+   - 성능 오버헤드 없음
+- 단점
+   - 자동화된 CI/CD 구현이 어려움
+   - 원격 관리가 제한적
+#### 2. Docker in Docker (DinD)
+컨테이너 내부에 완전히 독립된 도커 환경을 구축하는 방식입니다.
+- 장점
+   - 완전히 격리된 도커 환경 제공
+   - 독립적인 테스트 환경 구성 가능
+- 단점
+   - --privileged 플래그 필요로 보안 위험
+   - 리소스 오버헤드가 큼
+   - 성능 저하 발생 가능
+#### 3. Docker out of Docker (DooD)
+호스트의 도커 소켓을 컨테이너와 공유하는 방식입니다.
+- 장점
+   - 적은 리소스 사용
+   - 호스트의 도커 캐시 활용 가능
+   - DinD보다 간단한 설정
+- 단점
+   - 호스트 도커 데몬에 직접 접근하여 보안 위험 존재
+   - 컨테이너 간 격리성 감소
+
+
+## nginx 설정
+
+![](/images/6bff5f74-1ef1-4718-b17d-0e128bbb73ea-image.png)
+
+
+nginx 설정에선 ```conf.d``` 폴더만을 이용합니다. (conf 폴더는 혹시 모를 에러를 대비한 백업 폴더입니다)
+
+### default.conf / default.bak
+
+```sh
+upstream nextjs_upstream {
+    server frontend-b:your_port_number;
+}
+
+server {
+    listen 80;
+    server_name j-log.site www.j-log.site;
+
+    location /hooks/deploy-webapp {
+        proxy_pass http://flask-app:your_port_number;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 모든 HTTP 트래픽을 HTTPS로 리다이렉트
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name j-log.site www.j-log.site;
+    
+    ### let`s encrypt 관련 내용입니다.
+    ssl_certificate /etc/letsencrypt/perm_key_dir/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/perm_key_dir/privkey.pem;
+
+    location /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+    }
+    ###
+
+    location / {
+        proxy_pass http://nextjs_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+docker container 를 이용하여 nginx 를 띄우기 위해 기본적인 설정 파일을 미리 정의해두고 볼륨으로 마운트하여 컨테이너를 다시 빌드하더라도 빠르게 설정한 파일을 적용할 수 있도록 미리 작성해 두었습니다.
+
+nginx 의 경우 ```nginx.conf``` 파일을 기반으로 설정파일이 동작하지만 기본적으로 ```nginx.conf``` 파일은 ```conf.d``` 폴더에 있는 ```.conf``` 파일들을 include 하는 코드가 default 로 설정되어 있습니다. (따라서 conf.d 에 새로운 .conf 파일을 만들어도 무방하며, nginx.conf 파일을 직접 수정하셔도 됩니다.)
+
+```bash
+[root@s19274e1ae0e ~]# docker exec nginx ls /etc/nginx
+conf.d
+fastcgi_params
+mime.types
+modules
+nginx.conf
+scgi_params
+uwsgi_params
+```
+
+> **.bak 파일은 ?**
+백업 파일의 개념도 있지만 blue-green 배포를 진행하게 될 때 이미 동작중인 nginx 의 설정파일을 직접 수정하려하면 에러가 발생하게됩니다. 따라서 해당 문제를 해결하기위해 .bak 파일을 수정하고 .conf 파일을 .bak 파일로 덮어 문제를 해결하였습니다.
+
+## flask 서버
+
+![](/images/bb78b07d-4f8f-4082-8a50-9be432cc0dcd-image.png)
+
+
+
+### Dockerfile
+Dockerfile은 도커(Docker) 이미지 생성을 위한 설정 파일로 명령어들을 단계별로 작성하여 도커 이미지 빌드 프로세스를 자동화하는 파일입니다. Dockerfile을 통해 애플리케이션 실행 환경을 설정하고 필요로 하는 라이브러리나 종속성을 미리 설치하여 특정 환경을 갖춘 이미지를 만들 수 있습니다.
+
+```Dockerfile
+FROM python:3.9-slim
+
+# 필요한 도구 설치 (docker, bash, curl, git 등)
+RUN apt-get update && \
+    apt-get install -y docker.io git bash curl && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY webhook_server.py .
+COPY requirement.txt .
+
+# 라이브러리 설치
+RUN pip install --no-cache-dir -r requirement.txt
+
+EXPOSE 9000
+
+# Flask 개발 서버로 실행
+CMD ["python", "webhook_server.py"]
+```
+
+### webhook_server.py
+webhook 라이브러리를 통해 webhook 서버를 띄우는 것이 사실 더 간단하지만 저는 docker 활용 및 CI/CD 파이프라인을 공부하기 위한 목적이므로 Flask 를 컨테이너에 배포하여 진행해 보겠습니다.
+(성능 및 간단함만 원했다면 Jenkins로 배포를 진행했을 것 같습니다..)
+
+```python
+from flask import Flask, request
+import subprocess
+import os
+
+app = Flask(__name__)
+
+@app.route('/hooks/deploy-webapp', methods=['POST'])
+def deploy_webapp():
+    try:
+        os.chdir('/app/Jlog')
+        result = subprocess.run(['git', 'pull'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        script_result = subprocess.run(['/app/webhook/hook.sh'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return "Deployment successful", 200
+    except subprocess.CalledProcessError as e:
+        return f'Error: {e.stderr.decode("utf-8")}', 500
+    except Exception as e:
+        return f'Error: {str(e)}', 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=your_port_number)
+
+```
+
+사실 여기에서 Python Script 를 통해 CI/CD 를 쭉 진행 해도되지만 이후 과정들이 계속해서 스크립트 코드만 작성하기에 shellscript 를 하나 만들고 실행하였습니다. (이럴거면 webhook 쓸걸 그랬나 싶습니다. 그래도 에러 핸들링 측면에선 webhook 보단 괜찮은 것 같습니다.)
+
+아래에서 github webhook - secret 설정시 변경점도 적어두었습니다.
+
+## github webhook 설정
+
+![](/images/7407f8e4-e54c-4097-a6cb-39a971de08ce-image.png)
+
+
+이제 github repository - settings - webhooks 로 이동합니다. 
+이곳에서 payload URL 로 **공인IP:Port/location**을 http로 보내도록 합니다. 
+SSL 인증서를 사용할 경우 https(443)으로 통신하셔도 무방합니다.
+저는 webhook 요청이 단순 트리거 발생으로 원하는 파이프라인이 동작하게 하는 것이 목적이므로 http(80)통신을 사용해도 되지만 두 가지 방법을 알아보겠습니다.
+
+### http 처리
+
+nginx 80포트에서 동작시키기
+```sh
+server {
+    listen 80;
+    server_name j-log.site www.j-log.site;
+
+    location /hooks/deploy-webapp {
+        proxy_pass http://flask-app:your_port_number;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 모든 HTTP 트래픽을 HTTPS로 리다이렉트
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+```
+
+### https 처리
+
+nginx 443 포트에서 동작시키기
+```sh
+server {
+    listen 80;
+    server_name j-log.site www.j-log.site;
+
+    # 모든 HTTP 트래픽을 HTTPS로 리다이렉트
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name j-log.site www.j-log.site;
+    
+    ### let`s encrypt 관련 내용입니다.
+    ssl_certificate /etc/letsencrypt/live/j-log.site/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/j-log.site/privkey.pem;
+
+    location /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+    }
+    
+    location /hooks/deploy-webapp {
+        proxy_pass http://flask-app:your_port_number;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://nextjs_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+https 로 통신을 하기 위해서는 github - settings - webhook 옵션에서 SSL verification 을 허용해주셔야합니다.
+
+### Secret 옵션
+사실 현재 저렇게 구현만 해놓고 운영한다면 보안적인 측면에서 엄청난 리스크가 발생합니다. SSL 은 중간에 누군가 데이터를 가로채는 것을 방지하고 데이터를 암호화해서 전달하기 때문입니다.
+
+
+![](/images/5bd5e0b8-ceb3-4e9c-b717-fdb7d575bfd4-image.png)
+
+
+그렇기 때문에 위처럼 만약 누군가가 제 webhook 도메인주소와 포트번호, 로케이션 정보를 알게된다면 아무나 webhook 요청을 보낼 수 있게 됩니다. github에선 이러한 문제를 인지하고 있고 이를 방지하기위해 Secret이라는 비밀번호를 옵션으로 주고 있습니다.
+
+
+![](/images/4ab9d1da-3f0a-4030-b1f4-850472b9e6b0-image.png)
+
+
+github webhook - settings - Secret 옵션을 적용해보겠습니다.
+
+### GitHub Webhook 서명 검증 방식
+GitHub은 webhook 요청의 신뢰성을 검증하기 위해 두 가지 서명 헤더를 제공 하고 있습니다.
+- X-Hub-Signature: HMAC-SHA1 알고리즘 사용 (레거시 지원용)
+- X-Hub-Signature-256: HMAC-SHA256 알고리즘 사용 (권장)
+
+>GitHub은 보안상의 이유로 X-Hub-Signature-256 헤더 사용을 강력히 권장하고 있습니다
+
+### 서명 검증 작동 방식
+
+1. Webhook 설정 시 secret token을 지정
+2. GitHub이 webhook 요청을 보낼 때:
+   - payload와 secret token을 사용하여 HMAC 해시를 생성
+   - 생성된 해시를 X-Hub-Signature-256 헤더에 포함하여 전송
+3. 서버에서는:
+   - 동일한 방식으로 해시를 계산
+   - GitHub이 전송한 서명과 비교하여 검증
+
+
+
+![](/images/2e06f5ef-93d8-4ab7-8e0c-f30b310a76cb-image.png)
+
+
+### /root/python/webhook_server.py
+
+```python
+from flask import Flask, request
+import subprocess
+import os
+import hmac
+import hashlib
+
+app = Flask(__name__)
+
+# GitHub webhook secret key
+WEBHOOK_SECRET = 'PASSWORD'
+
+def verify_signature(payload_body, secret_token, signature_header):
+    """
+    GitHub webhook 서명을 검증
+    
+    Args:
+        payload_body: webhook 요청의 원본 데이터
+        secret_token: GitHub webhook에 설정된 secret
+        signature_header: GitHub에서 전송한 X-Hub-Signature-256 헤더값
+    """
+    if not signature_header:
+        return False
+
+    # GitHub의 서명은 'sha1=' or 'sha256='으로 시작
+    hash_object = hmac.new(
+        secret_token.encode('utf-8'),
+        msg=payload_body,
+        digestmod=hashlib.sha256
+    )
+    expected_signature = "sha256=" + hash_object.hexdigest()
+
+    return hmac.compare_digest(signature_header, expected_signature)
+
+
+@app.route('/hooks/deploy-webapp', methods=['POST'])
+def deploy_webapp():
+    try:
+        # X-Hub-Signature-256 헤더 확인
+        signature_header = request.headers.get('X-Hub-Signature-256')
+
+        # 서명 검증
+        if not verify_signature(request.data, WEBHOOK_SECRET, signature_header):
+        abort(403)
+
+        os.chdir('/app/Jlog')
+        # git pull
+        result = subprocess.run(['git', 'pull'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # shellscript pipeline code
+        script_result = subprocess.run(['/app/webhook/hook.sh'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return "Deployment successful", 200
+    except subprocess.CalledProcessError as e:
+        return f'Error: {e.stderr.decode("utf-8")}', 500
+    except Exception as e:
+        return f'Error: {str(e)}', 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=your_port_number)
+```
+## 파이프라인 ShellScript
+### 코드설명
+간단히 제 파이프라인 코드에 대해서 설명드리겠습니다. 저는 blue-green 배포 전략을 사용하여 간단히 CI/CD 파이프라인을 구성하였습니다. 만약 green 서버 배포를 진행중에 문제가 발생했다면 blue 서버를 그대로 운영하고 grenn
+
+- 디버깅 및 CI/CD 파이프라인의 문제를 판단하기위해 모든 성공 & 실패 정보는 ```/var/log/deploy.log``` 에 저장됩니다.
+- docker compose 에서 구성한 network name 을 사용하여 container 간 network 통신을 가능하게 합니다.
+
+### 동작 순서
+
+1. 먼저 배포 스크립트가 동작하게되면 기록 시작 시간을 남깁니다.
+2. 현재 동작중인 frontend 컨테이너 정보를 파악하여 active_container, inactive_container 이름을 분류합니다.(frontend-a, frontend-b 로 명명하였습니다)
+3. 동작중이지 않은 inactive_container 를 다시 한번 동작중이지 않는지 확인하고, 동작중이라면 두 개 서버가 모두 운영중이라는 뜻이므로 inactive_container 서버를 중단합니다.
+4. inactive_container 이미지를 미리 준비한 nextjs 배포용 Dockerfile 통해 빌드하고 컨테이너를 띄웁니다.
+5. nginx 컨테이너의 마운트된 설정파일을 백업해두고 설정을 새로운 FE 컨테이너에 맞게 설정합니다.
+6. ```docker run --rm``` 명령어를 통하여 새로운 nginx 컨테이너를 띄워 설정이 제대로 됐는지 테스트합니다. 실패했다면 기존 설정파일을 백업 파일로 되돌리고 FE 컨테이너를 종료합니다.
+7. 성공했다면 SIGHUP 시그널로 기존 연결을 끊지않고 nginx 컨테이너에 새로운 설정을 적용하여 CI/CD 파이프라인을 완성합니다.
+
+### /root/webhook/hook.sh
+```sh
+#!/bin/bash
+
+# 로그 파일 경로 설정
+LOG_FILE="/var/log/deploy.log"
+NETWORK_NAME="root_my-network"
+NGINX_DECONF_DIR="/root/proxy/conf.d"
+
+# 1. 스크립트 시작 시간 기록
+echo "Deployment started at: $(date)" >> $LOG_FILE
+
+# 2. 현재 활성화된 컨테이너 확인
+active_container=$(docker ps --filter "name=frontend-a" -q)
+
+# 3. 만약 inactive_container 가 실행 중이라면, 이미 실행 중인 inactive_container 중지 및 제거
+if [ "$(docker ps -a --filter "name=$inactive_container" -q)" ]; then
+    echo "Container $inactive_container already exists. Stopping and removing it..." >> $LOG_FILE
+    docker stop $inactive_container >> $LOG_FILE 2>&1
+    docker rm $inactive_container >> $LOG_FILE 2>&1
+fi
+
+# 4. inactive_container를 Dockerfile 통해 빌드하고 컨테이너를 띄웁니다.
+docker run -d -p $inactive_curl_port:your_port_number \
+  --net=$NETWORK_NAME \
+  --name $inactive_container \
+  $(docker build -q /app/Jlog/jlog -f /app/Jlog/jlog/Dockerfile) >> $LOG_FILE 2>&1
+
+# 종료 코드 확인 및 메시지 출력
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "Docker Compose for $inactive_container completed successfully."
+else
+    echo "Error occurred during Docker Compose for $inactive_container. Check the log file: $LOG_FILE"
+fi
+
+
+# 5. nginx blue-green 배포 설정 파일 변경
+echo $NGINX_DECONF_DIR >> $LOG_FILE 2>&1
+
+cp $NGINX_DECONF_DIR/default.conf $NGINX_DECONF_DIR/default.bak >> $LOG_FILE 2>&1
+
+if [ -n "$active_container" ]; then
+    inactive_container="frontend-b"
+    sed -i "s/server frontend-a:your_port_number;/server frontend-b:your_port_number;/" $NGINX_DECONF_DIR/default.conf >> $LOG_FILE 2>&1
+else
+    active_container="frontend-b"
+    inactive_container="frontend-a"
+    sed -i "s/server frontend-b:your_port_number;/server frontend-a:your_port_number;/" $NGINX_DECONF_DIR/default.conf >> $LOG_FILE 2>&1
+fi
+
+# 6. nginx 설정 컨테이너 테스트 
+docker run --rm -v /root/proxy/conf.d:/etc/nginx/conf.d -v /root/certs:/etc/letsencrypt --net=$NETWORK_NAME nginx nginx -t >> $LOG_FILE 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "Nginx configuration test passed." >> $LOG_FILE
+else
+    cp $NGINX_DECONF_DIR/default.bak $NGINX_DECONF_DIR/default.conf >> $LOG_FILE 2>&1
+    docker stop $inactive_container
+    docker rm $inactive_container
+    cp $NGINX_DECONF_DIR/default.bak $NGINX_DECONF_DIR/default.conf
+    echo "Nginx configuration test failed. Exiting..." >> $LOG_FILE
+    exit 1
+fi
+
+# 7. Nginx 설정 적용 (무중단 재시작)
+echo "Reloading Nginx configuration..." >> $LOG_FILE
+docker kill -s HUP nginx 
+
+if [ $? -eq 0 ]; then
+    echo "Nginx configuration reloaded successfully." >> $LOG_FILE
+else
+    echo "Failed to reload Nginx configuration." >> $LOG_FILE
+    exit 1
+fi
+
+# 기존 컨테이너 종료
+docker stop $active_container >> $LOG_FILE 2>&1
+docker rm $active_container >> $LOG_FILE 2>&1
+
+# 스크립트 종료 시간 기록
+echo "Deployment finished at: $(date)" >> $LOG_FILE
+```
+### 주의해야할 점
+
+1. 마운트된 파일은 변경이 안되기 때문에 docker volume 마운트를 할땐 파일이 아닌 상위 폴더를 마운트 시키는 것을 추천드립니다.
+
+- 초기 셋팅을 진행할때 저는 ```/root/proxy/conf.d/default.conf``` 파일을 직접 nginx 컨테이너에 ```/etc/nginx/conf.d/default.conf``` 파일로 직접 볼륨 마운트를 하였습니다. 제 nginx 웹서버 아래에 여러 포트로 서비스가 동작하지 않기에 단순히 한가지 설정파일이면 충분하다고 생각했습니다.
+그리고 파일 수정이 안되는 문제를 겪어서 조금 고생했습니다..
+
+2. 보안을 위해 마운트 시킬때 :ro(read only) 옵션을 걸어서 docker 컨테이너 내부에서 파일 변경을 잠궈두고 host 에서 파일 변경을 권장드립니다.
+
+## 마무리
+
+![](/images/0d88f9d0-1361-4235-90a4-c4987ab1e0b8-image.png)
+
+
+github - settings - webhook 탭에서 webhook 요청에 대한 성공/실패를 볼 수 있고 Redeliver 를 통해 해당 요청을 다시 보내는 것도 가능합니다.
+
+### 고찰 (왜 이렇게 힘들게 했나?)
+
+#### jenkins
+젠킨스를 사용했다면 아마 셋팅이 더 간단하고 롤백, 롤링업데이트 등 퍼포먼스적으로도 좋았을 것이라 생각합니다. 젠킨스를 띄워둔다면 웹에서 가시화된 UI 로 어느정도 셋팅이 가능하기에 만약 저처럼 제한된 컴퓨터 성능에서 CI/CD 를 구축하는 경우가 아니라고 하시면 jenkins 를 사용하시는 것을 추천드립니다. 
+#### webhook
+가장 고민한 부분이 webhook이었습니다. 
+- "위에서 jenkins를 컴퓨터 성능을 고려해 뺐다면 flask 서버를 띄우는 것도 CPU/RAM 을 잡아먹지 않냐? webhook으로 linux 내에서 처리했어야지 flask 도 shellscript 코드만 동작시키던데?"
+
+이렇게 질문하신다면 맞는 말이기에 할말이 없습니다. 이 질문에 대해 답변을 해야한다면
+
+- 제가 생각한 방향은 jenkins 는 너무 무거워 서버가 터졌었기에 대안을 찾아야했고 docker 를 좀 더 잘 사용해보고자 container 환경으로 모든 것을 구축하고 싶었습니다.
+
+### DNS, SSL
+
+내용이 너무 길어져 DNS 설정 및 SSL 설정은 다음 포스팅때 작성해보도록 하겠습니다.
+
+현재 내용이 DNS, SSL 모두 적용된 코드이기에 최대한 빠르게 다음 포스팅을 작성해보도록 하겠습니다.
+
+---
+### 참고자료
+
+- 출처 : https://docs.github.com/ko/webhooks/webhook-events-and-payloads
+- 출처 : https://docs.python.org/ko/3/library/hmac.html
+- 출처 : https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=isc0304&logNo=222274955992

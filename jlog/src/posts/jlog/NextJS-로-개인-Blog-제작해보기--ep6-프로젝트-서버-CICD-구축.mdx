@@ -1,0 +1,358 @@
+---
+title: "NextJS 로 개인 Blog 제작해보기 - ep.6 프로젝트 서버 CI/CD 구축"
+description: "NCP(Naver Cloud Platform) 을 활용하여 micro 무료서버를 받아 nextJS 프로젝트 서버구성을 진행해보았습니다."
+date: 2024-10-08T06:16:58.278Z
+tags: ["CI/CD","Nginx","docker","github","navercloudplatform","ncp","webhook","무중단배포","서버구축"]
+category : "Python"
+---
+
+
+
+# Server
+ 오랜만에 업로드되는 블로그 프로젝트로 추후 작업은 서버 CI/CD 부터 구축하여 배포 자동화를 구축하고 도메인을 구입하여 블로그를 운영하며 진행하겠습니다.
+ 
+## 서버 살펴보기
+
+### $ yum update
+```bash
+[root@s19274e1ae0e ~]# yum update
+Loaded plugins: fastestmirror, langpacks
+Loading mirror speeds from cached hostfile
+Could not retrieve mirrorlist http://mirrorlist.centos.org/?release=7&arch=x86_64&repo=os&infra=stock error was
+14: curl#6 - "Could not resolve host: mirrorlist.centos.org; 알 수 없는 오류"
+
+
+ One of the configured repositories failed (Unknown),
+ and yum doesn't have enough cached data to continue. At this point the only
+ safe thing yum can do is fail. There are a few ways to work "fix" this:
+
+     1. Contact the upstream for the repository and get them to fix the problem.
+
+     2. Reconfigure the baseurl/etc. for the repository, to point to a working
+        upstream. This is most often useful if you are using a newer
+        distribution release than is supported by the repository (and the
+        packages for the previous distribution release still work).
+
+     3. Run the command with the repository temporarily disabled
+            yum --disablerepo=<repoid> ...
+
+     4. Disable the repository permanently, so yum won't use it by default. Yum
+        will then just ignore the repository until you permanently enable it
+        again or use --enablerepo for temporary usage:
+
+            yum-config-manager --disable <repoid>
+        or
+            subscription-manager repos --disable=<repoid>
+
+     5. Configure the failing repository to be skipped, if it is unavailable.
+        Note that yum will try to contact the repo. when it runs most commands,
+        so will have to try and fail each time (and thus. yum will be be much
+        slower). If it is a very temporary problem though, this is often a nice
+        compromise:
+
+            yum-config-manager --save --setopt=<repoid>.skip_if_unavailable=true
+
+Cannot find a valid baseurl for repo: base/7/x86_64
+```
+
+기본적인 업데이트를 진행하려는데 base repository 설정이 안되어 있는듯 합니다.
+
+### $ grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+```bash
+[root@s19274e1ae0e ~]# grep baseurl /etc/yum.repos.d/CentOS-Base.repo
+# remarked out baseurl= line instead.
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+```
+centOS  기반 레포지토리 코드를 보니 기본 미러사이트 주소들이 모두 주석처리 되어있습니다. 주석만 풀면 해결될 문제 같아 보이지만 혹시모르니 [NCP 상 정책](https://guide.ncloud-docs.com/docs/linux-os-repository-check)을 찾아보았습니다.
+
+> 현재 CentOS에 설정된 Base URL은 ```http://mirror.ncloud.com/centos```이나, ```http://repo.ncloud.com/centos```로 사용하는 것을 권장해 드립니다.
+
+정책상 외부 미러사이트를 사용하는 것도 가능은 하지만 해당 ncloud 미러사이트를 추천한다고 합니다. 해당 정책에서 친절하게 변경하는 방법 가이드라인도 제공하고 있으니 해당 정책을 참고해주시면 수월하게 변경이 가능할 듯 합니다.
+
+가이드라인을 확인하기 귀찮으신 분들을 위해 5줄 정리하지면 (CentOS 기준입니다)
+
+1. ```rpm -qa | grep yum-utils | wc -l``` => 결과가 0 or 1 
+2. 결과가 0일 경우 ```yum install yum-utils``` 통해 yum-utils 인스톨
+3. 결과가 1일 경우 위 인스톨 과정 필요 없음
+4. ```yum-config-manager --add-repo http://init.ncloud.com/server/linux/repo/centos7/CentOS-Base.repo``` 레포지토리 등록
+5. ```sed -i 's|^baseurl=http://mirror.ncloud.com|baseurl=http://repo.ncloud.com|' /etc/yum.repos.d/CentOS-Base.repo``` 설정 레포지토리 변경
+
+
+### $ grep ^baseurl /etc/yum.repos.d/CentOS-Base.repo
+```bash
+[root@s19274e1ae0e ~]# grep ^baseurl /etc/yum.repos.d/CentOS-Base.repo
+baseurl=http://repo.ncloud.com/centos/$releasever/os/$basearch
+baseurl=http://repo.ncloud.com/centos/$releasever/updates/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/extras/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/centosplus/$basearch/
+baseurl=http://repo.ncloud.com/centos/$releasever/contrib/$basearch/
+```
+
+가이드라인대로 진행 후 확인해보면 정상적으로 변경이 되었습니다.
+
+### $ yum update
+다시 패키지 기본 업데이트를 진행 후 docker 설치를 진행하겠습니다.
+
+## docker
+
+### $ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+먼저 도커 설치 전에 도커 레포지토리를 등록하여 최신 도커 버전을 설치할 수 있도록 진행하겠습니다.
+
+
+### $ yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+도커 설치를 진행하겠습니다. 기본적인 도커 구성 세트이며 추가로 docker-compose 까지 추가로 설치하였습니다. nginx 웹 서버를 도커 컨테이너로 띄울 예정이며 해당 웹서버와 호스트 서버간 네트워크 통신이 가능하게 하기위해 docker-compose 를 추가하였습니다. (사실 호스트서버-컨테이너 통신은 반드시 docker-compose 가 필요한 것은 아니나 추후 다른 컨테이터를 띄울 수도있어 미리 compose 를 구성하려고합니다.)
+
+
+### $ yum list installed | grep docker
+```bash
+[root@s19274e1ae0e ~]# yum list installed | grep docker
+containerd.io.x86_64               1.6.33-3.1.el7                      @docker-ce-stable
+docker-buildx-plugin.x86_64        0.14.1-1.el7                        @docker-ce-stable
+docker-ce.x86_64                   3:26.1.4-1.el7                      @docker-ce-stable
+docker-ce-cli.x86_64               1:26.1.4-1.el7                      @docker-ce-stable
+docker-ce-rootless-extras.x86_64   26.1.4-1.el7                        @docker-ce-stable
+docker-compose-plugin.x86_64       2.27.1-1.el7                        @docker-ce-stable
+```
+도커 설치를 확인해봅니다.
+
+### $ docker version
+```bash
+[root@s19274e1ae0e ~]# docker version
+Client: Docker Engine - Community
+ Version:           26.1.4
+ API version:       1.45
+ Go version:        go1.21.11
+ Git commit:        5650f9b
+ Built:             Wed Jun  5 11:32:04 2024
+ OS/Arch:           linux/amd64
+ Context:           default
+```
+도커 버전을 확인해보고 최신버전인지 확인해봅니다. 잘 설치가 된 것 같습니다.
+
+### docker service start
+```bash
+$ systemctl start docker
+$ systemctl enable docker
+$ systemctl status docker
+```
+도커를 실행하고 서버 재부팅시 자동으로 도커 서비스가 실행되도록 구성한 후 확인합니다.
+
+### $ docker search nginx
+```bash
+[root@s19274e1ae0e ~]# docker search nginx
+NAME                                     DESCRIPTION                                      STARS     OFFICIAL
+nginx                                    Official build of Nginx.                         20260     [OK]
+nginx/nginx-ingress                      NGINX and  NGINX Plus Ingress Controllers fo…   94        
+nginx/nginx-prometheus-exporter          NGINX Prometheus Exporter for NGINX and NGIN…   43        
+nginx/unit                               This repository is retired, use the Docker o…   63        
+nginx/nginx-ingress-operator             NGINX Ingress Operator for NGINX and NGINX P…   2         
+nginx/nginx-quic-qns                     NGINX QUIC interop                               1         
+nginx/unit-preview                       Unit preview features                            0         
+bitnami/nginx                            Bitnami container image for NGINX                193       
+linuxserver/nginx                        An Nginx container, brought to you by LinuxS…   219       
+ubuntu/nginx                             Nginx, a high-performance reverse proxy & we…   119       
+kasmweb/nginx                            An Nginx image based off nginx:alpine and in…   8         
+nginx/nginxaas-loadbalancer-kubernetes                                                    0         
+rancher/nginx                                                                             2         
+redash/nginx                             Pre-configured nginx to proxy linked contain…   2         
+youstin/nginx                                                                             0         
+nginx/nginxaas-operator                                                                   0         
+bitnamicharts/nginx                                                                       0         
+paketobuildpacks/nginx                                                                    0         
+rapidfort/nginx                          RapidFort optimized, hardened image for NGINX    15        
+wodby/nginx                              Generic nginx                                    2         
+bitwarden/nginx                          The Bitwarden nginx web server acting as a r…   13        
+starojanje/nginx                                                                          0         
+rasa/nginx                               Rasa X nginx server                              2         
+gluufederation/nginx                      A customized NGINX image containing a consu…   1         
+arm64v8/nginx                            Official build of Nginx.                         50   
+```
+위 명령어를 통해 이미지 설치 전 어떤 이미지들이 있는지 간단히 확인해볼 수 있습니다. ```nginx``` or ```bitnami/nginx``` 를 설치해주시면 될 것 같습니다. bitnami 버전은 기존 버전대비 경량화와 자체 지속적인 업데이트를 통한 보안을 강화시켰다고 보면 될 것 같습니다. 저는 bitnami/jenkins 를 사용해본 적이 있는데 이미지 컨테이너 초기 구성 설정을 해주어서 초기 사용이 편리했습니다. 
+
+저는 대중적으로 쓰는 기본 nginx 를 설치하겠습니다.
+
+
+### 서버구성
+서버 구성을 해보겠습니다. 저는 우선 앞서말씀드린대로 [NCP(Naver Cloud Platform) Server 중 무료 서버](https://velog.io/@jaemaning/NCP-Server-생성-공인IP-설정-포트포워딩-몰아보기)를 받아 사용을 진행했습니다.
+
+간단히 github webhook - nginx - jenkins 를 이용하여 배포 자동화를 구축하려고 하였지만 성능 이슈가 발생했습니다. 
+
+
+![](/images/7e17ae99-e3b0-43d6-bb8b-c1394057435b-image.png)
+
+
+
+역시 1CPU / 1GB RAM 은 어려운 걸까요. 문제를 찾아보니 ```jenkins``` 최소사양은 1CPU / 1GB RAM 이지만 이는 정말 실 사용자가 측정한 미니멀한 사양인듯 합니다. 권장 사양은 2CPU / 2GB RAM 이었습니다.
+
+이 문제로 저는 CPU / RAM 을 늘린 서버를 구매하거나 다른 대안을 찾아야했습니다.
+
+### 1. webhook 을 이용한 대안
+
+webhook 을 이용한 간단한 파이프라인을 구축하면 블루-그린 전략의 무중단 배포를 nginx 로드밸런싱을 통해 구성할 수 있습니다.
+
+### /root/proxy/default.conf
+```bash
+upstream nextjs_upstream {
+    server 127.0.0.1:3000;  # nextjs-container-a
+    server 127.0.0.1:3001;  # nextjs-container-b
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://nextjs_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /hooks/deploy-webapp {
+        proxy_pass http://127.0.0.1:9000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+![](/images/736f8834-5583-4148-a630-9e0a9fe8e383-image.png)
+
+
+
+```sudo yum install webhook``` 명령어를 통해 webhook 을 받아주고 위 사진처럼 Github webhook 과 nginx 상 url 를 매칭 시켜준 뒤 몇몇 shellscript 를 작성해 준다면 간단하게 github 와 파이프라인 구축이 가능합니다.
+
+### /root/hooks/test.sh
+```sh
+#!/bin/bash
+
+# 로그 파일 경로 설정
+LOG_FILE="/var/log/deploy.log"
+
+# 현재 활성화된 컨테이너 확인
+active_container=$(docker ps --filter "name=nextjs-container-a" -q)
+
+if [ -n "$active_container" ]; then
+    inactive_container="nextjs-container-b"
+else
+    inactive_container="nextjs-container-a"
+fi
+
+# 새로운 버전 가져오기
+cd /root/nextjs
+git pull origin main >> $LOG_FILE 2>&1
+
+cd jlog
+
+# 새 컨테이너 빌드 및 실행
+docker build -t my-nextjs-app . >> $LOG_FILE 2>&1
+docker run -d --name $inactive_container -p 3001:3000 my-nextjs-app >> $LOG_FILE 2>&1
+
+# nginx 재설정 및 리로드
+sed -i "s/nextjs-container-[ab]/$inactive_container/" /etc/nginx/conf.d/default.conf
+nginx -s reload >> $LOG_FILE 2>&1
+
+# 이전 컨테이너 종료 및 삭제
+docker stop $active_container >> $LOG_FILE 2>&1
+docker rm $active_container >> $LOG_FILE 2>&1
+```
+
+
+![](/images/057a23aa-8787-4395-a7e7-355f479c0c31-image.png)
+
+
+
+이렇게 간단한게 webhook 을 이용하여 간소화된 프로젝트 빌드를 진행할 수 있습니다.
+
+사실 이 방법 외에도 다양한 방법이 있습니다.
+
+1. jenkins 같은 CI/CD 오픈소스 툴의 도움을 받는다.
+2. webhook - nginx 상에서 docker continer 를 이용해 blue-green 아키텍처를 구성한다.
+3. k3s 등 롤링업데이트 서비스 아키텍처를 구성한다. (해당 방법으로 구성해본적은 없습니다.)
+
+사실 가장 편한 방법이자 효율적인 방법은 서버 사양을 늘리고 jenkins 를 사용하는 것입니다. 이유는 CI/CD 를 위한 오픈소스이기에 사용이 편하고 웹 대시보드 지원, 테스트, 롤링업데이트, 블루-그린 배포 모두 사용가능하며 pipeline 작성 방법도 여러방법으로 작성할 수 있기에 편의성이 늘어나고 복잡한 과정을 알 필요가 없습니다.
+
+하지만 무료 서버를 이용해 구축해보고 싶은 마음과 제 블로그를 많은 분들이 방문하지 않을걸 잘 알기에, 한 번 2번 방법으로 시도해보겠습니다. (사실 jenkins가 안되자마자 nginx 설정을 이미 위에서 해당 방법으로 구성해 두었습니다.)
+
+### fe - dockerfile
+
+```dockerfile
+# 1. Node.js 베이스 이미지 사용
+FROM node:18-alpine
+
+# 2. 작업 디렉토리 설정 (jlog 디렉토리로 설정)
+WORKDIR /root/nextjs/jlog
+
+# 3. package.json 및 package-lock.json 파일 복사
+COPY package*.json ./
+
+# 4. 종속성 설치 (저는 일부 예전 라이브러리도 사용하여 --legacy-peer-deps 를 붙였습니다)
+RUN npm install --legacy-peer-deps
+
+# 5. 애플리케이션 코드 복사
+COPY . .
+
+# 6. Next.js 빌드
+RUN npm run build
+
+# 7. 포트 설정
+EXPOSE 3000
+
+# 8. Next.js 서버 실행
+CMD ["npm", "start"]
+```
+### docker-compose.yml
+```yml
+version: '3'
+services:
+  my-nginx:
+    image: my-nginx-with-vim
+    network_mode: host
+    ports:
+      - 80:80
+    volume:
+      - ./proxy/default.conf:/etc/nginx.conf.d/default.conf
+    container_name: nginx
+```
+
+이렇게 docker-compose 와 dockerfile 을 생성해주고 ```docker-compose up -d``` 명령어를 통해 docker compose container 를 띄워주면 nginx 서버가 올라가고 webhook 이 연결된 제 프론트엔드 코드가 변경되는 git push 를 진행하는 순간 test.sh 의 자동화 코드가 동작합니다.
+
+git pull 이후 자동으로 패키지와 코드를 확인하여 빌드를 진행하고 해당 빌드 파일 결과물로 서버를 구동하게 됩니다.
+
+이후 블루 그린 전략으로 3000, 3001 번 포트로 로드밸런싱 되어 활성화된 포트로 사용자는 웹페이지를 받을 수 있어 무중단 배포가 가능해집니다.
+
+
+![](/images/62b5f8b1-4446-4c93-8e64-7f9334a78cdd-image.png)
+
+
+
+하지만 테스트 진행 중 git 에서 프론트엔드 코드를 받아오고 ```npm install``` 과정을 진행하는데 3분쯤 서버가 멈췄습니다. 어쩔수없이 강제 종료 후 다시 ssh 로 서버에 접속하려는데 서버 접속도 먹통이 되어 서버 성능을 체크하였고 터진것을 확인했습니다. (생각보다 NCP 서버 성능 대시보드가 잘되어있네요)
+
+이대로면 가벼운 프론트엔드 서버를 구축해 운영하는 것은 무리라고 판단하였고 2CPU / 8GB 의 
+
+s2-g2 서버로 테스트를 진행해야할 것 같습니다.
+
+
+![](/images/a7e07d99-37ad-446c-85e7-7513f8545025-image.png)
+
+
+피같은 88,000원 .. 하지만 사실 지난달 NClouder를 받아 NCP 20만 포인트를 얻었습니다.
+
+
+
+![](/images/3705a772-b521-4dd8-a113-270bc80cce1e-image.png)
+
+
+
+이제 두달간 마음껏 테스트해볼 수 있겠군요. 신이납니다. :)
+
+그럼 다음 글은 새로운 서버에서 docker-nginx-frontend 서버를 띄워보도록 하겠습니다.
+
+사양이 어느정도냐에 따라서 jenkins 를 이용해 CI/CD 를 구축할 수도 있겠지만 일단 안전하게
+
+nginx 로드밸런싱을 이용한 blue-green 배포로 CI/CD 를 진행해 보겠습니다.

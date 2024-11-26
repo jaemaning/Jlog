@@ -53,18 +53,19 @@ function parsePostDetail(postPath : string) {
 export async function getPostAll(category?: string): Promise<Post[]> {
   const postPaths = getPostPaths(category);
   const posts = await Promise.all(postPaths.map((postPath) => parsePost(postPath)));
+
   return posts;
 };
 
 
 // 단일 페이지 조회
 export async function getPostDetail(category: string, name: string) {
-  const postPath = await sync(`${POSTS_PATH}/${category}/${name}.mdx`)
+  const decodedName = decodeURIComponent(name)
+  const postPath = await sync(`${POSTS_PATH}/${category}/${decodedName}.mdx`)
   if (!Array.isArray(postPath) || postPath.length === 0) {
     return notFound()
   } else {
-    console.log(postPath)
-    const detail = await parsePost(postPath[0]);
+    const detail = await parsePost(decodeURIComponent(postPath[0]));
     return detail;
   }
 }

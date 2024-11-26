@@ -1,0 +1,883 @@
+---
+title: "수자원공사 대국민 물 빅데이터 공모전 참여 Feat. NCP(Naver Cloud Platform)"
+description: "수자원공사에서 진행한 대국민 물 빅데이터 공모전에 참여하고 해당 프로젝트 내용을 기억하기 위해 작성되었습니다."
+date: 2024-08-16T07:24:11.533Z
+tags: []
+category : "Python"
+---
+수자원공사에서 진행한 대국민 물 빅데이터 공모전에 참여하고 해당 프로젝트 내용을 기억하기 위해 작성되었습니다.
+
+
+## 수자원 공사 대국민 물 빅데이터 공모전 내용
+
+![](/images/cee06458-7ec2-42d8-8d22-e435d7f3a4df-image.png)
+
+
+### 공모전 개요
+
+□ (공 모 명) 2024년 K-water 대국민 물 빅데이터 공모전
+
+□ (공모부문) K-water 데이터를 활용·분석한 아이디어 기획 
+* 제품 및 서비스 개발 시 평가 가점 부여, 발표평가에서 시연 예정
+
+□ (공모주제) 국민 물 서비스 향상 및 물 문제 해결에 기여할 수 있는 자유 주제
+* 주제 선정 시 K-water 대내외 빅데이터 공모전 수상 과제(‘Mywater–전문정보-빅데이터 분석사례’에 게시) 참고 가능
+
+□ (활용데이터) 공공데이터포털(www.data.go.kr) 등 물관련 데이터를 제공하는 정보시스템을 통하여 분석 데이터 확보 및 활용
+* K-water 데이터 활용 필수이며 MyWater, 워터라운드, 환경빅데이터플랫폼 및 타 공공기관․민간 데이터의 융합 활용 가능
+
+
+위 공모전에 자세한 개요를 확인해보면 **제품 서비스 개발 시 평가 가점 부여, 발표평가에서 시연 예정** 으로 되어있어 제품 서비스 개발을 동시에 진행하였습니다.
+
+
+## 프로젝트
+
+### 프로젝트 기획 배경
+>
+ 지하수를 수원으로 하는 대표적인 지역인 제주도는 지하수가 전체 수자원 시설용량의 88.5%를 차지하고 있어 전국의 수자원 중 지하수를 이용하는 비율이 7.6%인 것을 고려할 때 매우 많은 양의 수자원을 지하수에 의존하고 있은 것을 알 수 있다. 
+>
+ 따라서, 내륙지역에서 댐 저수량을 계측하고 예측하는 것이 중요하듯 제주도에서는 지하수 수위를 계측하고 예측하는 것은 제주도 주민들에게 안정적인 용수 공급을 위해 매우 중요한 사항이다.
+>
+ 하지만 지하수 관정의 증가와 기후변화로 지하수자원 보호에 어려움이 예상되어 지하수 보호에 국민이 공감할 수 있도록 제주도 지하수 수위 현황 및 예측 앱을 개발하였다.
+
+저를 포함 2인의 개발자로 구성된 팀으로 참여하여 개발 및 보고서 작성까지 2주의 시간이 소요되었습니다. 
+
+프로젝트 전체 진행 과정은 다음과 같습니다.
+
+1. 아이디어 기획
+2. 세부 활용 데이터 선정
+3. 시계열 예측 Model 선정
+4. 시계열 예측 Model 구현
+5. 가시화 구축 계획 선정 (App 및 S3 Storage 만으로 구현)
+6. App 개발 진행
+7. APP 배포
+8. Naver Storage(S3) 업로드 자동화 프로세스 구축
+++ Streamlit 을 활용한 Web Service 확대
+
+
+제가 담당한 부분은 5-8번 과제로 자세한 내용은 다음과 같습니다.
+- Android App 개발 (지하수 수위 예보 앱)
+  - Naver Map SDK 사용한 제주 지하수 수위 예보 가능 지역 마커 구분
+  - 지역별 지하수 수위 예보 가시화 자료 WebView 구현
+  - Naver Cloud Flatform S3 Storage 연동을 통한 데이터 수신
+  - 구글 플레이 스토어 앱 배포
+- AI Model Mac version 구동 (CPU 사용 - MPS 장치 가속 사용 안함)
+- Mac 스케쥴링 시스템인 crontab 을 사용하여 S3 업로드 자동화 구현 (linux 와 동일)
+
+## 시계열 예측을 위한 ML Model
+
+### 입력 데이터
+AI Model 의 학습에 사용한 입력 자료로는 기상청과 k-water 지하수정보센터에서 OPEN API로 제공하는 공공자료를 사용하였습니다.
+- '국가지하수측정망 지하수 수위 시계열 측정 일자료'
+- '기상청 종관기상관측(ASOS) 강수량 시계열 계측 및 예측 3일 시자료'
+
+
+![](/images/5d59154c-d76d-4884-9dda-690ecd4a2c63-image.png)
+
+
+강수자료의 경우 +3일 예보자료도 제공받기때문에 지하수 수위의 3일 예측자료를 생성할 수 있었습니다.
+
+### 모델선정
+7개 시계열 예측 모델을 비교하여 회귀 모델(regression model)평가 지표 중 MAPE(Mean Absolute Percentage Error)만을 비교하여 모델을 선정하였습니다.
+
+> **MAPE(Mean Absolute Percentage Error) : 평균 절대 비율 오차**
+
+![](/images/8042d515-e01a-4c30-b8b1-a21bdc1eaaac-image.png)
+
+MAPE 를 회귀 모델 평가 지표로 사용한 이유는 다른 분석 방법에 비해 직관적으로 에러율 비교가 가장 쉽기 때문입니다.
+또한 단점으로 지적되는 음,양 정확도 비교를 알기 어려운점도 모델 선정에선 큰 의미가 없다고 생각하여 MAPE 를 **평가 지표로 선택**하였습니다.
+
+
+
+![](/images/2785c1a1-0f01-4e60-adb0-de68837e6370-image.png)
+
+
+
+![](/images/df0b0e3e-16e9-40a1-a230-4e519fdfe76f-image.png)
+
+
+MAPE 값 비교 및 눈으로 데이터를 비교해 보았을때 가장 예측 정확도가 높은 모델은 TFT(Temporal Fusion Transformer) 모델 이었습니다. 이는 RNN과 Transformer를 결합한 구조로서, Transformer의 positional encoding을 RNN(LSTM)으로 대체한 구조의 모델입니다.
+
+> **TFT(Temporal Fusion Transformer) 모델**
+![](/images/image.gif)
+모델의 핵심 아이디어는 **시간에 따라 변하지만 알 수 있는 변수(Knwon Inputs)**와 **변하지 않는 정적 공변량(Static Convariates)** 를 함께 모델에 입력하여 **다중 시점에 대한 예측**이 가능하다는 점입니다.
+자세한 모델 구조를 알고 싶으시면 [논문](https://arxiv.org/abs/1912.09363) 참고 부탁드립니다.
+
+이러한 모델을 파이썬으로 구현하기 위해서는 다음과 같은 스텝이 필요합니다.
+
+1. 데이터 로드 및 전처리
+2. 학습 데이터셋 정의
+3. 검증 데이터셋 생성
+4. DataLoader로 변환
+5. Trainer 설정 및 초기화
+6. 모델 정의
+7. 최적 학습률 탐색
+8. 모델 학습 후 검증
+
+저희는 심플하게 해당 모델을 사용하기 위해 darts 라이브러리를 사용하였습니다.
+다음은 darts 라이브러리를 사용해 진행한 스텝입니다.
+
+1. 데이터 로드 및 전처리
+	- OPEN API 에서 데이터를 로드하였습니다.
+	- 결측값을 처리해주었습니다.
+    - 특정 튄값에 대한 처리를 진행하였습니다.
+2. 학습 데이터셋 객체 정의
+	- darts TimeSeries 객체를 통해 정의하였습니다.
+3. 검증 데이터셋 객체 정의
+	- darts TimeSeries 객체를 통해 정의하였습니다.
+4. 모델 셋팅
+	- darts TFTModel 객체를 통해 정의하였습니다.
+5. 모델 학습 후 검증
+	- pandas, matplotlib, plotly 라이브러리를 통해 시각화하고 MAE, MAPE 비교를 통해 검증하였습니다.
+
+darts 라이브러리에서 각종 시계열 ML에 대한 클래스를 통해 객체 제공을 해줄 뿐아니라, TimeSeries 등의 입력자료 클래스 또한 제공을 해줌으로써 데이터셋 정의와 모델의 배치사이즈등을 정하는 셋팅만 해주면 준비가 완료됩니다.
+
+정확한 코드는 [github](https://github.com/jaemaning/GW_Pred_App) 또는 아래 '자동화 프로세스 구현' 차례에서 소개하겠습니다.
+
+
+## APP 구현
+
+![](/images/image-4.jpeg)
+
+![](/images/image-5.jpeg)
+
+  □ 어플리케이션 세부 정보
+   ○ (개발환경) Kotlin / Android Studio(IDE)
+   ○ (개발서버) Local PC에서 이미지 생성 및 업로드
+   ○ (이미지저장소) [Naver Cloud Platform](https://www.ncloud.com) – Object Storage API
+   ○ (지도 SDK) [Naver Cloud Platform](https://www.ncloud.com) – AI NAVER API Map
+   ○ (소스코드) [Github](https://github.com/jaemaning/GW_Pred_App)
+   ○ 안드로이드 개발 버전
+   
+![](/images/83dc588a-b0c9-4fab-a09c-c7df9e784ea1-image.png)
+
+
+
+
+## No-Server 구현
+
+
+초기 위 AI 모델을 통해 가시화한 자료를 보여줄 방안으로 서버 구축을 생각해보았다. 비용과 효율, 성능을 고려했을 때 2가지 무료 서버가 만족스러워 보였다.
+
+- AWS t2.micro 버전의 무료 서버
+- NCP 1세대 micro 버전의 무료 서버 (현재 3세대 micro 서버 업데이트 예정인 것으로 보임)
+
+1주일안에 앱을 개발후 배포해두고 서버를 구축할 계획이었으나, AWS t2.micro 서버를 받고 AI 모델 테스트를 진행하면서 원활히 동작되지 않았다. 이유를 살펴보니 무료 버전이기에 RAM 100MB 서버였고, AI 모델을 돌리기에 충분하지 않았던 것 같다. NCP 1세대 micro 버전도 테스트를 진행할까 했으나 테스트를 위한 서버이기에 AWS 와 비슷할 것으로 판단하여 다른 방법을 찾기 시작했다.
+
+android app 에서 Naver-map-SDK 와 Naver-S3 storage 를 사용중이었으며 NCP 최소 서버가 월 1만원대로 저렴했고, 인바운드 자료 전송에 대해선 무료였기에 Naver-S3 storage 사용에서 이점이 있을 것으로 보였다.
+
+같이 개발을 진행한 개발자님께서 어차피 사용자는 거의 없을거고 시연 때 보여주기만 할거니까 서버를 두지않고 로컬 PC 에서 업로드를 진행하는 것은 어떠냐고 말씀하셨고 실제로 Naver-S3 storage 에서 매우 소액의 경우 NCP 측에서 비용을 받지 않는 것을 알게 되었다.
+
+이에 No-Server 로 로컬 PC(Mac)에서 crontab 과 shScript, Python 을 통해 AI model to NCP S3 storage 자동화 프로세스를 구성하였다.
+
+
+![](/images/e43f95bc-cf85-4281-8f39-f65609cfa093-image.png)
+
+
+## 자동화 프로세스 구현
+
+자동화 구축 방법은 다음 프로세스를 따랐다. 
+
+① NCP S3 storage upload 코드
+② 지하수 수위 예측 AI 모델 코드
+③ run_script.sh 코드 작성
+
+① 코드 구현 - ② 코드 구현 동작 후 ① 코드 동작 - ③ 을 통하여 ①,② 코드 동작 - crontab 스케쥴링을 이용해 ③ 코드 동작 (매일 9시 세팅)
+
+### ① NCP S3 storage upload 코드
+
+```python
+# ① NCP S3 storage upload 코드
+
+import boto3
+from datetime import datetime
+import json
+
+# =============================================================================
+# api key 가져오기
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# =============================================================================
+
+def ncpUpload():
+    service_name = 's3'
+    endpoint_url = 'https://kr.object.ncloudstorage.com'
+    region_name = 'kr-standard'
+    access_key = os.getenv('ncp_access_key')
+    secret_key = os.getenv('ncp_secret_key')
+    bucket_name = 'gw-predict'
+    
+    def check_object_exists(bucket_name, object_name):
+        try:
+            s3.head_object(Bucket=bucket_name, Key=object_name)
+            print(f"Object {object_name} exists in bucket {bucket_name}.")
+            return True
+        except Exception as e:
+            print(f"Object {object_name} does not exist in bucket {bucket_name}.")
+            return False
+
+    
+    def list_files_in_directory(directory):
+        # 지정된 디렉토리의 모든 항목 가져오기
+        all_items = os.listdir(directory)
+        
+        # 파일만 필터링
+        files = [f for f in all_items if os.path.isfile(os.path.join(directory, f))]
+        
+        return files
+
+    def ListFiles(client, bucket_name, prefix):
+        _BUCKET_NAME = bucket_name
+        _PREFIX = prefix
+        """List files in specific S3 URL"""
+        response = client.list_objects(Bucket=_BUCKET_NAME, Prefix=_PREFIX)
+
+        for content in response.get("Contents", []):
+            # print(content)
+            yield content.get("Key")
+    
+    s3 = boto3.client(service_name, endpoint_url=endpoint_url, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+
+    delimiter = '/'
+    max_keys = 300
+    response = s3.list_objects(Bucket=bucket_name, Delimiter=delimiter, MaxKeys=max_keys)
+    
+    # create folder
+    PREFIX = datetime.today().strftime('%Y%m%d')
+    print('Folder List')
+    for folder in response.get('CommonPrefixes')[::-1]:
+        if folder.get('Prefix') == f"{PREFIX}/":
+            print('%s 폴더가 존재합니다. ' % folder.get('Prefix'))
+            break
+    else:
+        s3.put_object(Bucket=bucket_name, Key=f"{PREFIX}/")
+        print(f'{PREFIX}/ 폴더 생성 ')
+    
+    while 1:
+        lfiles = list(ListFiles(s3, bucket_name, PREFIX))
+        print(lfiles)
+        if lfiles:
+            if 5 > len(lfiles):
+                # 파일 넣기
+                directory = './output/'
+                local_file_paths = list_files_in_directory(directory)
+                upload_dir = PREFIX + '/'
+                for local_file_path in local_file_paths:
+                    folder_exists = check_object_exists(bucket_name, upload_dir)
+                    file_exists = check_object_exists(bucket_name, upload_dir+local_file_path)
+                    
+                    if file_exists:
+                        print(f'{local_file_path}가 이미 존재합니다.')
+                        continue
+                    else:
+                        s3.upload_file(directory+local_file_path, bucket_name, upload_dir+local_file_path)
+                        folder_exists = check_object_exists(bucket_name, upload_dir)
+                        file_exists = check_object_exists(bucket_name, upload_dir+local_file_path)
+                        print(f'{directory+local_file_path} 업로드 진행 중')
+
+                    if folder_exists and file_exists:
+                        print(f'{directory+local_file_path} 업로드 진행 완료')
+                    else:
+                        print(f'{directory+local_file_path} 업로드 실패 ## 확인 필요')
+            else:
+                print(f"업로드 완료 {list(lfiles[1:])}")
+                break
+        else:
+            raise print("파일 목록을 불러올 수 없습니다.")
+
+    return
+
+
+if __name__ == "__main__":
+    ncpUpload()
+```
+
+### ② 지하수 수위 예측 AI 모델 코드
+
+```python
+# ② 지하수 수위 예측 AI 모델 코드
+
+# =============================================================================
+#                  강우예측자료를 활용한 제주도 지하수위 예측 서비스
+# =============================================================================
+import pandas as pd
+from dotenv import load_dotenv
+import os
+from datetime import datetime
+import json
+import requests
+import io
+from tqdm import tqdm
+import torch
+from darts import TimeSeries
+from darts.utils.timeseries_generation import datetime_attribute_timeseries
+from darts.dataprocessing.transformers import Scaler
+from darts.models import TFTModel
+from darts.metrics import mae
+import plotly.graph_objects as go
+import plotly.io as pio
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+from datetime import timedelta
+
+# 분석할 지하수관측소 강우강측소 선정
+# 지하수위 관측소(관측소코드)
+# 제주노형 95534, 제주동홍 95535, 제주조천 95537, 제주한경 95536
+# 강우(asos) 관측소(지점코드)
+# 제주 184, 서귀포 189, 성산 188, 고산 185
+
+dic_static = dict(gw = [95534, 95535, 95537, 95536], rain = [184, 189, 188, 185])
+
+# =============================================================================
+# api key 가져오기
+load_dotenv()
+
+key1 = os.getenv("key1")
+key2 = os.getenv("key2")
+key_gw = os.getenv("key_gw")
+
+# =============================================================================
+
+#%% 강우 예측 자료 불러오기
+
+
+# 제주 강우관측소 좌표(rain_location_grid.xlsx에서 찾음(지하수관측소 기준))
+# 제주 asos 기상관측소 station번호(240601_asos_staion.csv 에서 찾음)
+dic_nx_ny_rain = dict(stn = [184, 189, 188, 185], 
+                      nx = [52, 53, 55, 46], 
+                      ny = [38, 33, 39, 35],
+                      name = ['제주', '서귀포', '성산포', '고산'])
+
+df_rain_future = pd.DataFrame()
+
+today = datetime.today().strftime("%Y%m%d")
+
+for i in tqdm(range(0, len(dic_nx_ny_rain)), desc='강우 예측자료 읽는중'):
+    url_future = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst'
+    params ={'serviceKey' : key1, 'pageNo' : '4', 'numOfRows' : '1000', 
+             'dataType' : 'JSON', 'base_date' : today, 'base_time' : "0500", 
+             'nx' : dic_nx_ny_rain['nx'][i], 'ny' : dic_nx_ny_rain['ny'][i] }
+    
+    # 'fcstValue' 열에서 '강수없음'을 숫자로 바꿀 수 없으면 0으로 대체하는 코드
+    def replace_non_numeric(x):
+        try:
+            return float(x)
+        except ValueError:
+            return 0
+    
+    dic_rain_future_temp = json.loads(requests.get(url_future, params=params).text)["response"]
+    df_rain_future_temp = pd.DataFrame(dic_rain_future_temp["body"]["items"]["item"])
+    df_rain_future_temp = df_rain_future_temp[df_rain_future_temp["category"] == "PCP"]
+    df_rain_future_temp = df_rain_future_temp[['fcstDate', 'fcstTime', 'fcstValue']]
+    df_rain_future_temp['YYMMDDHHMI'] = df_rain_future_temp['fcstDate'] + df_rain_future_temp['fcstTime']
+    df_rain_future_temp['fcstValue'] = df_rain_future_temp['fcstValue'].str.replace('mm', '')
+    df_rain_future_temp['fcstValue'] = df_rain_future_temp['fcstValue'].apply(replace_non_numeric)
+    df_rain_future_temp = df_rain_future_temp[['YYMMDDHHMI', 'fcstValue']]
+    df_rain_future_temp['stn'] = dic_nx_ny_rain['stn'][i]
+    df_rain_future_temp['name'] = dic_nx_ny_rain['name'][i]
+    df_rain_future_temp.rename(columns = {'fcstValue' : 'RN'}, inplace = True)
+    df_rain_future_temp['RN'] = pd.to_numeric(df_rain_future_temp['RN'])
+    df_rain_future_temp['YYMMDDHHMI'] = pd.to_datetime(df_rain_future_temp['YYMMDDHHMI'])
+    
+    df_rain_future = pd.concat([df_rain_future, df_rain_future_temp])
+
+#%% 오늘 현재시간까지의 시간 강우자료 불러오기
+tm1 = datetime.today().strftime('%Y%m%d0000')
+tm2 = datetime.today().strftime('%Y%m%d%H00')
+
+df_rain_current = pd.DataFrame()
+
+for i in tqdm(range(0, len(dic_nx_ny_rain)), desc='오늘 강우자료 읽는중'):
+    url_today = 'https://apihub.kma.go.kr/api/typ01/url/kma_sfctm3.php'
+    params ={'tm1' : tm1, 'tm2' : tm2, 'stn' : dic_nx_ny_rain['stn'][i], 'authKey' : key2, 
+      'help' : '0', 'obs' : 'RN'}
+    
+    df_rain_current_temp = pd.read_csv(io.StringIO(requests.get(url_today, params=params).text.replace('#', '')), 
+      skiprows = 2, sep = '\s+')
+    df_rain_current_temp = df_rain_current_temp.drop([0, len(df_rain_current_temp) - 1])
+    df_rain_current_temp = df_rain_current_temp[['YYMMDDHHMI', 'RN']]
+    df_rain_current_temp['stn'] = dic_nx_ny_rain['stn'][i]
+    df_rain_current_temp['name'] = dic_nx_ny_rain['name'][i]
+    df_rain_current_temp['RN'] = pd.to_numeric(df_rain_current_temp['RN'])
+    df_rain_current_temp['RN'].replace(-9.0, 0, inplace = True)
+    df_rain_current_temp['YYMMDDHHMI'] = pd.to_datetime(df_rain_current_temp['YYMMDDHHMI'])
+    
+    df_rain_current = pd.concat([df_rain_current, df_rain_current_temp])
+    
+# 현재와 미래 강우 합치기
+df_rain_future_edit1 = df_rain_future[df_rain_future['YYMMDDHHMI'] > df_rain_current['YYMMDDHHMI'].max()]
+df_rain_future_edit2 = pd.concat([df_rain_current, df_rain_future_edit1]).set_index('YYMMDDHHMI')
+df_rain_future_edit3 = pd.pivot(df_rain_future_edit2, columns = 'name',  values = ['RN'])   
+
+df_rain_future_currnet = df_rain_future_edit3.resample('1D').sum()
+df_rain_future_currnet.reset_index(inplace = True)
+df_rain_future_currnet.columns = df_rain_future_currnet.columns.droplevel(level=1)
+
+df_rain_future_currnet.columns = ['YMD', '185', '189', '188', '184']
+
+
+#%% 과거~어제까지 일 강우자료 불러오기
+
+
+url_rain_day = 'https://apihub.kma.go.kr/api/typ01/url/kma_sfcdd3.php'
+
+# 1995년부터 2024.5.31까지 자료 다운로드
+
+# df_rain_past = pd.date_range(start='1995-01-01', end='2024-05-31')
+# df_rain_past = pd.DataFrame(df_rain_past)
+# df_rain_past.rename(columns={0 : 'YMD'}, inplace=True)
+
+
+# for i in tqdm(range(0, len(dic_nx_ny_rain))):
+#     params_rain_day1 = {'tm1' : '19941231', 'tm2' : '20240531', 
+#                         'stn' : dic_nx_ny_rain['stn'][i], 
+#                         'authKey' : key2, 'help' : '0', 'obs' : 'RN'}
+    
+#     df_rain_past_temp1 = pd.read_csv(
+#         io.StringIO(requests.get(url_rain_day, 
+#                                   params=params_rain_day1).text.replace('#', '')), 
+#         skiprows = 2, sep = '\s+')
+#     df_rain_past_temp1 = df_rain_past_temp1[['YYMMDD', 'RN']][3:]
+#     df_rain_past_temp1 = df_rain_past_temp1[:len(df_rain_past_temp1)-1]
+#     df_rain_past_temp1['YYMMDD'] = pd.to_datetime(df_rain_past_temp1['YYMMDD'])
+#     df_rain_past_temp1['RN'] = pd.to_numeric(df_rain_past_temp1['RN'])
+#     df_rain_past_temp1['RN'].replace(-9.0, 0, inplace = True)
+#     df_rain_past_temp1['RN'].fillna(0, inplace = True)
+#     df_rain_past_temp1.rename(columns = {'RN' : dic_nx_ny_rain['stn'][i]}, inplace =True)
+#     df_rain_past = pd.merge(left=df_rain_past, right=df_rain_past_temp1, how='left',
+#                             left_on='YMD', right_on='YYMMDD').drop(columns = ['YYMMDD'])
+
+# df_rain_past.to_csv('./input/df_rain_past.csv', index=False)
+
+# 위의 코드 저장된 자료
+df_rain_past = pd.read_csv('./input/df_rain_past.csv')
+df_rain_past['YMD'] = pd.to_datetime(df_rain_past['YMD'])
+
+# df_rain_past 이후부터 어제까지 자료 가져오기
+
+df_rain_past2 = pd.date_range(start=(pd.to_datetime(df_rain_past['YMD'].max()) + timedelta(days = 1)).strftime('%Y-%m-%d'),
+                              end=(datetime.today() - timedelta(days = 1)).strftime('%Y-%m-%d'))
+df_rain_past2 = pd.DataFrame({'YMD' : df_rain_past2})
+
+for i in tqdm(range(0, len(dic_nx_ny_rain)), desc='과거 강우 읽는중'):
+    params_rain_day1 = {'tm1' : (pd.to_datetime(df_rain_past['YMD'].max())).strftime('%Y%m%d'), 
+                        'tm2' : (datetime.today() - timedelta(days = 1)).strftime('%Y%m%d'), 
+                        'stn' : dic_nx_ny_rain['stn'][i], 
+                        'authKey' : key2, 'help' : '0', 'obs' : 'RN'}
+    
+    df_rain_past_temp1 = pd.read_csv(
+        io.StringIO(requests.get(url_rain_day, 
+                                  params=params_rain_day1).text.replace('#', '')), 
+        skiprows = 2, sep = '\s+')
+    df_rain_past_temp1 = df_rain_past_temp1[['YYMMDD', 'RN']][3:]
+    df_rain_past_temp1 = df_rain_past_temp1[:len(df_rain_past_temp1)-1]
+    df_rain_past_temp1['YYMMDD'] = pd.to_datetime(df_rain_past_temp1['YYMMDD'])
+    df_rain_past_temp1['RN'] = pd.to_numeric(df_rain_past_temp1['RN'])
+    df_rain_past_temp1['RN'].replace(-9.0, 0, inplace = True)
+    df_rain_past_temp1['RN'].fillna(0, inplace = True)
+    df_rain_past_temp1.rename(columns = {'RN' : dic_nx_ny_rain['stn'][i]}, inplace =True)
+    df_rain_past2 = pd.merge(left=df_rain_past2, right=df_rain_past_temp1, how='left',
+                            left_on='YMD', right_on='YYMMDD').drop(columns = ['YYMMDD'])
+
+#%% 과거 현재 미래 강우량 합치기
+df_rain_past2.columns = df_rain_past.columns
+
+df_rain = pd.concat([df_rain_past, df_rain_past2, df_rain_future_currnet])
+
+df_rain.set_index('YMD').plot()
+
+#%% 지하수 자료 불러오고 과거자료와 합치기
+
+df_gw_past_raw = pd.read_csv('./input/gw_yunbo.csv')
+
+# 제주노형 95534, 제주동홍 95535, 제주조천 95537, 제주한경 95536
+df_gw_past1 = df_gw_past_raw[df_gw_past_raw['GENNUM'].isin([95534, 95535, 95537, 95536])].set_index('YMD')
+df_gw_past2 = pd.pivot(df_gw_past1, columns='GENNUM', values=['ELEV'])
+df_gw_past2.columns = df_gw_past2.columns.droplevel(level = 0)
+df_gw_past2['YMD'] = df_gw_past2.index
+df_gw_past2['YMD'] = pd.to_datetime(df_gw_past2['YMD'])
+df_gw_past2 = df_gw_past2.reset_index(drop =True)
+
+df_date = pd.date_range(start=df_gw_past2['YMD'].min(), end=df_gw_past2['YMD'].max())
+df_date = pd.DataFrame({'YMD' : df_date})
+df_gw_past3 = pd.merge(left = df_date, right = df_gw_past2, on = 'YMD')
+df_gw_past3 = df_gw_past3.interpolate(method = 'linear')
+
+# gims api에서 연보자료 이후부터 현재까지 지하수자료 불러오기
+
+df_gw_current = pd.date_range(start = df_gw_past3['YMD'].max() + timedelta(days = 1),
+                              end = datetime.today())
+df_gw_current = pd.DataFrame({'YMD' : df_gw_current})
+begindate = (df_gw_past3['YMD'].max() + timedelta(days=1)).strftime('%Y%m%d')
+enddate = datetime.today().strftime('%Y%m%d')
+
+url_gw = 'http://www.gims.go.kr/api/data/observationStationService/getGroundwaterMonitoringNetwork?KEY=' + key_gw + '&type=JSON'
+
+for i in tqdm(range(0, len(dic_static['gw'])), desc='과거 지하수자료 읽는중'):
+    params_gw = {'gennum' : str(dic_static['gw'][i]), 'begindate' : begindate, 'enddate' : enddate}
+    
+    df_gw_api = pd.DataFrame(json.loads(requests.get(url_gw, params=params_gw).text)['response']['resultData'])
+    
+    df_gw_api_temp = df_gw_api[['ymd', 'gennum', 'elev']].copy()
+    df_gw_api_temp.rename(columns = {'ymd' : 'YMD', 'gennum' : 'GENNUM', 'elev' : 'ELEV'}, inplace = True)
+    df_gw_api_temp['YMD'] = pd.to_datetime(df_gw_api_temp['YMD'])
+    df_gw_api_temp['ELEV'] = pd.to_numeric(df_gw_api_temp['ELEV'])
+    df_gw_api_temp = df_gw_api_temp[['YMD', 'ELEV']]
+    
+    df_gw_current = pd.merge(left=df_gw_current, right=df_gw_api_temp, on = 'YMD', how = 'left')
+    df_gw_current['ELEV'] = df_gw_current['ELEV'].interpolate(method = 'linear')
+    df_gw_current.rename(columns = {'ELEV' : dic_static['gw'][i]}, inplace = True)
+    
+# 제주동홍(95535)는 23.8.30~23.8.31 1.56m가 내려갔고 23.10.24~23.10.25 1.48m 올라간 것 수정
+date_start = pd.to_datetime('2023-08-31')
+date_end = pd.to_datetime('2023-10-24')
+
+df_gw_current.loc[(df_gw_current['YMD'] >= date_start) & 
+                  (df_gw_current['YMD'] <= date_end), 95535] += 1.56
+
+df_gw = pd.concat([df_gw_past3, df_gw_current]).dropna()
+
+df_gw.set_index('YMD').plot()
+
+
+
+# 모형훈련 함수 생성
+def fun_model(gw_code, rain_code, learn_date, n_epochs, predict_period, model_save):
+    # 적정한 모형 생성을 위해 학습기간을 설정
+    df_rain_sliced  = df_rain[df_rain['YMD'] >= pd.to_datetime(learn_date)]
+    df_gw_rain = pd.merge(df_rain_sliced, df_gw, on = 'YMD', how='left')
+
+    # float64 열만 float32로 변환
+    float_cols = df_gw_rain.select_dtypes(include=['float64']).columns
+    df_gw_rain[float_cols] = df_gw_rain[float_cols].astype(np.float32)
+    
+    ts_gw_raw = TimeSeries.from_dataframe(df_gw_rain[df_gw_rain['YMD'] <= datetime.today()], 'YMD', [gw_code])
+    
+    # 스케일링
+    scaler_gw = Scaler()
+    scaler_gw.fit(ts_gw_raw)
+    ts_gw_scaled = scaler_gw.transform(ts_gw_raw)
+    
+    ts_covariates = TimeSeries.from_dataframe(df_gw_rain, 'YMD', str(rain_code))
+    ts_covariates_editd1 = ts_covariates.stack(
+        datetime_attribute_timeseries(ts_covariates, 'year')).stack(
+            datetime_attribute_timeseries(ts_covariates, 'month')).stack(
+                datetime_attribute_timeseries(ts_covariates, 'day'))
+    
+    scaler_covariates = Scaler()
+    scaler_covariates.fit(ts_covariates_editd1)
+    ts_covariates_scaled = scaler_covariates.transform(ts_covariates_editd1)
+    
+    ts_gw_scaled_train, ts_gw_scaled_val = ts_gw_scaled.split_after(
+        pd.to_datetime(datetime.today() - timedelta(days = predict_period)))
+    
+    model_tft = {}
+    if model_save == True:
+        model_tft[str(gw_code)] = TFTModel(
+            input_chunk_length=365*2, 
+            output_chunk_length=predict_period, 
+            hidden_size=64, lstm_layers=1, 
+            n_epochs=n_epochs, 
+            batch_size=16,  # batch_size를 16으로 설정
+            optimizer_kwargs={'lr': 1e-3},
+            model_name=f'model_tft_gw_{gw_code}',
+            log_tensorboard=False,
+            force_reset=True,
+            random_state=42,
+            dropout=0.1,
+            pl_trainer_kwargs={
+                "accelerator": "cpu"  # CPU 사용
+            }
+        )
+        
+        model_tft[str(gw_code)].fit(
+            ts_gw_scaled_train[str(gw_code)], 
+            future_covariates=ts_covariates_scaled[str(rain_code)]
+        )
+        model_tft[str(gw_code)].save(f'./model/model_tft_gw_{gw_code}.pt')
+    else:
+        model_tft[str(gw_code)] = TFTModel.load(f'./model/model_tft_gw_{gw_code}.pt', map_location="cpu")
+        model_tft[str(gw_code)].to_cpu()
+    
+    # 예측
+    ts_pred_scaled = model_tft[str(gw_code)].predict(
+        len(ts_gw_scaled_val[str(gw_code)]) + 3, 
+        series=ts_gw_scaled_train[str(gw_code)], 
+        future_covariates=ts_covariates_scaled[str(rain_code)]
+    )
+    ts_pred_scaled_sample = model_tft[str(gw_code)].predict(
+        len(ts_gw_scaled_val[str(gw_code)]) + 3, 
+        series=ts_gw_scaled_train[str(gw_code)], 
+        future_covariates=ts_covariates_scaled[str(rain_code)],
+        num_samples=500
+    )
+    ts_pred = scaler_gw.inverse_transform(ts_pred_scaled)
+    ts_pred_sample = scaler_gw.inverse_transform(ts_pred_scaled_sample)
+    # Mean Absolute Error
+    value_mae = round(mae(ts_gw_scaled_val, ts_pred_scaled), 2)
+    
+    return ts_gw_raw, ts_pred, ts_pred_sample, value_mae
+
+# 그래프 함수 생성
+pio.renderers.default = 'browser'
+
+def fun_graph(ts_pred, ts_pred_sample, ts_gw_raw, value_mae, gw_korean):
+    df_val_pred = ts_pred.pd_dataframe()
+    df_val = df_val_pred[df_val_pred.index <= df_val_pred.index[-3]]
+    df_val['YMD'] = df_val.index
+    df_val = df_val.reset_index(drop=True)
+    
+    df_pred = df_val_pred[df_val_pred.index >= df_val_pred.index[-3]]
+    df_pred['YMD'] = df_pred.index
+    df_pred = df_pred.reset_index(drop=True)
+    
+    # 몬테카를로 샘플링
+    df_pred_sample = ts_pred_sample.pd_dataframe()
+    df_pred_sample_conf = pd.DataFrame({
+        'upper': df_pred_sample.apply(lambda x: np.percentile(x, 95), axis=1),
+        'lower': df_pred_sample.apply(lambda x: np.percentile(x, 5), axis=1)
+    })
+    df_pred_sample_conf['YMD'] = df_pred_sample_conf.index
+    df_pred_sample_conf = df_pred_sample_conf.reset_index(drop=True)
+    
+    df_measured = ts_gw_raw.tail(365).pd_dataframe()
+    df_measured['YMD'] = df_measured.index
+    df_measured = df_measured.reset_index(drop=True)
+    
+    # 예측일자 추출
+    fig_gw = go.Figure()
+    fig_gw.add_trace(go.Scatter(
+        mode='lines', 
+        x=df_val['YMD'], y=df_val[df_val.columns[0]], 
+        name='validation', 
+        line=dict(color='steelblue')
+    ))
+    fig_gw.add_trace(go.Scatter(
+        mode='lines', 
+        x=df_pred['YMD'], y=df_pred[df_pred.columns[0]], 
+        name='predicted', 
+        line=dict(color='orangered')
+    ))
+    fig_gw.add_trace(go.Scatter(
+        mode='lines', 
+        x=df_measured['YMD'], y=df_measured[df_pred.columns[0]], 
+        name='measured',
+        line=dict(color='black'),
+        opacity=0.4
+    ))
+    
+    # 신뢰구간 추가
+    fig_gw.add_trace(go.Scatter(
+        x=df_pred_sample_conf['YMD'], 
+        y=df_pred_sample_conf['upper'], 
+        mode='lines', 
+        line=dict(width=0),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+    fig_gw.add_trace(go.Scatter(
+        x=df_pred_sample_conf['YMD'], 
+        y=df_pred_sample_conf['lower'], 
+        fill='tonexty', 
+        mode='lines', 
+        line=dict(width=0),
+        fillcolor='rgba(85, 85, 85, 0.2)',
+        showlegend=True,
+        name='5%~95% percentiles',
+        hoverinfo='skip'
+    ))
+    
+    fig_gw.add_annotation(dict(
+        xref='paper', yref='paper', x=0.5, y=1.05,
+        text=f'관측소명:{gw_korean}, MAE: {value_mae}',
+        showarrow=False,
+        font=dict(size=40)
+    ))
+    fig_gw.update_layout(
+        xaxis=dict(title='YMD', titlefont=dict(size=35), tickfont=dict(size=30), tickformat='%y-%m-%d'), 
+        yaxis=dict(title='groundwater level', titlefont=dict(size=35), tickfont=dict(size=30)),
+        template='plotly_white',
+        legend=dict(font=dict(size=20))
+    )
+    
+    if not os.path.exists('output'):
+        os.makedirs('output')
+        
+    fig_gw.write_html(f'./output/graph_{gw_korean}.html')
+    fig_gw.show()
+    
+    # 그래프 저장
+    plt.rcParams['font.family'] = 'Malgun Gothic'
+    plt.figure(figsize=(15, 10))
+    plt.plot(df_val['YMD'], df_val[df_val.columns[0]], label='Validation', color='steelblue')
+    plt.plot(df_pred['YMD'], df_pred[df_pred.columns[0]], label='Predicted', color='orangered')
+    plt.plot(df_measured['YMD'], df_measured[df_pred.columns[0]], label='Measured', color='black')
+
+    plt.fill_between(df_pred_sample_conf['YMD'], df_pred_sample_conf['lower'], df_pred_sample_conf['upper'], 
+                     color='gray', alpha=0.2, label='5%~95% percentiles')
+    
+    plt.title(f'관측소명: {gw_korean}, MAE: {value_mae}', fontsize=20)
+    plt.xlabel('YMD', fontsize=15)
+    plt.ylabel('Groundwater Level', fontsize=15)
+    plt.legend(fontsize=12)
+    plt.xticks(rotation=45)
+        
+    plt.savefig(f'./output/graph_{gw_korean}.jpg')
+    plt.close()
+
+# ncp s3 upload
+import ncpStorage
+
+
+if __name__ == '__main__':
+
+    # 모형훈련 및 예측
+    ts_gw_raw_제주노형, ts_pred_제주노형, ts_pred_sample_제주노형, value_mae_제주노형 = fun_model(
+        gw_code = 95534, rain_code = 184, learn_date = '2020-01-01', 
+        n_epochs = 30, predict_period = 30, model_save = False)
+
+    # 그래프 확인
+    fun_graph(ts_pred_제주노형, ts_pred_sample_제주노형, ts_gw_raw_제주노형, 
+            value_mae_제주노형, gw_korean = '제주노형')
+
+    #%% 모형훈련(지하수(제주동홍 95535), 강우(서귀포 189))
+
+    # 모형훈련 및 예측
+    ts_gw_raw_제주동홍, ts_pred_제주동홍, ts_pred_sample_제주동홍, value_mae_제주동홍 = fun_model(
+        gw_code = 95535, rain_code = 189, learn_date = '2020-01-01', 
+        n_epochs = 30,  predict_period = 30, model_save = False)
+
+    # 그래프 확인
+    fun_graph(ts_pred_제주동홍, ts_pred_sample_제주동홍, ts_gw_raw_제주동홍, 
+            value_mae_제주동홍, gw_korean = '제주동홍')
+
+    #%% 모형훈련(지하수(제주조천 95537), 강우(성산 188))
+
+    ts_gw_raw_제주조천, ts_pred_제주조천, ts_pred_sample_제주조천, value_mae_제주조천 = fun_model(
+        gw_code = 95537, rain_code = 188, learn_date = '2020-01-01', 
+        n_epochs = 20,  predict_period = 90, model_save = False)
+
+    # 그래프 확인
+    fun_graph(ts_pred_제주조천, ts_pred_sample_제주조천, ts_gw_raw_제주조천, 
+            value_mae_제주조천, gw_korean = '제주조천')
+
+    #%% 모형훈련(지하수(제주한경 95536), 강우(고산 185))
+
+    ts_gw_raw_제주한경, ts_pred_제주한경, ts_pred_sample_제주한경, value_mae_제주한경 = fun_model(
+        gw_code = 95536, rain_code = 185, learn_date = '2020-01-01', 
+        n_epochs = 20,predict_period = 90, model_save = False)
+
+    # 그래프 확인
+    fun_graph(ts_pred_제주한경, ts_pred_sample_제주한경, ts_gw_raw_제주한경, 
+            value_mae_제주한경, gw_korean = '제주한경')
+    
+    ncpStorage.ncpUpload()
+```
+
+### ③ run_script.sh 코드 작성
+```bash
+#!/bin/bash
+
+LOGFILE=/Users/kimjaeman/Downloads/waterground_src/cron_job.log
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
+}
+
+# 스크립트가 있는 디렉토리로 이동
+cd /Users/kimjaeman/Downloads/waterground_src || exit
+
+# 로그 작성
+log "Changed directory to /Users/kimjaeman/Downloads/waterground_src."
+
+# Conda 환경 활성화
+source /opt/anaconda3/etc/profile.d/conda.sh
+conda activate gw_env
+
+# 파이썬 스크립트 실행
+log "Conda environment activated."
+python /Users/kimjaeman/Downloads/waterground_src/240702_groundwater_localmodel_v1.2_mac_cpu.py
+log "Python script executed."
+```
+
+서버를 구축하여 자동화 구축 및 다양한 편의 서비스를 제공해주고 싶었지만, 가난한 취업 준비생입장으로서 서버 구축 비용마저도 부담이 되었습니다.
+
+~~프리티어 서버 RAM 용량만이라도 조금 늘려주면 좋을텐데,,~~
+
+## 프로젝트를 마무리하며
++8/13일 공모전 내용에 대한 발표가 진행되었고 우수상을 수상하였습니다.
+
+![](/images/image-2.jpeg)
+![](/images/image-3.jpeg)
+
+---
+
+## 공모전을 준비하며 추가로 배운점
+사실 이번 공모전을 하면서 AI에 대한 공부도 많았지만 클라우드 서비스에 대한 공부가 가장 많았던것 같습니다.
+ - 클라우드 서버 구축비용 계산, 스펙, 테스트
+ - Naver Map SDK 사용
+ - Naver Object Storage(S3) 사용
+
+이러한 다양한 클라우드 서비스를 이용하며 살펴봤던 국내외 클라우드 서비스 생태계를 정리해보았습니다.
+
+
+### 현재 클라우드 서비스 동향
+아마 이 글을 읽으시는 분들이라면 Amazon 에서 서비스하는 AWS(Amazon Web Service)는 이미 잘 알고 계실 거 같습니다. EC2 서버와 S3 등 많은 클라우드 서비스를 발빠르게 서비스하며 시장 점유율 압도적 1위를 기록하고 있었습니다. 하지만 현재 생성형 AI의 인기로 Microsoft(openAI chatGPT 독점), Google(Gemini) 같은 생성형 AI 강자들이 클라우드 플랫폼에서 인기를 얻고 있습니다.
+
+![](/images/image.avif)
+
+사실 AI 관련된 API 서비스에 대해서만 수요가 증가했다면 그러려니 할 수 있지만 AI API Call 만 증가한 것이 아닌 전체 Cloud Provider Market Share 자체가 증가하였습니다. (위 사진에서도 보이듯 Google과 Microsoft는 Cloud Provider Market Share 자체가 증가하였습니다.)
+
+**왜 그런걸까요?**
+
+이제부터는 제 추측이지만, API 서비스를 사용할때 자사 클라우드를 통해 데이터를 전송하면 비용 절약(동일 리전 내 클라우드 데이터 처리 시 네트워크 트래픽 발생 x)과 데이터 처리를 쉽게 할 수 있다(플랫폼 연결성)는 장점 때문으로 보입니다. 
+
+1. 아래 그림은 Azure 에서 제공하는 Machine learning Architecture 입니다. 비정형 데이터 처리를 위한 Azure Data Lake Storage 와 분석을 위한 Azure Synapse Analytics, 머신 러닝 학습을 위한 Azure Machine Learning 과 시각화를 위한 Power BI 까지 모든 프로세스 과정을 Azure 에서 제공하는 서비스를 통해 동작시킬 수 있고, 연결 방법 또한 매우 쉽게 되어있습니다.
+![](/images/image.svg)
+
+
+2. 내부적으로 데이터를 처리할때 VPC 구간 사설 통신은 비용이 저렴한 경우가 많습니다. 그 이유는 공용 인터넷을 사용하는 경우, 데이터가 외부 네트워크를 통해 전송되므로 대역폭 사용에 대한 비용이 발생합니다. 그러나 VPC 내 사설 통신은 같은 리전의 클라우드 환경이라면 내부 네트워크를 사용하기 때문에 이러한 추가 비용이 발생하지 않아 저렴할 수 있습니다.
+Azure 의 비용 정책을 자세히 살펴보진 않았지만, 같은 리전 내 클라우드 내부로 데이터를 처리하는데 드는 비용 자체가 상대적으로 외부 인터넷으로 데이터를 처리하는데 드는 비용보단 같거나 저렴할 것으로 보입니다.
+
+이러한 점이 **MS 와 Google 의 Cloud Provider Market Share 자체가 증가**한 결과를 이끌었을 것으로 생각됩니다.
+
+
+### 왜 NCP, 네이버 클라우드 플랫폼인가?
+
+![](/images/image.jpeg)
+
+최근 CrowdStrike사의 보안 프로그램 업데이트를 통해서 MS Azure 클라우드 서버가 다운되는 사고가 있었습니다. 이번처럼 하나의 클라우드에 의존하는 회사가 있을 경우 복수의 클라우드 인프라를 사용하려는 분위기 입니다. 또한 외국 클라우드 서비스 업체의 경우 시차의 문제가 있어 이번같은 문제가 발생할 경우 대처가 늦을수 있다 점도 주목 받았습니다.
+
+이를 통해 국내 클라우드 서비스 업체 중 가장 점유율이 높은 NCP(Naver Cloud Flatform)을 알게되었고 짧지만 최근 앱 개발을 하며 네이버 클라우드 플랫폼을 사용하면서 느낀 점에 대해 이야기 해보겠습니다.
+
+**1. 파워풀한 성능**
+앞서 말씀드린 것처럼 AI나 다른 서비스를 이용하게 될 때 같이 클라우드 내의 동일 리전을 사용하게 된다면 외부 인터넷 트래픽이 발생하지 않아 비용 절감이나 속도 측면에서 이점이 있을 수 있습니다.
+네이버 클라우드 플랫폼의 경우 Naver Clova, Naver Storage(S3) 등 성능이 매우 뛰어나고 사용하기 편리한 환경으로 구축이 되어있었습니다.
+
+![](/images/ea6bbd45-0f4a-4dc3-a7e0-929bf75a052e-image.png)
+
+
+**2. 다양한 서비스와 지속적인 업데이트**
+실제로 7월 1일 ~ 현재까지 1달 반여 기간동안 10개의 공지와 알람이 오는 등 제가 사용중인 3개의 서비스에서만 update와 deprecated 되는 기능들이 많았습니다.
+
+![](/images/1384141f-6c4f-4047-916b-0a478d782df6-image.png)
+
+
+사실 NCP를 잠깐 사용하였기에 큰 불편함을 느낄 수 없었습니다. 비용 또한 다른 외국 업체들과 비교해보아도 합리적이라고 생각이 들었고 거의 모든 서비스에서 무료로 테스트가 가능했습니다.
+
+이렇게 공모전에 참여하며 공모전 내용과 함께 클라우드 서비스 생태계와 국내 클라우드 서비스 중 하나인 NCP에 대해서도 알아보았습니다.
+
+---
+### 참고자료
+
+- 출처 : https://biz.chosun.com/it-science/ict/2024/02/08/UWF2WSQB4VD7TG5FUMIC6F34BQ/
+- 출처 : https://white-joy.tistory.com/10
+- 출처 : https://velog.io/@jhbale11/Temporal-Fusion-Transformer2020논문-리뷰
+- 출처 : https://wikidocs.net/234459
+- 출처 : https://www.latimes.com/story/2024-07-19/who-is-crowdstrike-and-how-did-it-cripple-so-many-computers
+- 출처 : https://www.ncloud.com

@@ -1,0 +1,190 @@
+---
+title: "Samsung ONE open Source 에 
+Contributor 로 활동하며"
+description: "2023.08.21 ~ 2023.10.06 위 기간 동안 SSAFY 에서 진행했었던 Samsung ONE(On-device Neural Engine) open Source 참여 프로젝트에 대해서 조금 늦은 회고를 해보겠습니다."
+date: 2023-12-14T06:30:07.504Z
+tags: ["one","프로젝트","프로젝트 회고"]
+category : "Python"
+---
+2023.08.21 ~ 2023.10.06
+위 기간 동안 SSAFY 에서 진행했었던 Samsung ONE(On-device Neural Engine) open Source 참여 프로젝트에 대해서 조금 늦은 회고를 해보겠습니다.
+
+이 글은 Samsung의 의견이 아닌 제 개인의 견해만이 들어있어 재미로 읽고 이러한 것도 있구나 하고 넘어가주시면 감사하겠습니다.
+
+## 💡 [ONE](https://github.com/Samsung/ONE) 이란 ?
+
+
+![](/images/0054ca54-a9a9-4bac-bd86-653620ecb3ac-image.png)
+
+출처 : https://github.com/Samsung/ONE
+
+ ONE(On-device Neural Engine) 의 약자로서 삼성에서 개발중인 오픈소스 프로젝트로 Cloud 환경에서 막강한 Computing power 를 이용해 AI 를 돌리는 기존의 프로젝트와 달리 On-device 환경에서 바로 AI 를 동작시키는 최적화 compiler 와 runtime 환경을 제공하는 프로젝트입니다.
+
+그렇다면 왜? 기존의 Cloud 환경이 아닌 On-device 환경에서 동작하는 AI를 개발하려는 걸까요??
+
+## 📱 ONE 의 장,단점
+Samsung ONE 의 장,단점에 대해서 알아보았습니다.
+
+> 단점:
+1. On-device 환경은 Cloud 환경보다 성능이 떨어지므로 무거운 AI의 처리 속도가 떨어지거나, 성능이 저하될 수 있다.
+(성능은 낮추는 대신 AI model 을 compact 하게 만들어 속도 향상을 시키는 방식으로 최대 속도 대비 성능을 추구하는 것으로 알고 있습니다.)
+**2. 처리속도 증가를 위해 대부분의 코드들이 C++ 로 작성되어있어 AI 개발자(Python 유저)들의 사용성이 떨어짐**
+
+> 장점:
+1. 인터넷이 필요없다.
+2. 통신이 필요없이 자신의 디바이스만 있으면 구동가능하기에 개인의 보안이 철저히 유지된다.
+3. 가벼운 AI 의 경우 통신이 필요없어 더 빠른 동작속도를 보인다.
+
+최근 많은 생성형 AI의 정보유출을 우려로 IT 기업들이 사내에서 ChatGPT 와 같은 생성형 AI 사용을 금지 한다는 기사들을 보신적이 있으실 겁니다.
+
+
+![](/images/60941bd9-37c8-4aa2-915b-7b34a0e878b7-image.png)
+
+
+위 기사를 봐도 알 수 있듯이 **보안 유출**이 현재 생성형 AI 의 가장 큰 문제이며, 많은 전문가들이 On-device AI 가 그 해결법이 될 것으로 예상하고 있습니다.
+
+## 📋 프로젝트 진행
+위 단점들을 보완하기위해 저희가 Samsung ONE Open Source project 를 진행하게 되었습니다. 
+
+저희들은 대부분의 AI 개발자인 Python 사용자들도 쉽게 사용할 수 있도록 기존 C++ 코드를 Python 의 코드로 Binding 시키는 Pybinding 작업을 진행하였고, 이를 PyPi에 업로드하여 사용성을 증대시켰습니다. (2023.12.06 현재 기준 Test PyPi에 만 올라가 있고 추후 PyPi 업로드 예정입니다.)
+
+
+![](/images/f16356ff-fa96-45c9-b21e-94548197bbcd-image.png)
+
+
+기존의 C++의 코드를 Pybind11 을 이용하여 Binding 하는 방식입니다. 위 코드와 같은 방식을 통하여 저희는 ONE runtime CAPI 인 nnfw_api 를 pybinding 하였습니다.
+
+
+![](/images/bc1f6ccf-e68b-45a7-8624-8d1f1a8fc9d6-image.png)
+
+
+그 결과 기존 C++로 코드를 작성했을때 대비 코드 line 수는 3배 가량 감소하였고, C++ runtime 환경을 초기 Build 시 많은 시간이 발생하여 전체적인 초기 개발 시간은 6배가량 단축 시킬 수 있었습니다.
+
+## 👀 프로젝트에서 나의 역할
+
+제가 담당하였던 Cross build 진행에 대해서 소개해드리겠습니다.
+
+우선 저희는 기존 x86-64 LinuxOS Ubuntu 환경에서 개발을 진행하였고,
+해당 환경과 프로젝트에서 pybind11을 build 하여 적용하는 과정이 필요했기에 cmake 파일 작성이 필요하였습니다.
+
+기존 프로젝트중에서 pybind11 을 이용하여 python 코드를 C++ 코드로 변환하는 프로젝트가 있었고, 해당 프로젝트에서도 pybind11을 빌드하는 과정이 있었기에 nnas_find_package를 이용하여 먼저 pybind11Source 를 찾는 과정을 코드에 추가하였고, 
+
+만약 없다면 pybind11을 ExternalProjectTools 에 포함시켜 pybind11을 build 하는 과정을 넣었습니다. 
+
+
+```c
+// pybind11 for build  .cmake file
+
+function(_Pybind11_Build)
+  nnas_find_package(Pybind11Source QUIET)
+
+  if(NOT Pybind11Source_FOUND)
+    set(Pybind11_FOUND FALSE)
+    return()
+  endif(NOT Pybind11Source_FOUND)
+
+  if(NOT TARGET pybind11)
+    nnas_include(ExternalProjectTools)
+    add_extdirectory(${Pybind11Source_DIR} pybind11 EXCLUDE_FROM_ALL)
+  endif(NOT TARGET pybind11)
+
+  set(Pybind11_FOUND TRUE)
+  return()
+endfunction(_Pybind11_Build)
+
+if(BUILD_PYTHON_BINDING)
+  _Pybind11_Build()
+else()
+  set(Pybind11_FOUND FALSE)
+endif()
+```
+
+이후 aarch64, arm32 환경에서 cross build 를 진행하기 위해 아래 코드에 'DOWNLOAD_PYBIND11' 을 추가하고 rootfs 상 cross build 를 위한 코드들을 추가로 진행하여 테스트하였습니다.
+
+
+```c
+#
+# aarch64 linux cmake options
+
+
+option(DOWNLOAD_NEON2SSE "Download NEON2SSE library source" OFF)
+option(DOWNLOAD_PYBIND11 "Download Pybind11 source" ON)
+option(BUILD_PYTHON_BINDING "Build python binding" ON)
+```
+
+```c
+#
+# armv7l linux cmake options
+
+option(DOWNLOAD_NEON2SSE "Download NEON2SSE library source" OFF)
+option(BUILD_OPENCL_TOOL "Build OpenCL tool" ON)
+
+option(DOWNLOAD_OPENGL_HEADERS "Download Opengl_headers source" ON)
+option(DOWNLOAD_EGL_HEADERS "Download Egl_headers source" ON)
+option(DOWNLOAD_VULKAN "Download vulkan source" ON)
+option(DOWNLOAD_OPENCL_HEADERS "Download Opencl_headers source" ON)
+option(BUILD_GPU_CL "Build gpu_cl backend" ON)
+option(BUILD_TENSORFLOW_LITE_GPU "Build TensorFlow Lite GPU delegate from the downloaded source" ON)
+option(DOWNLOAD_PYBIND11 "Download Pybind11 source" ON)
+option(BUILD_PYTHON_BINDING "Build python binding" ON)
+```
+
+최종적으로 저희는 aarch64, arm32 에서 테스트를 진행하였고 간단한 이미지 분류 모델인 'inception_v3' 모델로 테스트를 진행하였습니다. 아래는 테스트 화면입니다.
+
+![](/images/158a45c7-f915-444c-9e84-c3766d01e9d3-image.png)
+
+
+
+
+이러한 간편함을 제공해 유저들이 편하고 빠르게 ONE을 이용하여 on-device AI test 를 진행해 볼 수 있게만들고 사용성을 증대 시키는 것이 저희들의 목표였습니다. python 유저들이 ONE runtime 환경을 pip install 을 통해 다운로드 받고 import 하여 바로 써볼 수 있게 되어 저희들이 초기에 목표로 하였던 성과를 달성하였다고 생각해 뿌듯하였습니다.
+
+
+
+
+## 🤔 프로젝트 회고
+프로젝트를 돌아보며 사실 처음엔 on-device AI 라는 개념도 잘 이해가 되지 않았을 뿐만 아니라
+'open Source에 contributor 로 나같은 초급 개발자가 참여해도되나..?', '내 코드가 엉망이라 방해만 되면 어떡하지?'라는 걱정을 하였습니다. 
+
+하지만 멘토님의 주마다 저희의 개발 속도를 체크하고 방향성을 제시해주면서 저희를 응원해주시니 무사히 프로젝트가 잘 마무리 된 것 같습니다.
+
+이를 통해 아래와 같은 점들은 새로 학습하고 배우게 되었습니다.
+
+> 1. open Source 프로젝트의 Contributor 로 활동하며 github의 다양한 명령어와 기능을 배우게 되었습니다.
+> 2. C++ 사용 역량과 pybind11 라이브러리를 사용하며 binding 방법을 습득하게 되었습니다.
+> 3. Cross Build 를 진행하며 rootfs 에 필요한 외부 라이브러리를 불러오고 적용하여 aarch64, arm32 환경에서 원활히 동작시키는 방법을 습득하였습니다.
+
+
+![](/images/d19792e0-8599-498a-87f2-90b5f1ea12ec-image.png)
+
+
+![](/images/102c6fd0-dbd0-4214-8c06-61ae1e6ab666-image.png)
+
+
+![](/images/a08f5cdd-c05f-41fa-a617-9713de130ada-image.png)
+
+
+위 contributor 는 저희 6명이 같은 repository 를 사용하여 한사람의 PR에 모든것이 들어가게 되었습니다.
+open Source 프로젝트를 할 수 있는 기회가 주어진다면 꼭 한번 해보고 싶습니다!
+
+## 📈 + 더 알아보기
+현재 Samsung ONE과 유사한 프로젝트들이 실사례로 많이 등장하고 있는 것 같네요. :)
+
+대표적인 사례로 최근 애플이 WWDC 2023 에서 새롭게 출시한 'Vision Pro'와 'IOS17' 이 있습니다.
+
+
+![](/images/ef8e97c8-0134-4c44-852f-1c67f67c55b0-image.png)
+
+
+출처 : https://www.aitimes.com/news/articleView.html?idxno=151564
+
+퀄컴에서도 한국에 기자회견에서 on-device AI 의 중요성을 강조했습니다.
+
+최근 Samsung Galaxy S24 에서 On-device AI 를 탑재한 상용 핸드폰이 출시되었습니다. 
+
+
+![](/images/f703c81a-27ca-4246-a6f6-5bf50af524e8-image.png)
+
+
+출처 : https://news.samsung.com/us/samsung-google-cloud-bring-generative-ai-to-samsung-galaxy-s24-series/
+
+on-device AI가 발전하여 세상에 긍정적인 변화를 가져오면 좋겠습니다 :)

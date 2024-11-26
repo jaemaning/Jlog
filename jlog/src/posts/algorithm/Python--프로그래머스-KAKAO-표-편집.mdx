@@ -1,0 +1,332 @@
+---
+title: "[Python / 프로그래머스] KAKAO 표 편집"
+description: "[Python / 프로그래머스] KAKAO 표 편집 문제풀이 입니다. 이 글에는 정답 코드가 포함 되어 있습니다."
+date: 2024-07-09T06:29:36.842Z
+tags: ["python","알고리즘","카카오코테","표 편집","프로그래머스"]
+category : "algorithm"
+---
+
+해당 문제는 [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/81303)에서 풀어볼 수 있기에 문제 설명은 생략하겠습니다.
+
+## 문제 해결 방법
+처음 문제를 접하였을 때 굉장히 직관적인 풀이가 가능할 것으로 보이고 상당히 쉬워보였다.
+
+그저 위, 아래, 삭제, 복구 작업만 해주면 되기에 단순 Stack 자료구조 문제인가? 싶었고 바로 시간복잡도를 확인해 보았다.
+
+### 시간복잡도
+
+![](/images/d1d8e91f-2ed7-41c4-9a6a-7a89e19eb2cb-image.png)
+
+
+
+문제의 제한 사항이 되게 길게 쓰여있었는데, 핵심적인 내용만 보자면 세 가지이다.
+- ```n <= 1,000,000```
+- ```cmd의 원소 개수 <= 200,000``` (단, ```cmd 모든 X 값의 합 <= 1,000,000```)
+- 표, 삭제 스택의 범위 밖으로 나가는 일은 없다.
+
+시간복잡도를 계산해야하는데, 처음에 ```cmd 모든 X값의 합 <= 1,000,000``` 에 꽃혀 단순 for 문을 돌려도 터지진 않겠다고 생각했다.
+
+그 이유는 위아래 이동이 최대 1,000,000 번으로 n이 아무리 커도 이동이 1,000,000번이면 1,000,000번만 탐색하면 되기 때문인데, 이 가정으로 문제를 풀고 시간초과에 빠져버렸다. (삭제된 데이터는 건너 뛰어야하는데, 1번과 100,001 번 사이에 100,000개의 데이터 삭제가 일어났다면 단순히 1번 움직이는데 연산량은 100,000번이 된다.)
+
+그렇기에 단순한 for문과 stack 으로 문제를 푸는것은 불가능해보였고, 두 번째로 생각난 아이디어는 **linkedList** 자료구조였다.
+
+### linkedList 자료구조
+
+
+![](/images/8e42c338-603c-48fd-b814-1146868a4b56-image.png)
+
+
+
+출처 : https://opentutorials.org/module/1335/8821
+
+위 출처에서 linkedList 자료구조와 arrayList 자료구조에 대해 자세히 설명해주고 있습니다.
+
+간단히 설명하자면 linkedList 자료구조란 앞과 뒤에 어떤 자료가 들어있는지 알 수 있는 연결된 자료 구조로 멀리 떨어져 있는 구조에서 연결된 것처럼 빠른 탐색이 가능하다. 
+
+![](/images/f94ef7bb-7b25-408e-9330-6426f2c50730-image.png)
+
+
+하지만 arrayList 에서 5번째 자료는 array[5] 처럼 탐색이 가능하지만 linkedList 에서는 0번부터 계속해서 다음 값을 찾아 5번째 자료를 찾아야하는 단점이 있다.
+
+
+![](/images/40385738-d105-432f-a17c-64f5e2f9126f-image.png)
+
+
+이 linkedList 아이디어를 통해 내가 겪은 아래 문제를 해결해 시간초과 문제를 해결할 수 있을 것으로 보였다. 
+
+문제 ) 삭제된 데이터는 건너 뛰어야하는데, 1번과 100,001 번 사이에 100,000개의 데이터 삭제가 일어났다면 단순히 1번 움직이는데 연산량은 100,000번이 된다.
+
+해결 ) 
+```python
+# 단순 딕셔너리로도 구현이 가능.
+linked_lst = {
+  0: {prev: None, next_: 1},
+  1: {prev : 0, next_: 100001}, 
+  ... , 
+  100001 : {prev : 1, next_: None}
+}
+```
+
+## 문제 풀이
+
+이번엔 두 가지 방식을 통해 문제를 풀어보겠습니다. 자료 구조 문제의 경우 사실 deque, heapq 같은 라이브러리를 사용하지 않는다면 class 를 통해 해당 자료구조를 만들어 주는 경우가 정석에 가깝다고 생각하여 정석적인 풀이방식과, 간단히 dictionary 를 통해 linkedList 를 만들어보는 방식으로 두 가지를 구현해 보겠습니다. 내부 로직은 크게 다르지 않습니다.
+
+먼저 정석적인 Class 를 이용해 Node 와 Chart 를 만들어 내부 함수를 통해 문제를 풀어보겠습니다.
+
+```python
+class Node:
+    def __init__(self, val, prev=None, next_=None):
+        self.val = val
+        self.prev = prev
+        self.next = next_
+
+class Chart:
+    def __init__(self, n, k):
+        self.stack = []
+        self.now = k
+        self.answer = ["O"] * n
+        self.nodes = [Node(0, next_=1)]
+        self.nodes.extend([Node(i, i-1, i+1) for i in range(1, n-1)])
+        self.nodes.append(Node(n-1, prev=(n-2)))
+    
+    def keyU(self, x):
+        for _ in range(x):
+            self.now = self.nodes[self.now].prev
+
+    def keyD(self, x):
+        for _ in range(x):
+            self.now = self.nodes[self.now].next
+            
+    def keyC(self):
+        self.stack.append(self.now)
+        self.answer[self.now] = "X"
+        prev, next_ = self.nodes[self.now].prev, self.nodes[self.now].next
+        
+        if prev is not None:
+            self.nodes[prev].next = next_
+        
+        if next_ is not None:
+            self.nodes[next_].prev = prev
+            
+        self.now = next_ if next_ is not None else prev
+    
+    def keyZ(self):
+        cur = self.stack.pop()
+        self.answer[cur] = "O"
+        
+        prev, next_ = self.nodes[cur].prev, self.nodes[cur].next
+        
+        if prev is not None:
+            self.nodes[prev].next = cur
+        
+        if next_ is not None:
+            self.nodes[next_].prev = cur
+
+    
+def solution(n, k, cmds):
+    answer = ''
+    
+    char = Chart(n, k)
+    
+    for cmd in cmds:
+        if len(cmd) > 1:
+            c, v = cmd.split()
+        else:
+            c = cmd
+        
+        if c == "U":
+            char.keyU(int(v))
+        elif c == "D":
+            char.keyD(int(v))
+        elif c == "C":
+            char.keyC()
+        else:
+            char.keyZ()
+    
+    return "".join(char.answer)
+```
+
+다음은 간단히 dictionary 를 만들어 푼 방식입니다. 
+```python
+def solution(n, k, cmds):
+    answer = ["O"] * n
+    linked_lst = {i: [i-1, i+1] for i in range(n)}
+    linked_lst[0][0], linked_lst[n-1][1] = None, None
+    stk = []
+    now = k
+    
+    def keyU(x):
+        nonlocal now
+        for _ in range(x):
+            now = linked_lst[now][0]
+    
+    def keyD(x):
+        nonlocal now
+        for _ in range(x):
+            now = linked_lst[now][1]
+    
+    def keyC():
+        nonlocal now
+        stk.append(now)
+        answer[now] = "X"
+        prev, next_ = linked_lst[now]
+        
+        if prev is not None:
+            linked_lst[prev][1] = next_
+        if next_ is not None:
+            linked_lst[next_][0] = prev
+        
+        now = next_ if next_ is not None else prev
+    
+    def keyZ():
+        nonlocal now
+        cur = stk.pop()
+        answer[cur] = "O"
+        prev, next_ = linked_lst[cur]
+        
+        if prev is not None:
+            linked_lst[prev][1] = cur
+        if next_ is not None:
+            linked_lst[next_][0] = cur
+    
+    for cmd in cmds:
+        if len(cmd) > 1:
+            c, v = cmd.split()
+            v = int(v)
+        else:
+            c = cmd
+        
+        if c == "U":
+            keyU(v)
+        elif c == "D":
+            keyD(v)
+        elif c == "C":
+            keyC()
+        elif c == "Z":
+            keyZ()
+    
+    return "".join(answer)
+```
+
+## 새로 배운 내용 & 느낀점
+
+### 코테환경 (인터넷 IDE 환경) 에서의 디버깅
+사실 코테환경에서의 디버깅은 정말 최악이라고 할 수 있습니다. 파이참이나, 스파이더 같은 강력한 IDE 에서 제공하는 디버깅 툴을 사용할 수도 없고, 변수를 시각화해서 보여주는 기능도 없죠,,
+
+그렇기 때문에 print를 찍어보며 디버깅을 할 수 밖에 없습니다. 이번 문제의 경우 유독 runtime Error 가 많이 발생했는데요, 물론 에러코드는 출력을 해주지만 어디서 에러가 발생했는지는 안알려주는 경우가 있었습니다.
+
+이 경우 디버깅을 위해 try, except 문을 사용해 보니 문제의 원인을 알 수 있어 편했습니다.
+
+```python
+for cmd in cmds:
+    if len(cmd) > 1:
+        c, v = cmd.split()
+        v = int(v)
+    else:
+        c = cmd
+        
+    if c == "U":
+        keyU(v)
+    elif c == "D":
+        keyD(v)
+    elif c == "C":
+    	try:
+        	keyC()
+        except Exception as e:
+        	print("[keyC] error:", e)
+    elif c == "Z":
+    	try:
+        	keyZ()
+        except Exception as e:
+        	print("[keyZ] error:", e)
+```
+
+또한 class 를 만들 경우 만든 class 에서 출력이 주소값으로 출력이 되게 되는데
+```python
+class Node:
+    def __init__(self, val, prev=None, next_=None):
+        self.val = val
+        self.prev = prev
+        self.next = next_
+
+class Chart:
+    def __init__(self, n, k):
+        self.stack = []
+        self.now = k
+        self.answer = ["O"] * n
+        self.nodes = [Node(0, next_=1)]
+        self.nodes.extend([Node(i, i-1, i+1) for i in range(1, n-1)])
+        self.nodes.append(Node(n-1, prev=(n-2)))
+
+    ##
+    # ...중략
+    ##
+
+char = Chart(n, k)
+print(char.nodes)
+
+'''
+출력 〉	[
+<solution.Node object at 0x7f26cfdd2550>, 
+<solution.Node object at 0x7f26cee27580>, 
+<solution.Node object at 0x7f26cee274f0>, 
+<solution.Node object at 0x7f26cee27640>, 
+<solution.Node object at 0x7f26cee27850>, 
+<solution.Node object at 0x7f26cee279d0>, 
+<solution.Node object at 0x7f26cee27af0>, 
+<solution.Node object at 0x7f26cee275b0>
+]
+'''
+```
+
+클래스의 인스턴스를 출력할 때 ```__repr__``` 메서드를 정의하면, 우리가 원하는 형식으로 객체를 출력할 수 있습니다. 
+
+```python
+class Node:
+    def __init__(self, val, prev=None, next_=None):
+        self.val = val
+        self.prev = prev
+        self.next = next_
+
+    def __repr__(self):
+        prev_val = self.prev if self.prev is not None else None
+        next_val = self.next if self.next is not None else None
+        return f"Node({self.val}, prev={prev_val}, next={next_val})"
+
+class Chart:
+    def __init__(self, n, k):
+        self.stack = []
+        self.now = k
+        self.answer = ["O"] * n
+        self.nodes = [Node(0, next_=1)]
+        self.nodes.extend([Node(i, i-1, i+1) for i in range(1, n-1)])
+        self.nodes.append(Node(n-1, prev=(n-2)))
+
+    ##
+    # ...중략
+    ##
+
+char = Chart(n, k)
+print(char.nodes)
+
+'''
+출력 〉	[
+Node(0, prev=None, next=1), 
+Node(1, prev=0, next=2), 
+Node(2, prev=1, next=3), 
+Node(3, prev=2, next=4), 
+Node(4, prev=3, next=5), 
+Node(5, prev=4, next=6), 
+Node(6, prev=5, next=7), 
+Node(7, prev=6, next=None)
+]
+'''
+```
+
+
+
+### 느낀점
+
+예전 코테들을 풀어보면서 느낀점이 Trie, linkedList 등과 같이 자료구조 문제들이 많이 나왔던 것 같습니다. 현재는 라이브러리들이 잘 되어있어 직접 구현하는 경우가 적지만 자료 구조 문제는 자료 구조를 알고 있냐 모르고 있냐가 해결에 큰 비중을 차지하기에 숙지를 반드시 해야겠다라고 다시 한번 느껴 자료구조들을 다시 공부하고 있습니다.
+
+다음엔 Trie 자료구조를 한번 찾아보고 공부해보겠습니다.
