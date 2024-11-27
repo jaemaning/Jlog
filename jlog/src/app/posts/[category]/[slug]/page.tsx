@@ -3,6 +3,7 @@ import NameTag from '@/shared/atom/name-tag/name-tag';
 import { container, extraSetting, articleStyle } from './page.css'
 import { getPostDetail } from '@/features/search-post/lib/get-post';
 import { notFound } from 'next/navigation';
+import Giscus from '@/shared/atom/giscus/giscus';
 
 type Params = {
   params: { category: string; slug: string };
@@ -10,7 +11,6 @@ type Params = {
 
 export default async function PostDetailPage({ params } : Params) {
   const post = await getPostDetail(params.category, params.slug)
-  console.log(post)
 
   return (
       <div>
@@ -24,7 +24,7 @@ export default async function PostDetailPage({ params } : Params) {
             <MDXContent postName={post.content}></MDXContent>
           </div>
         </article>
-        <NameTag></NameTag>
+        <Giscus></Giscus>
       </div>
   );
 };

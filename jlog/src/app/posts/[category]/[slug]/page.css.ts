@@ -13,5 +13,6 @@ export const extraSetting = style({
 })
 
 export const articleStyle = style({
-    width: '95%'
+    width: '90%',
+    marginBottom: '200px'
 })

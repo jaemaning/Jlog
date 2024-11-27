@@ -26,9 +26,6 @@ export function postSearch(posts: React.RefObject<Posts>, val : string) {
         // 제목 | 내용에서 검색어가 포함된 경우 필터링
         return post.grayMatterData.title.toLowerCase().includes(searchQuery) || post.content.toLowerCase().includes(searchQuery);
     })
-    filteredPosts.map((f)=>{
-        console.log(f.dateString)
-    })
     return postSortByDate(filteredPosts)
 }
 
