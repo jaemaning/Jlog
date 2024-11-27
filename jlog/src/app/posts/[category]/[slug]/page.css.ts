@@ -7,12 +7,13 @@ export const container = style({
 });
 
 export const extraSetting = style({
-    color: vars.themeColor.color.gray,
-    fontSize: '1.1rem',
+    color: vars.themeColor.color.subFontColor,
+    fontSize: '1rem',
     lineHeight: '2rem'
 })
 
 export const articleStyle = style({
     width: '90%',
+    margin: 'auto',
     marginBottom: '200px'
 })

@@ -19,7 +19,7 @@ export const strongStyle = style({
 })
 
 export const codeTitleStyle = style({
-  fontSize: '1.1rem',
+  fontSize: '1rem',
   fontWeight: 500,
   padding: '0.6rem 0.8rem',
   border: '1px solid #8b8b8b',
@@ -37,38 +37,38 @@ export const codeStyle = style({
   fontFamily: Hack,
   fontSize: '1rem',
   lineHeight: 1.5,
-  padding: '0.1rem 0.2rem',
-  borderRadius: '0.2rem',
+  padding: '0.2rem 0.5rem',
+  borderRadius: '0.5rem',
   border: `1px solid ${vars.themeColor.color.grayBackground}`,
   backgroundColor: vars.themeColor.color.grayBackground,
-  color: vars.themeColor.color.mainFontColor,
+  color: vars.themeColor.color.orange200,
   margin: '20px 0'
 });
 
 export const headingStyle = {
   h1: style({
-    fontSize: '2.7rem',
+    fontSize: '2rem',
     fontWeight: 'bold',
     marginBottom: '1.5rem',
     lineHeight: '1.5',
     color: vars.themeColor.color.mainFontColor
   }),
   h2: style({
-    fontSize: '2rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold',
     marginBottom: '1.25rem',
     lineHeight: '1.5',
     color: vars.themeColor.color.mainFontColor
   }),
   h3: style({
-    fontSize: '1.8rem',
+    fontSize: '1.6rem',
     fontWeight: 'bold',
     marginBottom: '1rem',
     lineHeight: '1.5',
     color: vars.themeColor.color.mainFontColor
   }),
   h4: style({
-    fontSize: '1.6rem',
+    fontSize: '1.4rem',
     fontWeight: 'bold',
     marginBottom: '0.75rem',
     lineHeight: '1.5',
@@ -77,7 +77,8 @@ export const headingStyle = {
 };
 
 export const paragraphStyle = style({
-  marginBottom: '1rem',
+  marginBottom: '0.8rem',
+  fontSize: '1.1rem',
   padding: '10px 0'
 });
 

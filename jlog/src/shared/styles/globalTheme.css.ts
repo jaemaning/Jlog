@@ -14,6 +14,7 @@ const themeColor = createThemeContract({
       mainBackground: null,
       contentBackground: null,
       mainFontColor: null,
+      subFontColor: null,
       borderColor: null,
       gradient: null,
       loadingColor: null,
@@ -30,6 +31,7 @@ export const lightTheme = createTheme(themeColor, {
         mainBackground: '#f7f9fa',
         contentBackground: '#ffffff',
         mainFontColor: '#2c2c2c',
+        subFontColor: '#4d4d4d',
         borderColor: '#a1a1a3',
         gradient: 'linear-gradient(#39598A, #79D7ED)',
         loadingColor: '#EEEEEE',
@@ -37,7 +39,7 @@ export const lightTheme = createTheme(themeColor, {
         orange200 : style.colors['orange-burnt'],
         orange300 : style.colors['orange-soft'],
         gray : '#6c757d',
-        grayBackground: '#f4f4f4',
+        grayBackground: '#e6e6e6',
     },
 });
 
@@ -47,6 +49,7 @@ export const darkTheme = createTheme(themeColor, {
         mainBackground: '#1d1d1d',
         contentBackground: '#2c2c2c',
         mainFontColor: '#ffffff',
+        subFontColor: '#cfcfcf',
         borderColor: '#b1b1b3',
         gradient: 'linear-gradient(#091236, #1E215D)',
         loadingColor: '#303030',
@@ -54,7 +57,7 @@ export const darkTheme = createTheme(themeColor, {
         orange200 : style.colors['orange-soft'],
         orange300 : style.colors['orange-bright'],
         gray : style.colors['gray-500'],
-        grayBackground: '#262626',
+        grayBackground: '#2e2e2e',
     },
 });
 
