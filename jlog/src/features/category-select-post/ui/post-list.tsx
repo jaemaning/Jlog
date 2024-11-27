@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
 import * as styles from './post-list.css';
-import { GroupDictionary } from '../model/model';
+import { NewGroupDictionary } from '../model/model';
 
 
-export function PostList ({ sortedYears, groups, category } : { sortedYears :string[], groups : GroupDictionary, category: string }) {
+export function PostList ({ sortedYears, groups, category } : { sortedYears :string[], groups : NewGroupDictionary, category: string }) {
 
   return (
     <div className={styles.container}>
@@ -14,9 +14,18 @@ export function PostList ({ sortedYears, groups, category } : { sortedYears :str
           <div className={styles.groupContainer}>
             <p className={`${styles.yearStyle} ${styles.grayColor}`}>{year}</p>
             <ul className={styles.uiContainer}>
-              {groups[year][category].map(([title, categ, date, name], index) => (
+              {groups[year][category].map(([title, categ, date, name, prev, next], index) => (
                 <li key={index} >
-                  <Link href={`/posts/${categ}/${name}`} className={styles.FlexContainer}>
+                  <Link 
+                    href={{
+                      pathname : `/posts/${categ}/${name}`,
+                      query : {
+                        prev : prev,
+                        next : next
+                      }
+                    }} 
+                    className={styles.FlexContainer}
+                  >
                     <p className={styles.pStyle}>{title}</p>
                     <p className={`${styles.grayColor} ${styles.pStyle}`}>{date}</p>
                   </Link>

@@ -6,8 +6,8 @@ import { PostList } from '@/features/category-select-post';
 import { Posts } from '@/features/search-post/model/model';
 import { divideCategory } from '../lib/category-post';
 import { CategoryGroups } from '../model/model';
-import { objectSortByYear, postSortByCategory, postSortByMonDay } from '../lib/sort-post';
-import { GroupDictionary } from '@/features/category-select-post/model/model';
+import { objectSortByYear, postPrevNextContentAdd, postSortByCategory, postSortByMonDay } from '../lib/sort-post';
+import { GroupDictionary, NewGroupDictionary } from '@/features/category-select-post/model/model';
 import { Typo } from '@/shared/atom/typo';
 
 
@@ -16,6 +16,7 @@ export function CategoryList({ posts } : {posts : Posts}) {
   const [category, setCategory] = useState("All");
   const [postGroups, setPostGroups] = useState<CategoryGroups>({});
   const [groups, setGroups] = useState<GroupDictionary>({});
+  const [newgroups, setNewGroups] = useState<NewGroupDictionary>({});
   const [sortedYears, setSortedYear] = useState<string[]>([]);
   
   useEffect(()=>{
@@ -24,9 +25,11 @@ export function CategoryList({ posts } : {posts : Posts}) {
       const sortedPost = await postSortByMonDay(posts) // 월, 일 별 sorting
       const groups = await postSortByCategory(sortedPost) // category 별 분류
       const sortedYears = await objectSortByYear(groups) // 연도 sorting 후 리스트 처리
+      const newGroups = await postPrevNextContentAdd(groups) // prev, next content 추가
 
       setPostGroups(postGroups);
       setGroups(groups)
+      setNewGroups(newGroups)
       setSortedYear(sortedYears)
     }
 
@@ -51,7 +54,7 @@ export function CategoryList({ posts } : {posts : Posts}) {
       </div>
       <hr/>
       <br/>
-      <PostList sortedYears={sortedYears} groups={groups} category={category}/>
+      <PostList sortedYears={sortedYears} groups={newgroups} category={category}/>
     </div>
   );
 };

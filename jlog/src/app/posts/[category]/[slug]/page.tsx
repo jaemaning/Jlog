@@ -6,11 +6,19 @@ import { notFound } from 'next/navigation';
 import Giscus from '@/shared/atom/giscus/giscus';
 
 type Params = {
-  params: { category: string; slug: string };
+  category: string
+  slug: string
 };
 
-export default async function PostDetailPage({ params } : Params) {
+type SearchParams = {
+  prev : string,
+  next : string
+}
+
+export default async function PostDetailPage({ params, searchParams } : { params : Params, searchParams : SearchParams }) {
   const post = await getPostDetail(params.category, params.slug)
+  const prev = searchParams.prev || "Null"
+  const next = searchParams.next || "Null"
 
   return (
       <div>
@@ -23,8 +31,10 @@ export default async function PostDetailPage({ params } : Params) {
           <div className={extraSetting}>
             <MDXContent postName={post.content}></MDXContent>
           </div>
+          <Giscus></Giscus>
+          <p>{prev}</p>
+          <p>{next}</p>
         </article>
-        <Giscus></Giscus>
       </div>
   );
 };

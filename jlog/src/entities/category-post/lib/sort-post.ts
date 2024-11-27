@@ -1,5 +1,5 @@
 import { Posts, Post } from '@/features/search-post/model/model'
-import { GroupDictionary } from '../../../features/category-select-post/model/model';
+import { GroupDictionary, NewGroupDictionary } from '../../../features/category-select-post/model/model';
 
 // 월 일만 비교하기, 연도는 그룹으로 관리
 export function postSortByMonDay (posts: Posts) : Posts {
@@ -51,4 +51,35 @@ export function postSortByCategory(posts: Posts) : GroupDictionary {
     })
 
     return groups
+}
+
+
+export function postPrevNextContentAdd(
+  groups: GroupDictionary
+): NewGroupDictionary {
+  const newGroups: NewGroupDictionary = {};
+
+  // 각 연도를 순회
+  for (const year in groups) {
+    newGroups[year] = {};
+
+    // 각 카테고리를 순회
+    for (const category in groups[year]) {
+      const items = groups[year][category]; // 현재 카테고리의 배열
+      const newItems = items.map((item, index) :  [string, string, string, string, string, string] => {
+        const prev =
+          index > 0 ? items[index - 1].join("-") : "prevNull"; // 이전 요소
+        const next =
+          index < items.length - 1 ? items[index + 1].join("-") : "nextNull"; // 다음 요소
+
+        // 새 배열 반환
+        return [...item, prev, next];
+      });
+
+      // 변환된 카테고리를 NewGroupDictionary에 추가
+      newGroups[year][category] = newItems;
+    }
+  }
+
+  return newGroups;
 }
