@@ -10,10 +10,15 @@ export const extraSetting = style({
     color: vars.themeColor.color.subFontColor,
     fontSize: '1rem',
     lineHeight: '2rem',
-    marginBottom: '200px'
+    marginBottom: '50px'
 })
 
 export const articleStyle = style({
     width: '90%',
     margin: 'auto',
+})
+
+export const hrSetting = style({
+    marginTop: '100px',
+    backgroundColor: vars.themeColor.color.gray
 })

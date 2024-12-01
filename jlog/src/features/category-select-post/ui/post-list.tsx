@@ -18,11 +18,7 @@ export function PostList ({ sortedYears, groups, category } : { sortedYears :str
                 <li key={index} >
                   <Link 
                     href={{
-                      pathname : `/posts/${categ}/${name}`,
-                      query : {
-                        prev : prev,
-                        next : next
-                      }
+                      pathname : `/posts/${categ}/${name}`
                     }} 
                     className={styles.FlexContainer}
                   >

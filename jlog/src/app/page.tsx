@@ -6,6 +6,7 @@ import IntroBox from "@/shared/atom/intro/inrtro";
 import { CategoryList } from "@/entities/category-post"
 import { divideCategory } from "@/entities/category-post/lib/category-post";
 
+
 export default async function Home() {
   const posts = await getPostAll();
 

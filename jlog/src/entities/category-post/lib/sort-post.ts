@@ -68,9 +68,9 @@ export function postPrevNextContentAdd(
       const items = groups[year][category]; // 현재 카테고리의 배열
       const newItems = items.map((item, index) :  [string, string, string, string, string, string] => {
         const prev =
-          index > 0 ? items[index - 1].join("-") : "prevNull"; // 이전 요소
+          index > 0 ? items[index - 1].join("##") : "prevNull"; // 이전 요소
         const next =
-          index < items.length - 1 ? items[index + 1].join("-") : "nextNull"; // 다음 요소
+          index < items.length - 1 ? items[index + 1].join("##") : "nextNull"; // 다음 요소
 
         // 새 배열 반환
         return [...item, prev, next];

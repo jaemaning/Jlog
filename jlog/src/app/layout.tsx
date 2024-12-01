@@ -39,9 +39,9 @@ export default async function RootLayout({
         <ThemeProvider>
           <Navbar />
             <SearchOverlay posts={posts} />
-            <div className={mainContainer}>
-              {children}
-            </div>
+              <div className={mainContainer}>
+                {children}
+              </div>
           <Footer />
         </ThemeProvider>
       </body>
