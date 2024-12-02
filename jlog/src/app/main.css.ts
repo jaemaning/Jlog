@@ -8,7 +8,8 @@ export const mainContainer = style({
     height: '100%',
     padding: '0 5px',
     minHeight: calc.subtract('100vh', '340px'), // 250px margin + 24px footer height + 66px navBar height
-    marginTop: '50px'
+    marginTop: '50px',
+    overflowX: 'hidden'
 });
 
 export const hrStyle = style({

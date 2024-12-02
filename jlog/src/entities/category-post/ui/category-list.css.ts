@@ -30,7 +30,7 @@ export const selectOpt = style({
 
 export const selectVariants = styleVariants({
   active: {
-    borderBottom: '2px solid red',
+    borderBottom: `2px solid ${vars.themeColor.color.orange200}`,
     color: vars.themeColor.color.mainFontColor
   },
   inactive: {
