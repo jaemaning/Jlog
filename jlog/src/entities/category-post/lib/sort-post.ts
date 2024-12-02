@@ -33,20 +33,20 @@ export function postSortByCategory(posts: Posts) : GroupDictionary {
 
       if(year in groups) {
         if ("All" in groups[year]) {
-          groups[year]["All"].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
+          groups[year]["All"].push([post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name])
         } else {
-          groups[year]["All"] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+          groups[year]["All"] = [[post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name]]
         }
         
         if (post.category in groups[year]) {
-          groups[year][post.category].push([post.grayMatterData.title, post.category, month+"."+day, post.name])
+          groups[year][post.category].push([post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name])
         } else {
-          groups[year][post.category] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+          groups[year][post.category] = [[post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name]]
         }
       } else {
         groups[year] = {  }
-        groups[year][post.category] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
-        groups[year]["All"] = [[post.grayMatterData.title, post.category, month+"."+day, post.name]]
+        groups[year][post.category] = [[post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name]]
+        groups[year]["All"] = [[post.grayMatterData.title, post.category, year+"."+month+"."+day, post.name]]
       }
     })
 

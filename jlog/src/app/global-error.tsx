@@ -7,7 +7,7 @@ export default function GlobalError({
   error: Error;
   reset: () => void;
 }) {
-  console.log("global error", error);
+
   return (
     <html>
       <body>

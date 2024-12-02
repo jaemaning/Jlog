@@ -23,7 +23,7 @@ export function PostList ({ sortedYears, groups, category } : { sortedYears :str
                     className={styles.FlexContainer}
                   >
                     <p className={styles.pStyle}>{title}</p>
-                    <p className={`${styles.grayColor} ${styles.pStyle}`}>{date}</p>
+                    <p className={`${styles.grayColor} ${styles.pStyle}`}>{date.split(".").slice(1,3).join(".")}</p>
                   </Link>
                 </li>
               ))}

@@ -1,0 +1,1 @@
+export { PostFooter } from  './ui/post-footer'

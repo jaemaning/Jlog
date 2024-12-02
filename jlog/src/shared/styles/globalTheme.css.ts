@@ -23,6 +23,7 @@ const themeColor = createThemeContract({
       orange300: null,
       gray: null,
       grayBackground: null,
+      grayBackgroundHover : null
     },
   });
   
@@ -40,6 +41,7 @@ export const lightTheme = createTheme(themeColor, {
         orange300 : style.colors['orange-soft'],
         gray : '#6c757d',
         grayBackground: '#e6e6e6',
+        grayBackgroundHover : '#dddddd'
     },
 });
 
@@ -58,6 +60,7 @@ export const darkTheme = createTheme(themeColor, {
         orange300 : style.colors['orange-bright'],
         gray : style.colors['gray-500'],
         grayBackground: '#2e2e2e',
+        grayBackgroundHover : '#343434'
     },
 });
 

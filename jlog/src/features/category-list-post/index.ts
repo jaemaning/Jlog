@@ -1,0 +1,1 @@
+export { CategoryListPost } from "./ui/category-list-post";

@@ -24,12 +24,12 @@ export const typoStyle = recipe({
         },
         h2: {
           fontSize: vars.fontSizes.large,
-          fontWeight: bold,
+          fontWeight: '500',
           transform: 'skew(-10deg)'
         },
         h3: {
           fontSize: vars.fontSizes.mediumLarge,
-          fontWeight: bold,
+          fontWeight: normal,
           transform: 'skew(-10deg)'
         },
         p1: {

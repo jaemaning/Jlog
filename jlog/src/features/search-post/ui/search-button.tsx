@@ -29,14 +29,12 @@ export const SearchButton = () => {
             // MetaKey (⌘ on macOS) + K 또는 CtrlKey + K 감지
             if ((event.metaKey || event.ctrlKey) && event.key.match('k')) {
                 toggleSearch();
-                console.log(isSearchOpen)
             }
         };
 
         function handleKeyDownESC(event: KeyboardEvent) {
             // ESC 감지
             if (event.key.match('Escape')) {
-                console.log(isSearchOpen)
                 if (isSearchOpen) {
                     toggleSearch();
                 }
