@@ -13,8 +13,9 @@ export const mainContainer = style({
 });
 
 export const hrStyle = style({
+    width: '95%',
     height: '0.5px',
     backgroundColor: vars.themeColor.color.gray,
     border: 'none',
-    margin: '20px 0',
+    margin: '20px auto',
 });

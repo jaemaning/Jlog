@@ -31,8 +31,8 @@ export default async function PostDetailPage({ params } : { params : Params }) {
             <MDXContent postName={post.content}></MDXContent>
             <hr className={hrSetting} />
           </div>
-          <PostFooter prev={prev} next={next} categPosts={categPosts} target_name={params.slug} target_category={params.category}></PostFooter>
           <Giscus></Giscus>
+          <PostFooter prev={prev} next={next} categPosts={categPosts} target_name={params.slug} target_category={params.category}></PostFooter>
         </article>
       </div>
   );

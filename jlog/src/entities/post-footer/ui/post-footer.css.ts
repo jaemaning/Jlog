@@ -6,7 +6,7 @@ export const container = style({
     display: "flex",
     justifyContent: 'space-between',
     textDecoration: 'none',
-    marginBottom: '100px'
+    marginTop: '100px'
 })
 
 export const semiContainer = style({
@@ -45,6 +45,6 @@ export const leftPTag = style({
 })
 
 export const rightPTag = style({
-    textAlign: 'left',
+    textAlign: 'right',
     marginRight: '0'
 })

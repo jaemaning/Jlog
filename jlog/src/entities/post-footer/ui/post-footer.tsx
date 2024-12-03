@@ -27,8 +27,12 @@ export function PostFooter(
                         <p className={`${styles.pTag} ${styles.leftPTag}`}>{prev[0]}</p>
                     </Link>
                     : 
-                    <div>
-                        <p>없음</p>
+                    <div className={styles.semiContainer}>
+                        <svg viewBox="0 0 3 6" className={`${styles.arrow} ${styles.arrowLeft}`}>
+                            <path d="M3 0L0 3L3 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            </path>
+                        </svg>
+                        <p className={`${styles.pTag} ${styles.leftPTag}`}>이전 포스터가 없습니다.</p>
                     </div>
                 }
                 {

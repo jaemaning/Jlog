@@ -28,7 +28,7 @@ export function CategoryListPost(
     return (
         <div className={styles.container}>
             <div className={styles.childContainer} onClick={clickedPold}>
-                <Typo size="h2">{"* "}<p className={styles.orangeStyle}>{target_category}</p>{" *"} 관련글 모아보기</Typo>
+                <Typo size="h2">{"* "}<span className={styles.orangeStyle}>{target_category}</span>{" *"} 관련글 모아보기</Typo>
                 <div className={styles.lineStyle}>
                     <SegmentIcon className={styles.iconStyle}></SegmentIcon>
                     <p className={styles.smallPStyle}>{`${currentIdx+1}/${categPosts.length}`}</p>

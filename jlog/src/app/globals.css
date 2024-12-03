@@ -122,3 +122,8 @@
  .token.entity {
    cursor: help;
  }
+
+hr {
+  width : 95%;
+  margin : 20px auto
+}
